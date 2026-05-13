@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,10 +14,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const description =
+  "Upload a recorded talk and get an evaluator-style report — fillers, pacing, vocal variety, structure, your top three actions, and a pitch-and-pace timeline chart.";
+
 export const metadata: Metadata = {
-  title: "Toastmasters Speech Coach",
-  description:
-    "Upload a recorded speech and get an evaluator-style report on fillers, pacing, vocal variety, and structure.",
+  title: "Rhetor — AI speech coaching",
+  description,
+  openGraph: {
+    title: "Rhetor — AI speech coaching",
+    description,
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -26,9 +35,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="flex min-h-svh flex-col bg-background text-foreground">
+        <SiteHeader />
+        {children}
+        <SiteFooter />
+      </body>
     </html>
   );
 }

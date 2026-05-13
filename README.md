@@ -1,9 +1,9 @@
-# Toastmasters Speech Coach
+# Rhetor — AI speech coaching
 
-Free web tool that turns a recorded Toastmasters speech into an evaluator-style report — filler words, pacing, vocal variety, structure, top-3 actions — plus a pace + pitch timeline chart.
+Free web tool that turns a recorded talk into an evaluator-style report — filler words, pacing, vocal variety, structure, top-3 actions — plus a pace + pitch timeline chart.
 
 ## Stack
-Next.js 15 · FastAPI · Deepgram · librosa + parselmouth · Claude Sonnet · Cloudflare R2 · Neon Postgres · Modal · Vercel
+Next.js 16 · FastAPI · Deepgram · librosa + parselmouth · Claude Sonnet · Cloudflare R2 · Neon Postgres · Modal · Vercel
 
 ## Status
 In active development — see [`BUILD_STAGES.md`](./BUILD_STAGES.md).
