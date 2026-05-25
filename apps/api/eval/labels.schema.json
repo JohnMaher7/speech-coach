@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/johnmaher/rhetor/eval/labels.schema.json",
+  "title": "Rhetor eval labels",
+  "description": "Schema for apps/api/eval/labels.json. One entry per labelled speech in the eval seed set. See notes/eval-harness-deep-dive.md for what each field is for.",
+  "type": "array",
+  "items": { "$ref": "#/$defs/case" },
+  "$defs": {
+    "case": {
+      "type": "object",
+      "required": ["id", "source", "speech_type", "human_label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable identifier for this case. Becomes the row label in the eval table.",
+          "pattern": "^[a-z0-9_]+$"
+        },
+        "source": {
+          "enum": ["fixture", "audio"],
+          "description": "fixture = pre-built Transcript/Metrics in tests/fixtures.py. audio = .wav under eval/audio/."
+        },
+        "fixture_name": {
+          "type": "string",
+          "description": "Required when source=fixture. Must match a GoldenCase symbol exported from apps/api/tests/fixtures.py (e.g. FILLERY_FAST)."
+        },
+        "audio_path": {
+          "type": "string",
+          "description": "Required when source=audio. Relative to apps/api/eval/ (e.g. 'audio/mid_band.wav')."
+        },
+        "speech_type": {
+          "enum": ["prepared", "impromptu", "presentation"],
+          "description": "Passed through to the pipeline. Affects scoring weights (impromptu drops `closing`)."
+        },
+        "human_label": { "$ref": "#/$defs/human_label" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "source": { "const": "fixture" } } },
+          "then": { "required": ["fixture_name"] }
+        },
+        {
+          "if": { "properties": { "source": { "const": "audio" } } },
+          "then": { "required": ["audio_path"] }
+        }
+      ]
+    },
+    "human_label": {
+      "type": "object",
+      "required": ["graded_by", "categories"],
+      "additionalProperties": false,
+      "properties": {
+        "graded_by": {
+          "type": "string",
+          "description": "Who graded this case (a name, or 'DRAFT — ...' for placeholders)."
+        },
+        "graded_at": {
+          "type": ["string", "null"],
+          "description": "ISO date (YYYY-MM-DD) when graded. Null while still a draft."
+        },
+        "categories": { "$ref": "#/$defs/category_scores" },
+        "notes": {
+          "type": "string",
+          "description": "Free-text grading notes — why you scored a category the way you did, what was hard to judge, etc. Kept for future-you reviewing the eval table."
+        }
+      }
+    },
+    "category_scores": {
+      "type": "object",
+      "required": [
+        "hook", "message_focus", "structure", "closing",
+        "pacing", "pauses", "vocal_variety", "language"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "hook":          { "$ref": "#/$defs/score" },
+        "message_focus": { "$ref": "#/$defs/score" },
+        "structure":     { "$ref": "#/$defs/score" },
+        "closing":       { "$ref": "#/$defs/score" },
+        "pacing":        { "$ref": "#/$defs/score" },
+        "pauses":        { "$ref": "#/$defs/score" },
+        "vocal_variety": { "$ref": "#/$defs/score" },
+        "language":      { "$ref": "#/$defs/score" }
+      }
+    },
+    "score": {
+      "oneOf": [
+        { "type": "integer", "minimum": 1, "maximum": 5 },
+        { "const": "n/a" }
+      ],
+      "description": "1 (needs work) through 5 (excellent), or 'n/a' if the category doesn't apply."
+    }
+  }
+}

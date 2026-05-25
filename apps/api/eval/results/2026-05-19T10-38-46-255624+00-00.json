@@ -1,0 +1,223 @@
+{
+  "timestamp_utc": "2026-05-19T10:38:46.255624+00:00",
+  "passed": false,
+  "failure_reasons": [
+    "max category MAE = 1.17 > 1.0 (worst: vocal_variety)"
+  ],
+  "mae_by_category": {
+    "hook": 0.0,
+    "message_focus": 0.333,
+    "structure": 0.5,
+    "closing": 1.0,
+    "pacing": 0.167,
+    "pauses": 0.0,
+    "vocal_variety": 1.167,
+    "language": 0.0
+  },
+  "variance_by_case_category": {
+    "fillery_fast": {
+      "hook": 0.0,
+      "message_focus": 0.577,
+      "structure": 0.577,
+      "closing": 0.0,
+      "pacing": 0.577,
+      "pauses": 0.0,
+      "vocal_variety": 0.0,
+      "language": 0.0
+    },
+    "clean_paced": {
+      "hook": 0.0,
+      "message_focus": 0.0,
+      "structure": 0.577,
+      "closing": 1.0,
+      "pacing": 0.0,
+      "pauses": 0.0,
+      "vocal_variety": 0.577,
+      "language": 0.0
+    },
+    "mid_band_real": {
+      "hook": 0.0,
+      "message_focus": 0.0,
+      "structure": 0.0,
+      "closing": 0.0,
+      "pacing": 0.0,
+      "pauses": 0.0,
+      "vocal_variety": 0.0,
+      "language": 0.0
+    }
+  },
+  "evidence_pass_rate": 1.0,
+  "total_cost_usd": 0.2956,
+  "n_completed": 6,
+  "n_skipped": 3,
+  "thresholds": {
+    "max_mae": 1.0,
+    "max_variance": 1.0,
+    "min_evidence_pass": 0.95,
+    "runs_per_case": 3
+  },
+  "runs": [
+    {
+      "case_id": "fillery_fast",
+      "run_idx": 1,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 1,
+        "message_focus": 2,
+        "structure": 1,
+        "closing": 1,
+        "pacing": 1,
+        "pauses": 1,
+        "vocal_variety": 2,
+        "language": 1
+      },
+      "overall_score": 1.3,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.060189,
+      "headline": "A real diagnosis of a real problem, completely buried under eighteen fillers per minute and zero preparation."
+    },
+    {
+      "case_id": "fillery_fast",
+      "run_idx": 2,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 1,
+        "message_focus": 3,
+        "structure": 1,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 1,
+        "vocal_variety": 2,
+        "language": 1
+      },
+      "overall_score": 1.61,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.058809,
+      "headline": "A real diagnosis of team bottlenecks drowned in fillers, hedges, and no structure."
+    },
+    {
+      "case_id": "fillery_fast",
+      "run_idx": 3,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 1,
+        "message_focus": 3,
+        "structure": 2,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 1,
+        "vocal_variety": 2,
+        "language": 1
+      },
+      "overall_score": 1.79,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.059094,
+      "headline": "A real diagnosis buried under relentless fillers and no prepared structure in sight."
+    },
+    {
+      "case_id": "clean_paced",
+      "run_idx": 1,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 5,
+        "message_focus": 5,
+        "structure": 4,
+        "closing": 1,
+        "pacing": 5,
+        "pauses": 5,
+        "vocal_variety": 5,
+        "language": 5
+      },
+      "overall_score": 4.42,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.03718,
+      "headline": "A charming, well-structured mini-speech that earns its hook and delivers its thesis \u2014 but the closing is merely a list, not a landing."
+    },
+    {
+      "case_id": "clean_paced",
+      "run_idx": 2,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 5,
+        "message_focus": 5,
+        "structure": 5,
+        "closing": 2,
+        "pacing": 5,
+        "pauses": 5,
+        "vocal_variety": 4,
+        "language": 5
+      },
+      "overall_score": 4.6,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.03968,
+      "headline": "A polished, nearly textbook 30-second speech that earns its hook and delivers \u2014 the only crack is a close that lists rather than lands."
+    },
+    {
+      "case_id": "clean_paced",
+      "run_idx": 3,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 5,
+        "message_focus": 5,
+        "structure": 5,
+        "closing": 3,
+        "pacing": 5,
+        "pauses": 5,
+        "vocal_variety": 4,
+        "language": 5
+      },
+      "overall_score": 4.7,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.040655,
+      "headline": "A tightly crafted 32-second speech that punches well above its length \u2014 charming hook, clean three-part thesis, and a deliberate close."
+    },
+    {
+      "case_id": "mid_band_real",
+      "run_idx": 1,
+      "skipped": true,
+      "skip_reason": "audio file missing: audio/mid_band.wav",
+      "model_scores": {},
+      "overall_score": null,
+      "verification_passed": false,
+      "verification_issue_count": 0,
+      "cost_usd": 0.0,
+      "headline": null
+    },
+    {
+      "case_id": "mid_band_real",
+      "run_idx": 2,
+      "skipped": true,
+      "skip_reason": "audio file missing: audio/mid_band.wav",
+      "model_scores": {},
+      "overall_score": null,
+      "verification_passed": false,
+      "verification_issue_count": 0,
+      "cost_usd": 0.0,
+      "headline": null
+    },
+    {
+      "case_id": "mid_band_real",
+      "run_idx": 3,
+      "skipped": true,
+      "skip_reason": "audio file missing: audio/mid_band.wav",
+      "model_scores": {},
+      "overall_score": null,
+      "verification_passed": false,
+      "verification_issue_count": 0,
+      "cost_usd": 0.0,
+      "headline": null
+    }
+  ]
+}

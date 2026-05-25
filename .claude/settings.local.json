@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "MultiEdit(*)",
+      "Glob(*)",
+      "LS(*)",
+      "Grep(*)",
+      "WebFetch(domain:*)",
+      "WebSearch(*)",
+      "Skill(*)",
+      "NotebookEdit(*)",
+      "mcp__*",
+      "mcp__playwright__browser_navigate",
+      "WebFetch(domain:clerk.com)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(sudo rm -rf /)"
+    ]
+  }
+}

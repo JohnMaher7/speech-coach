@@ -2,17 +2,31 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { Check, Lightbulb, Loader2, RefreshCw } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { streamAnalyze } from "@/lib/api";
+import { streamAnalyze, type SpeechType } from "@/lib/api";
+
+const SPEECH_TYPES: readonly SpeechType[] = [
+  "prepared",
+  "impromptu",
+  "presentation",
+] as const;
+
+function parseSpeechType(raw: string | null): SpeechType | null {
+  return raw && (SPEECH_TYPES as readonly string[]).includes(raw)
+    ? (raw as SpeechType)
+    : null;
+}
 
 const STEPS = [
   { id: "transcribed", label: "Transcribing speech" },
   { id: "acoustic_done", label: "Analyzing audio" },
+  { id: "lexical_done", label: "Spotting filler words" },
   { id: "metrics_done", label: "Computing metrics" },
   { id: "synthesis_done", label: "Generating coaching" },
 ] as const;
@@ -27,8 +41,11 @@ const TIPS = [
 
 export default function AnalyzingPage() {
   const router = useRouter();
+  const { getToken } = useAuth();
   const params = useParams<{ key: string[] }>();
+  const searchParams = useSearchParams();
   const key = params.key.join("/");
+  const speechType = parseSpeechType(searchParams.get("type"));
 
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +58,12 @@ export default function AnalyzingPage() {
 
     (async () => {
       try {
-        for await (const ev of streamAnalyze(key)) {
+        const token = await getToken();
+        if (!token) {
+          router.replace("/sign-in");
+          return;
+        }
+        for await (const ev of streamAnalyze(key, token, speechType)) {
           if (ev.event === "done") {
             router.replace(`/report/${ev.data.report_id}`);
             return;
@@ -56,7 +78,7 @@ export default function AnalyzingPage() {
         setError(e instanceof Error ? e.message : "Analysis failed.");
       }
     })();
-  }, [key, router]);
+  }, [key, router, speechType, getToken]);
 
   useEffect(() => {
     if (error) return;
@@ -80,7 +102,7 @@ export default function AnalyzingPage() {
           <p className="text-sm text-muted-foreground">
             {error
               ? "Nothing was saved — give it another go with a different file."
-              : "This usually takes about ten seconds."}
+              : "This usually takes about three minutes."}
           </p>
         </div>
 

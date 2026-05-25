@@ -1,0 +1,243 @@
+{
+  "timestamp_utc": "2026-05-19T12:32:23.446495+00:00",
+  "passed": false,
+  "failure_reasons": [
+    "max category MAE = 1.38 > 1.0 (worst: vocal_variety)",
+    "max (case, category) variance = 1.16 > 1.0",
+    "evidence-pass rate = 75.00% < 95%"
+  ],
+  "mae_by_category": {
+    "hook": 0.5,
+    "message_focus": 0.75,
+    "structure": 0.375,
+    "closing": 0.125,
+    "pacing": 0.375,
+    "pauses": 0.375,
+    "vocal_variety": 1.375,
+    "language": 0.0
+  },
+  "variance_by_case_category": {
+    "fillery_fast": {
+      "hook": 0.0,
+      "message_focus": 0.0,
+      "structure": 0.0,
+      "closing": 0.0,
+      "pacing": 0.0,
+      "pauses": 0.0,
+      "vocal_variety": 0.0,
+      "language": 0.0
+    },
+    "clean_paced": {
+      "hook": 0.0,
+      "message_focus": 0.0,
+      "structure": 0.0,
+      "closing": 0.707,
+      "pacing": 0.0,
+      "pauses": 0.0,
+      "vocal_variety": 0.707,
+      "language": 0.0
+    },
+    "mid_band_real": {
+      "hook": 1.155,
+      "message_focus": 0.0,
+      "structure": 0.0,
+      "closing": 0.0,
+      "pacing": 0.0,
+      "pauses": 0.0,
+      "vocal_variety": 0.577,
+      "language": 0.0
+    }
+  },
+  "evidence_pass_rate": 0.75,
+  "total_cost_usd": 0.4983,
+  "n_completed": 8,
+  "n_skipped": 1,
+  "thresholds": {
+    "max_mae": 1.0,
+    "max_variance": 1.0,
+    "min_evidence_pass": 0.95,
+    "runs_per_case": 3
+  },
+  "runs": [
+    {
+      "case_id": "fillery_fast",
+      "run_idx": 1,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 1,
+        "message_focus": 3,
+        "structure": 2,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 1,
+        "vocal_variety": 2,
+        "language": 1
+      },
+      "overall_score": 1.79,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.096044,
+      "headline": "A real problem identified, then immediately buried under a wall of fillers and no preparation in sight."
+    },
+    {
+      "case_id": "fillery_fast",
+      "run_idx": 2,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 1,
+        "message_focus": 3,
+        "structure": 2,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 1,
+        "vocal_variety": 2,
+        "language": 1
+      },
+      "overall_score": 1.79,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.060594,
+      "headline": "A real diagnosis drowned in fillers \u2014 this prepared speech reads like an unprepared one."
+    },
+    {
+      "case_id": "fillery_fast",
+      "run_idx": 3,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 1,
+        "message_focus": 3,
+        "structure": 2,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 1,
+        "vocal_variety": 2,
+        "language": 1
+      },
+      "overall_score": 1.79,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.060084,
+      "headline": "A real engineering problem is completely obscured by the heaviest filler load possible."
+    },
+    {
+      "case_id": "clean_paced",
+      "run_idx": 1,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 5,
+        "message_focus": 5,
+        "structure": 5,
+        "closing": 4,
+        "pacing": 5,
+        "pauses": 5,
+        "vocal_variety": 5,
+        "language": 5
+      },
+      "overall_score": 4.9,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.02971,
+      "headline": "A near-perfect 32-second opener \u2014 concrete hook, clean thesis, deliberate structure, and a close that lands."
+    },
+    {
+      "case_id": "clean_paced",
+      "run_idx": 2,
+      "skipped": true,
+      "skip_reason": "exception: 1 validation error for Synthesis\nwalkthrough\n  Input should be a valid dictionary or instance of Walkthrough [type=model_type, input_value='{\"opening\": {\"start_t\": ...t.\", \"quote_t\": 30.0}}}', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/model_type",
+      "model_scores": {},
+      "overall_score": null,
+      "verification_passed": false,
+      "verification_issue_count": 0,
+      "cost_usd": 0.0,
+      "headline": null
+    },
+    {
+      "case_id": "clean_paced",
+      "run_idx": 3,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 5,
+        "message_focus": 5,
+        "structure": 5,
+        "closing": 3,
+        "pacing": 5,
+        "pauses": 5,
+        "vocal_variety": 4,
+        "language": 5
+      },
+      "overall_score": 4.7,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.0413,
+      "headline": "A near-perfect 32-second prepared speech \u2014 vivid hook, clean thesis, crisp signposting, and a deliberate close that sticks."
+    },
+    {
+      "case_id": "mid_band_real",
+      "run_idx": 1,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 3,
+        "message_focus": 3,
+        "structure": 2,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 3,
+        "vocal_variety": 5,
+        "language": 1
+      },
+      "overall_score": 2.55,
+      "verification_passed": false,
+      "verification_issue_count": 1,
+      "cost_usd": 0.070404,
+      "headline": "A promising topic derailed mid-speech by a self-confessed loss of direction and a junk-food close."
+    },
+    {
+      "case_id": "mid_band_real",
+      "run_idx": 2,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 3,
+        "message_focus": 3,
+        "structure": 2,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 3,
+        "vocal_variety": 4,
+        "language": 1
+      },
+      "overall_score": 2.45,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.064655,
+      "headline": "A promising thesis on context engineering derails mid-speech into a candid self-confessed collapse."
+    },
+    {
+      "case_id": "mid_band_real",
+      "run_idx": 3,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 1,
+        "message_focus": 3,
+        "structure": 2,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 3,
+        "vocal_variety": 4,
+        "language": 1
+      },
+      "overall_score": 2.21,
+      "verification_passed": false,
+      "verification_issue_count": 3,
+      "cost_usd": 0.075523,
+      "headline": "A promising idea about context engineering collapses mid-sentence into an on-mic train wreck."
+    }
+  ]
+}

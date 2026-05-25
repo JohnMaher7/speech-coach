@@ -11,6 +11,10 @@ class ReportRow(SQLModel, table=True):
 
     report_id: str = Field(primary_key=True)
     audio_key: str = Field(index=True)
+    # Clerk user id of the owner. Nullable so pre-auth rows survive; every
+    # report created after Stage with accounts always sets it. Indexed
+    # because the dashboard query filters on it.
+    user_id: str | None = Field(default=None, index=True)
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False)
     )

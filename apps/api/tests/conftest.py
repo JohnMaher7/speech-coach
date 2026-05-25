@@ -27,10 +27,17 @@ def short_acoustic() -> AcousticFeatures:
         duration_sec=60.0,
         pitch_times=[0.0, 0.5, 1.0, 1.5, 2.0],
         pitch_values=[120.0, 122.0, None, 125.0, 121.0],
+        pitch_st_timeline=[-0.2, 0.1, None, 0.5, -0.1],
+        pitch_frame_times=[0.0, 1.0, 2.0],
+        pitch_st_values=[0.0, 0.5, -0.3],
+        intensity_frame_times=[0.0, 1.0, 2.0],
+        intensity_values_db=[60.0, 65.0, 62.0],
+        voiced_mean_hz=121.4,
         pauses=[
             Pause(start=2.5, end=4.0),
             Pause(start=10.0, end=10.6),
         ],
         pitch_mean_hz=121.4,
         pitch_std_hz=30.0,
+        pitch_std_st=2.25,
     )

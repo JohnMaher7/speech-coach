@@ -1,0 +1,65 @@
+[
+  {
+    "id": "fillery_fast",
+    "source": "fixture",
+    "fixture_name": "FILLERY_FAST",
+    "speech_type": "prepared",
+    "human_label": {
+      "graded_by": "John Maher",
+      "graded_at": "2026-05-19",
+      "categories": {
+        "hook": 1,
+        "message_focus": 2,
+        "structure": 2,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 1,
+        "vocal_variety": 2,
+        "language": 1
+      },
+      "notes": "Filler-heavy, fast, flat. Low across the board. Note: these are the deep-dive's suggested anchors — re-grade independently before trusting MAE."
+    }
+  },
+  {
+    "id": "clean_paced",
+    "source": "fixture",
+    "fixture_name": "CLEAN_PACED",
+    "speech_type": "prepared",
+    "human_label": {
+      "graded_by": "John Maher",
+      "graded_at": "2026-05-19",
+      "categories": {
+        "hook": 5,
+        "message_focus": 5,
+        "structure": 5,
+        "closing": 4,
+        "pacing": 5,
+        "pauses": 5,
+        "vocal_variety": 4,
+        "language": 5
+      },
+      "notes": "Strong hook, clear thesis, three-point structure, deliberate pauses, but flat pitch profile."
+    }
+  },
+  {
+    "id": "mid_band_real",
+    "source": "audio",
+    "audio_path": "audio/mid_band.wav",
+    "speech_type": "prepared",
+    "human_label": {
+      "graded_by": "John Maher",
+      "graded_at": "2026-05-19",
+      "categories": {
+        "hook": 1,
+        "message_focus": 2,
+        "structure": 1,
+        "closing": 1,
+        "pacing": 3,
+        "pauses": 2,
+        "vocal_variety": 1,
+        "language": 1
+      },
+      "notes": "Lacks a clear message, no vocal variety and the message and structure lacked coherence"
+    }
+  }
+]

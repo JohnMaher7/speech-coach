@@ -1,5 +1,12 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
+// Every backend call is now behind Clerk auth. Callers pass the session
+// token (client: `useAuth().getToken()`; server: `(await auth()).getToken()`)
+// and we attach it as a Bearer header.
+function authHeaders(token: string): Record<string, string> {
+  return { authorization: `Bearer ${token}` };
+}
+
 export type SignResponse = {
   url: string;
   key: string;
@@ -10,11 +17,12 @@ export type AnalyzeEvent =
   | { event: "started"; data: Record<string, never> }
   | { event: "transcribed"; data: { words: number; duration_sec: number } }
   | { event: "acoustic_done"; data: { pitch_mean_hz: number } }
+  | { event: "lexical_done"; data: { fillers: number } }
   | {
       event: "metrics_done";
       data: { wpm: number; fillers: number; long_pauses: number };
     }
-  | { event: "synthesis_done"; data: { actions: number } }
+  | { event: "synthesis_done"; data: { priorities: number } }
   | { event: "done"; data: { report_id: string } }
   | { event: "error"; data: { message: string } };
 
@@ -34,6 +42,7 @@ export type Transcript = {
 export type TimelinePoint = {
   t: number;
   pitch_hz: number | null;
+  pitch_st: number | null;
   wpm_local: number;
 };
 
@@ -47,11 +56,19 @@ export type Acoustic = {
   pauses: Pause[];
   pitch_mean_hz: number;
   pitch_std_hz: number;
+  pitch_std_st: number;
 };
+
+export type FillerCategory =
+  | "interjection"
+  | "hedge"
+  | "verbal_pause"
+  | "tic";
 
 export type FillerHit = {
   word: string;
   t: number;
+  category: FillerCategory;
 };
 
 export type Metrics = {
@@ -62,14 +79,76 @@ export type Metrics = {
   monotone_score: number;
 };
 
-export type CategoryScore = {
-  score: number;
-  rationale: string;
+// Schema v2 (Stage 29) — replaces the four-category v1 Synthesis.
+export type CategoryScoreValue = 1 | 2 | 3 | 4 | 5 | "n/a";
+
+export type Evidence = {
+  quote: string;
+  t: number;
 };
 
-export type Action = {
+export type CategoryScore = {
+  score: CategoryScoreValue;
+  rationale: string;
+  evidence: Evidence[];
+  applicability_reason: string | null;
+};
+
+export type Beat = {
+  start_t: number;
+  end_t: number;
+  observation: string;
+  praise: string | null;
+  critique: string | null;
+  quote_t: number | null;
+};
+
+export type Walkthrough = {
+  opening: Beat;
+  body: Beat[];
+  close: Beat;
+};
+
+export type CategoryKey =
+  | "hook"
+  | "message_focus"
+  | "structure"
+  | "closing"
+  | "pacing"
+  | "pauses"
+  | "vocal_variety"
+  | "language";
+
+export type Categories = Record<CategoryKey, CategoryScore>;
+
+export type HabitCountItem = {
+  label: string;
+  count: number;
+};
+
+export type HabitSection = {
+  score: CategoryScoreValue;
+  summary: string;
+  examples: Evidence[];
+  counts: HabitCountItem[];
+};
+
+export type HabitKey =
+  | "fillers"
+  | "pauses"
+  | "pace"
+  | "vocal_variety"
+  | "language";
+
+export type DeliveryHabits = Record<HabitKey, HabitSection | null>;
+
+export type Priority = {
   title: string;
-  detail: string;
+  observation: string;
+  example_quote: string;
+  example_t: number;
+  why_it_matters: string;
+  drill: string;
 };
 
 export type Rewrite = {
@@ -79,17 +158,28 @@ export type Rewrite = {
 };
 
 export type Synthesis = {
-  fillers: CategoryScore;
-  pacing: CategoryScore;
-  vocal_variety: CategoryScore;
-  structure: CategoryScore;
-  top_actions: Action[];
+  headline: string;
+  message_sentence: string | null;
+  walkthrough: Walkthrough;
+  categories: Categories;
+  delivery_habits: DeliveryHabits;
+  priorities: Priority[];
   rewrites: Rewrite[];
-  summary: string;
 };
 
 export type LlmCost = {
   total_usd: number;
+  synthesis_usd: number;
+  lexical_fillers_usd: number;
+};
+
+export type SpeechType = "prepared" | "impromptu" | "presentation";
+
+export type Overall = {
+  score: number;
+  weights_version: number;
+  weights: Record<string, number>;
+  applicable_categories: string[];
 };
 
 export type Report = {
@@ -97,17 +187,33 @@ export type Report = {
   audio_key: string;
   created_at: string;
   duration_sec: number;
+  schema_version: 4;
+  speech_type: SpeechType | null;
   transcript: Transcript;
   acoustic: Acoustic;
   metrics: Metrics;
   synthesis: Synthesis;
+  overall: Overall;
   cost: LlmCost | null;
 };
 
-export async function signUpload(contentType: string): Promise<SignResponse> {
+// One-line summary of a report, shown as a row on the dashboard.
+export type DashboardReport = {
+  report_id: string;
+  created_at: string;
+  duration_sec: number;
+  speech_type: SpeechType | null;
+  headline: string;
+  overall_score: number;
+};
+
+export async function signUpload(
+  contentType: string,
+  token: string,
+): Promise<SignResponse> {
   const res = await fetch(`${API_URL}/uploads/sign`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...authHeaders(token) },
     body: JSON.stringify({ content_type: contentType }),
   });
   if (!res.ok) {
@@ -128,11 +234,15 @@ export async function uploadToR2(url: string, file: File): Promise<void> {
 
 export async function* streamAnalyze(
   key: string,
+  token: string,
+  speechType?: SpeechType | null,
 ): AsyncGenerator<AnalyzeEvent> {
+  const body: { key: string; speech_type?: SpeechType } = { key };
+  if (speechType) body.speech_type = speechType;
   const res = await fetch(`${API_URL}/analyze`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ key }),
+    headers: { "content-type": "application/json", ...authHeaders(token) },
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { detail?: string } | null;
@@ -167,8 +277,30 @@ export async function* streamAnalyze(
   }
 }
 
-export async function fetchReport(id: string): Promise<Report> {
-  const res = await fetch(`${API_URL}/reports/${id}`, { cache: "no-store" });
+export async function fetchReport(id: string, token: string): Promise<Report> {
+  const res = await fetch(`${API_URL}/reports/${id}`, {
+    cache: "no-store",
+    headers: authHeaders(token),
+  });
   if (!res.ok) throw new Error(`fetch report failed: ${res.status}`);
   return res.json();
+}
+
+export async function fetchMyReports(token: string): Promise<DashboardReport[]> {
+  const res = await fetch(`${API_URL}/reports`, {
+    cache: "no-store",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw new Error(`fetch reports failed: ${res.status}`);
+  return res.json();
+}
+
+export async function deleteReport(id: string, token: string): Promise<void> {
+  const res = await fetch(`${API_URL}/reports/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!res.ok && res.status !== 404) {
+    throw new Error(`delete report failed: ${res.status}`);
+  }
 }

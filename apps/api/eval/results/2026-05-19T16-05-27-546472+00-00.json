@@ -1,0 +1,250 @@
+{
+  "timestamp_utc": "2026-05-19T16:05:27.546472+00:00",
+  "passed": false,
+  "failure_reasons": [
+    "evidence-pass rate = 77.80% < 95%"
+  ],
+  "mae_by_category": {
+    "hook": 0.111,
+    "message_focus": 0.444,
+    "structure": 1.0,
+    "closing": 0.667,
+    "pacing": 0.444,
+    "pauses": 0.333,
+    "vocal_variety": 0.889,
+    "language": 0.667
+  },
+  "variance_by_case_category": {
+    "fillery_fast": {
+      "hook": 0.0,
+      "message_focus": 0.577,
+      "structure": 0.577,
+      "closing": 0.0,
+      "pacing": 0.577,
+      "pauses": 0.0,
+      "vocal_variety": 0.0,
+      "language": 0.0
+    },
+    "clean_paced": {
+      "hook": 0.0,
+      "message_focus": 0.0,
+      "structure": 0.577,
+      "closing": 1.0,
+      "pacing": 0.0,
+      "pauses": 0.0,
+      "vocal_variety": 0.577,
+      "language": 0.0
+    },
+    "mid_band_real": {
+      "hook": 0.577,
+      "message_focus": 0.0,
+      "structure": 0.0,
+      "closing": 0.0,
+      "pacing": 0.0,
+      "pauses": 0.0,
+      "vocal_variety": 0.0,
+      "language": 0.0
+    }
+  },
+  "evidence_pass_rate": 0.778,
+  "total_cost_usd": 0.5252,
+  "n_completed": 9,
+  "n_skipped": 0,
+  "thresholds": {
+    "max_mae": 1.0,
+    "max_variance": 1.0,
+    "min_evidence_pass": 0.95,
+    "runs_per_case": 3
+  },
+  "runs": [
+    {
+      "case_id": "fillery_fast",
+      "run_idx": 1,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 1,
+        "message_focus": 3,
+        "structure": 2,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 1,
+        "vocal_variety": 2,
+        "language": 1
+      },
+      "overall_score": 1.79,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.094754,
+      "headline": "A real problem buried under the heaviest filler load possible \u2014 18 fillers a minute on a prepared speech."
+    },
+    {
+      "case_id": "fillery_fast",
+      "run_idx": 2,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 1,
+        "message_focus": 2,
+        "structure": 1,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 1,
+        "vocal_variety": 2,
+        "language": 1
+      },
+      "overall_score": 1.41,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.062649,
+      "headline": "A real problem buried under a filler avalanche \u2014 18 fillers per minute turns a legitimate diagnosis into a ramble."
+    },
+    {
+      "case_id": "fillery_fast",
+      "run_idx": 3,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 1,
+        "message_focus": 2,
+        "structure": 1,
+        "closing": 1,
+        "pacing": 1,
+        "pauses": 1,
+        "vocal_variety": 2,
+        "language": 1
+      },
+      "overall_score": 1.3,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.061374,
+      "headline": "A real problem and a real fix are completely hidden behind 18 fillers per minute and zero preparation."
+    },
+    {
+      "case_id": "clean_paced",
+      "run_idx": 1,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 5,
+        "message_focus": 5,
+        "structure": 5,
+        "closing": 2,
+        "pacing": 5,
+        "pauses": 5,
+        "vocal_variety": 4,
+        "language": 5
+      },
+      "overall_score": 4.6,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.039865,
+      "headline": "A crisp, well-constructed opener that delivers thesis, structure, and hook in 32 seconds \u2014 closing is the one thing it doesn't earn."
+    },
+    {
+      "case_id": "clean_paced",
+      "run_idx": 2,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 5,
+        "message_focus": 5,
+        "structure": 5,
+        "closing": 3,
+        "pacing": 5,
+        "pauses": 5,
+        "vocal_variety": 5,
+        "language": 5
+      },
+      "overall_score": 4.8,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.03259,
+      "headline": "A near-perfect 32-second prepared speech \u2014 charming hook, clean thesis, and a landing that sticks."
+    },
+    {
+      "case_id": "clean_paced",
+      "run_idx": 3,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 5,
+        "message_focus": 5,
+        "structure": 4,
+        "closing": 1,
+        "pacing": 5,
+        "pauses": 5,
+        "vocal_variety": 5,
+        "language": 5
+      },
+      "overall_score": 4.42,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.033065,
+      "headline": "A precise, confident hook with a clean three-part thesis \u2014 almost nothing to coach on."
+    },
+    {
+      "case_id": "mid_band_real",
+      "run_idx": 1,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 1,
+        "message_focus": 3,
+        "structure": 3,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 3,
+        "vocal_variety": 3,
+        "language": 3
+      },
+      "overall_score": 2.45,
+      "verification_passed": true,
+      "verification_issue_count": 0,
+      "cost_usd": 0.064185,
+      "headline": "A functional skills explainer that lacks a real hook, a clean thesis, and any meaningful close."
+    },
+    {
+      "case_id": "mid_band_real",
+      "run_idx": 2,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 1,
+        "message_focus": 3,
+        "structure": 3,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 3,
+        "vocal_variety": 3,
+        "language": 3
+      },
+      "overall_score": 2.45,
+      "verification_passed": false,
+      "verification_issue_count": 3,
+      "cost_usd": 0.070607,
+      "headline": "A clear enough explainer on skills, but too slow, too hedged, and the close is a throwaway."
+    },
+    {
+      "case_id": "mid_band_real",
+      "run_idx": 3,
+      "skipped": false,
+      "skip_reason": null,
+      "model_scores": {
+        "hook": 2,
+        "message_focus": 3,
+        "structure": 3,
+        "closing": 1,
+        "pacing": 2,
+        "pauses": 3,
+        "vocal_variety": 3,
+        "language": 3
+      },
+      "overall_score": 2.57,
+      "verification_passed": false,
+      "verification_issue_count": 1,
+      "cost_usd": 0.066096,
+      "headline": "A functional explainer with a real point \u2014 but pacing, hedges, and a throwaway close keep it from landing."
+    }
+  ]
+}
