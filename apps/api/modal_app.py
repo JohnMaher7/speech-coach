@@ -22,6 +22,8 @@ image = (
         "praat-parselmouth>=0.4.7",
         "slowapi>=0.1.9",
         "sentry-sdk[fastapi]>=2.20.0",
+        "clerk-backend-api>=5.0.6",
+        "rapidfuzz>=3.10.0",
     )
     .add_local_python_source("app")
 )
@@ -29,11 +31,10 @@ image = (
 app = modal.App("speech-coach-api", image=image)
 
 
-# `min_containers=1` keeps one container always warm — kills the 1–3 s cold
-# start the first user after idle would otherwise pay. Idle containers are
-# billed at a much lower rate than active ones, so a small always-warm pool
-# stays well within Modal's $30/mo free tier for a portfolio project.
-@app.function(secrets=[modal.Secret.from_dotenv()], min_containers=1)
+# `min_containers=0` scales the app to zero when idle, so it bills nothing
+# between visits. The tradeoff is a 1–3 s cold start on the first request
+# after the app has been idle — acceptable for a low-traffic portfolio app.
+@app.function(secrets=[modal.Secret.from_dotenv()], min_containers=0)
 @modal.asgi_app()
 def web():
     from app.main import app as fastapi_app

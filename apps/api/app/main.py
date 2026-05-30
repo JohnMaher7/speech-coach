@@ -95,7 +95,11 @@ app.add_exception_handler(RateLimitExceeded, rate_limit_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://speakgrade.com",
+        "https://www.speakgrade.com",
+    ],
     allow_origin_regex=r"https://.*\.vercel\.app",
     allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["content-type", "authorization"],
