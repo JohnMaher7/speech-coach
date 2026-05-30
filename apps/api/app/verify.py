@@ -42,7 +42,6 @@ _CATEGORY_NAMES = (
     "vocal_variety",
     "language",
 )
-_HABIT_NAMES = ("fillers", "pauses", "pace", "vocal_variety", "language")
 _PUNCT_TABLE = str.maketrans({c: " " for c in punctuation})
 
 
@@ -93,14 +92,6 @@ def _iter_quote_anchors(synthesis: Synthesis) -> Iterable[tuple[str, str, float]
     for name, cat in _iter_categories(synthesis):
         for i, ev in enumerate(cat.evidence):
             yield f"categories.{name}.evidence[{i}]", ev.quote, ev.t
-
-    habits = synthesis.delivery_habits
-    for name in _HABIT_NAMES:
-        section = getattr(habits, name)
-        if section is None:
-            continue
-        for i, ex in enumerate(section.examples):
-            yield f"delivery_habits.{name}.examples[{i}]", ex.quote, ex.t
 
     for i, p in enumerate(synthesis.priorities):
         yield f"priorities[{i}]", p.example_quote, p.example_t

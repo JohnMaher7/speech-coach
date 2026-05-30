@@ -76,6 +76,9 @@ export type Metrics = {
   fillers: FillerHit[];
   filler_per_min: number;
   long_pauses: number;
+  pauses_over_0_6: number;
+  pauses_over_2: number;
+  total_pause_sec: number;
   monotone_score: number;
 };
 
@@ -91,7 +94,13 @@ export type CategoryScore = {
   score: CategoryScoreValue;
   rationale: string;
   evidence: Evidence[];
+  counts: HabitCountItem[];
   applicability_reason: string | null;
+};
+
+export type HabitCountItem = {
+  label: string;
+  count: number;
 };
 
 export type Beat = {
@@ -121,27 +130,6 @@ export type CategoryKey =
 
 export type Categories = Record<CategoryKey, CategoryScore>;
 
-export type HabitCountItem = {
-  label: string;
-  count: number;
-};
-
-export type HabitSection = {
-  score: CategoryScoreValue;
-  summary: string;
-  examples: Evidence[];
-  counts: HabitCountItem[];
-};
-
-export type HabitKey =
-  | "fillers"
-  | "pauses"
-  | "pace"
-  | "vocal_variety"
-  | "language";
-
-export type DeliveryHabits = Record<HabitKey, HabitSection | null>;
-
 export type Priority = {
   title: string;
   observation: string;
@@ -162,7 +150,6 @@ export type Synthesis = {
   message_sentence: string | null;
   walkthrough: Walkthrough;
   categories: Categories;
-  delivery_habits: DeliveryHabits;
   priorities: Priority[];
   rewrites: Rewrite[];
 };
@@ -187,7 +174,7 @@ export type Report = {
   audio_key: string;
   created_at: string;
   duration_sec: number;
-  schema_version: 4;
+  schema_version: 5;
   speech_type: SpeechType | null;
   transcript: Transcript;
   acoustic: Acoustic;

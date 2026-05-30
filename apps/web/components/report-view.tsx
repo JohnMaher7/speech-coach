@@ -17,15 +17,13 @@ import type {
   Beat,
   CategoryKey,
   CategoryScore,
-  DeliveryHabits,
-  HabitKey,
-  HabitSection,
   Priority,
   Report,
   Rewrite,
   Walkthrough,
 } from "@/lib/api";
 import { scoreTone, verdict, type ScoreTone } from "@/lib/scores";
+import { fillerBand, monotoneBand, wpmBand } from "@/lib/metric-bands";
 
 const SPEECH_TYPE_LABEL: Record<string, string> = {
   prepared: "Prepared",
@@ -63,22 +61,6 @@ const CATEGORY_ORDER: CategoryKey[] = [
   "language",
 ];
 
-const HABIT_META: Record<HabitKey, { label: string; icon: IconType }> = {
-  fillers: { label: "Fillers", icon: MessageSquareDashed },
-  pauses: { label: "Pauses", icon: PauseIcon },
-  pace: { label: "Pace", icon: Timer },
-  vocal_variety: { label: "Vocal variety", icon: AudioLines },
-  language: { label: "Language", icon: MessageSquareDashed },
-};
-
-const HABIT_ORDER: HabitKey[] = [
-  "fillers",
-  "pauses",
-  "pace",
-  "vocal_variety",
-  "language",
-];
-
 function categoryColor(score: CategoryScore["score"]): string {
   if (score === "n/a") return "var(--muted-foreground)";
   if (score <= 2) return "var(--score-low)";
@@ -91,11 +73,6 @@ function toneColor(tone: ScoreTone): string {
   if (tone === "good") return "var(--score-good)";
   if (tone === "mid") return "var(--score-mid)";
   return "var(--score-low)";
-}
-
-function scoreToneForCard(score: CategoryScore["score"]): ScoreTone {
-  if (score === "n/a") return "mid";
-  return scoreTone(score);
 }
 
 function formatDuration(seconds: number): string {
@@ -121,9 +98,6 @@ export function ReportView({
 }) {
   const { synthesis } = report;
   const overall = report.overall.score;
-  const habitsToShow = HABIT_ORDER.filter(
-    (k) => synthesis.delivery_habits[k] !== null,
-  );
 
   return (
     <main className="flex-1">
@@ -132,13 +106,8 @@ export function ReportView({
         overall={overall}
         sampleLabel={sampleLabel}
       />
+      <StatDashboard report={report} />
       <WalkthroughSection walkthrough={synthesis.walkthrough} />
-      {habitsToShow.length > 0 && (
-        <DeliveryHabitsSection
-          habits={synthesis.delivery_habits}
-          keys={habitsToShow}
-        />
-      )}
       <PrioritiesSection priorities={synthesis.priorities} />
       {synthesis.rewrites.length > 0 && (
         <RewritesSection rewrites={synthesis.rewrites} />
@@ -344,118 +313,6 @@ function BeatCard({ label, beat }: { label: string; beat: Beat }) {
   );
 }
 
-function DeliveryHabitsSection({
-  habits,
-  keys,
-}: {
-  habits: DeliveryHabits;
-  keys: HabitKey[];
-}) {
-  return (
-    <section className="py-14 pb-0">
-      <div className="mx-auto w-full max-w-[920px] px-8">
-        <SectionEyebrow>
-          Delivery habits · {keys.length}{" "}
-          {keys.length === 1 ? "deep-dive" : "deep-dives"}
-        </SectionEyebrow>
-        <SectionTitle>
-          Habits that{" "}
-          <em className="font-medium text-primary italic">shaped</em> the
-          delivery.
-        </SectionTitle>
-
-        <div className="grid gap-3">
-          {keys.map((k) => {
-            const section = habits[k];
-            if (!section) return null;
-            return <HabitCard key={k} habitKey={k} section={section} />;
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function HabitCard({
-  habitKey,
-  section,
-}: {
-  habitKey: HabitKey;
-  section: HabitSection;
-}) {
-  const meta = HABIT_META[habitKey];
-  const Icon = meta.icon;
-  const color = categoryColor(section.score);
-  const scoreLabel = section.score === "n/a" ? "n/a" : `${section.score} / 5`;
-
-  return (
-    <article
-      className="rounded-[18px] border border-border bg-card px-[22px] py-5"
-      style={{ color }}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-[10px] text-foreground">
-          <span
-            className="flex size-[30px] items-center justify-center rounded-[9px]"
-            style={{
-              background: "color-mix(in oklch, currentColor 14%, var(--card))",
-              color,
-            }}
-          >
-            <Icon className="size-4" strokeWidth={2} />
-          </span>
-          <b className="text-[15px] font-semibold tracking-[-0.005em] text-foreground">
-            {meta.label}
-          </b>
-        </div>
-        <span
-          className="rounded-full border px-3 py-[3px] font-mono text-[11.5px] font-medium"
-          style={{
-            background: "color-mix(in oklch, currentColor 12%, var(--card))",
-            borderColor: "color-mix(in oklch, currentColor 22%, transparent)",
-            color,
-          }}
-        >
-          {scoreLabel}
-        </span>
-      </div>
-
-      <p className="mt-[14px] text-[14px] leading-[1.6] text-[oklch(0.35_0.01_264)]">
-        {section.summary}
-      </p>
-
-      {section.counts.length > 0 && (
-        <div className="mt-[14px] flex flex-wrap gap-[8px]">
-          {section.counts.map((c) => (
-            <span
-              key={c.label}
-              className="rounded-full border border-border bg-background px-3 py-[3px] font-mono text-[11px] tracking-[0.04em] text-foreground"
-            >
-              <b className="font-medium">{c.label}</b>{" "}
-              <span className="text-muted-foreground">×{c.count}</span>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {section.examples.length > 0 && (
-        <ul className="mt-[14px] grid gap-[8px]">
-          {section.examples.map((ex, i) => (
-            <li
-              key={i}
-              className="rounded-md border-l-2 border-primary/40 bg-accent/40 px-3 py-2 font-serif text-[14px] leading-[1.5] text-foreground italic"
-            >
-              &ldquo;{ex.quote}&rdquo;
-              <span className="ml-2 font-mono text-[11px] text-muted-foreground not-italic">
-                @ {formatDuration(ex.t)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </article>
-  );
-}
 
 function PrioritiesSection({ priorities }: { priorities: Priority[] }) {
   return (
@@ -554,12 +411,10 @@ function RewritesSection({ rewrites }: { rewrites: Rewrite[] }) {
 }
 
 function ScorecardSection({ report }: { report: Report }) {
-  const { synthesis, acoustic, duration_sec, metrics } = report;
+  const { synthesis, acoustic, duration_sec } = report;
   const pauseLabel = `${acoustic.pauses.length} ${
     acoustic.pauses.length === 1 ? "pause" : "pauses"
   } marked`;
-  const languageTone = scoreToneForCard(synthesis.categories.language.score);
-  const vocalTone = scoreToneForCard(synthesis.categories.vocal_variety.score);
 
   return (
     <section className="py-14 pb-0">
@@ -567,7 +422,7 @@ function ScorecardSection({ report }: { report: Report }) {
         <SectionEyebrow>Scorecard · eight categories</SectionEyebrow>
         <SectionTitle>How you scored.</SectionTitle>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid gap-3">
           {CATEGORY_ORDER.map((key) => (
             <CategoryCard key={key} catKey={key} cat={synthesis.categories[key]} />
           ))}
@@ -636,26 +491,6 @@ function ScorecardSection({ report }: { report: Report }) {
             </p>
           </div>
         </div>
-
-        <div className="mt-10 grid grid-cols-2 gap-[14px] sm:grid-cols-4">
-          <Stat
-            label="Duration"
-            value={(duration_sec / 60).toFixed(1)}
-            unit="min"
-          />
-          <Stat label="Words / min" value={metrics.wpm.toFixed(0)} />
-          <Stat
-            label="Fillers"
-            value={metrics.fillers.length.toString()}
-            valueColor={toneColor(languageTone)}
-          />
-          <Stat
-            label="Monotone"
-            value={Math.round(metrics.monotone_score * 100).toString()}
-            unit="%"
-            valueColor={toneColor(vocalTone)}
-          />
-        </div>
       </div>
     </section>
   );
@@ -675,15 +510,11 @@ function CategoryCard({
   const filled = cat.score === "n/a" || typeof cat.score !== "number" ? 0 : cat.score;
 
   return (
-    <div
-      className="relative rounded-[18px] border border-border bg-card px-6 py-[22px]"
+    <article
+      className="rounded-[18px] border border-border bg-card px-[22px] py-5"
       style={{ color }}
     >
-      <span
-        className="absolute top-[22px] left-6 h-7 w-1 rounded"
-        style={{ background: "currentColor" }}
-      />
-      <div className="flex items-center justify-between gap-3 pl-4">
+      <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-[10px] text-foreground">
           <span
             className="flex size-[30px] items-center justify-center rounded-[9px]"
@@ -709,27 +540,59 @@ function CategoryCard({
           {scoreLabel}
         </span>
       </div>
-      <div className="mt-[18px] mb-[14px] ml-4 flex gap-[5px]" style={{ color }}>
+
+      <div className="mt-[16px] flex gap-[5px]" style={{ color }}>
         {Array.from({ length: 5 }).map((_, i) => (
           <span
             key={i}
             className="h-[6px] flex-1 rounded-[3px]"
             style={{
-              background:
-                i < filled ? "currentColor" : "oklch(0.95 0.005 264)",
+              background: i < filled ? "currentColor" : "oklch(0.95 0.005 264)",
             }}
           />
         ))}
       </div>
-      <p className="pl-4 text-[14px] leading-[1.6] text-[oklch(0.35_0.01_264)]">
+
+      <p className="mt-[14px] text-[14px] leading-[1.6] text-[oklch(0.35_0.01_264)]">
         {cat.rationale}
       </p>
+
+      {cat.counts.length > 0 && (
+        <div className="mt-[14px] flex flex-wrap gap-[8px]">
+          {cat.counts.map((c) => (
+            <span
+              key={c.label}
+              className="rounded-full border border-border bg-background px-3 py-[3px] font-mono text-[11px] tracking-[0.04em] text-foreground"
+            >
+              <b className="font-medium">{c.label}</b>{" "}
+              <span className="text-muted-foreground">×{c.count}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {cat.evidence.length > 0 && (
+        <ul className="mt-[14px] grid gap-[8px]">
+          {cat.evidence.map((ev, i) => (
+            <li
+              key={i}
+              className="rounded-md border-l-2 border-primary/40 bg-accent/40 px-3 py-2 font-serif text-[14px] leading-[1.5] text-foreground italic"
+            >
+              &ldquo;{ev.quote}&rdquo;
+              <span className="ml-2 font-mono text-[11px] text-muted-foreground not-italic">
+                @ {formatDuration(ev.t)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
       {cat.score === "n/a" && cat.applicability_reason && (
-        <p className="mt-[10px] pl-4 font-mono text-[11.5px] text-muted-foreground">
+        <p className="mt-[12px] font-mono text-[11.5px] text-muted-foreground">
           {cat.applicability_reason}
         </p>
       )}
-    </div>
+    </article>
   );
 }
 
@@ -788,11 +651,13 @@ function Stat({
   value,
   unit,
   valueColor,
+  context,
 }: {
   label: string;
   value: string;
   unit?: string;
   valueColor?: string;
+  context?: string;
 }) {
   return (
     <div className="rounded-[12px] border border-border bg-card px-5 py-[18px]">
@@ -810,6 +675,93 @@ function Stat({
           </small>
         )}
       </div>
+      {context && (
+        <div className="mt-[8px] font-mono text-[11px] tracking-[0.02em] text-muted-foreground">
+          {context}
+        </div>
+      )}
     </div>
+  );
+}
+
+function PauseStat({
+  value,
+  label,
+}: {
+  value: number | string;
+  label: string;
+}) {
+  return (
+    <div>
+      <div className="font-serif text-[26px] leading-none font-medium tracking-[-0.01em] tabular-nums">
+        {value}
+      </div>
+      <div className="mt-[7px] font-mono text-[11px] tracking-[0.03em] text-muted-foreground">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function StatDashboard({ report }: { report: Report }) {
+  const { metrics, duration_sec, transcript } = report;
+  const wordCount = transcript.words.length;
+  const monotonePct = Math.round(metrics.monotone_score * 100);
+
+  const wpm = wpmBand(metrics.wpm);
+  const fillers = fillerBand(metrics.filler_per_min);
+  const mono = monotoneBand(monotonePct);
+
+  const pausePct =
+    duration_sec > 0
+      ? Math.round((metrics.total_pause_sec / duration_sec) * 100)
+      : 0;
+
+  return (
+    <section className="pb-2">
+      <div className="mx-auto w-full max-w-[920px] px-8">
+        <div className="grid grid-cols-2 gap-[14px] lg:grid-cols-4">
+          <Stat
+            label="Duration"
+            value={(duration_sec / 60).toFixed(1)}
+            unit="min"
+            context={`${wordCount.toLocaleString()} words`}
+          />
+          <Stat
+            label="Words / min"
+            value={metrics.wpm.toFixed(0)}
+            valueColor={toneColor(wpm.tone)}
+            context={wpm.label}
+          />
+          <Stat
+            label="Fillers"
+            value={metrics.fillers.length.toString()}
+            valueColor={toneColor(fillers.tone)}
+            context={`${metrics.filler_per_min.toFixed(1)}/min · ${fillers.label}`}
+          />
+          <Stat
+            label="Monotone"
+            value={monotonePct.toString()}
+            unit="%"
+            valueColor={toneColor(mono.tone)}
+            context={`${mono.label} · lower is better`}
+          />
+        </div>
+
+        <div className="mt-[14px] rounded-[12px] border border-border bg-card px-5 py-[18px]">
+          <div className="font-mono text-[10.5px] tracking-[0.08em] text-muted-foreground uppercase">
+            Pauses
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-4">
+            <PauseStat value={metrics.pauses_over_0_6} label="≥ 0.6s · deliberate" />
+            <PauseStat value={metrics.pauses_over_2} label="≥ 2s · long" />
+            <PauseStat
+              value={`${metrics.total_pause_sec.toFixed(1)}s`}
+              label={`total silence · ${pausePct}% of talk`}
+            />
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

@@ -39,7 +39,7 @@ export const cleanSampleReport: Report = {
   audio_key: "samples/clean.mp3",
   created_at: "2026-05-12T10:32:00Z",
   duration_sec: 504.3,
-  schema_version: 4,
+  schema_version: 5,
   speech_type: "prepared",
   transcript: {
     text: "",
@@ -71,6 +71,9 @@ export const cleanSampleReport: Report = {
     ],
     filler_per_min: 0.24,
     long_pauses: 4,
+    pauses_over_0_6: 4,
+    pauses_over_2: 0,
+    total_pause_sec: 5.6,
     monotone_score: 0.18,
   },
   synthesis: {
@@ -127,6 +130,7 @@ export const cleanSampleReport: Report = {
         rationale:
           "A question that's both specific and answerable. The audience leans in.",
         evidence: [{ quote: "Why did we stop?", t: 14 }],
+        counts: [],
         applicability_reason: null,
       },
       message_focus: {
@@ -136,6 +140,7 @@ export const cleanSampleReport: Report = {
         evidence: [
           { quote: "Curiosity is the only renewable advantage.", t: 482 },
         ],
+        counts: [],
         applicability_reason: null,
       },
       structure: {
@@ -143,6 +148,7 @@ export const cleanSampleReport: Report = {
         rationale:
           "Cold open, two clearly signposted arcs, call-back close. Textbook shape — don't change it.",
         evidence: [],
+        counts: [],
         applicability_reason: null,
       },
       closing: {
@@ -150,6 +156,7 @@ export const cleanSampleReport: Report = {
         rationale:
           "The close lands the thesis in four words, then leaves a pause. The room had time to register it before the applause.",
         evidence: [{ quote: "And that's the advantage.", t: 478 }],
+        counts: [],
         applicability_reason: null,
       },
       pacing: {
@@ -157,6 +164,7 @@ export const cleanSampleReport: Report = {
         rationale:
           "Average 142 wpm — in the band for a serious talk. Slight acceleration through the data section, but recovers before the close.",
         evidence: [{ quote: "the third number is the one", t: 244 }],
+        counts: [],
         applicability_reason: null,
       },
       pauses: {
@@ -164,6 +172,7 @@ export const cleanSampleReport: Report = {
         rationale:
           "Four long pauses, all on transitions or after a rhetorical question. Placement, not just presence.",
         evidence: [],
+        counts: [{ label: "≥0.6s", count: 4 }],
         applicability_reason: null,
       },
       vocal_variety: {
@@ -171,6 +180,7 @@ export const cleanSampleReport: Report = {
         rationale:
           "Semitone range of 9.4 across the talk. Emphasis lands on the verbs in the open and the nouns in the close.",
         evidence: [{ quote: "we stopped", t: 72 }],
+        counts: [],
         applicability_reason: null,
       },
       language: {
@@ -178,15 +188,12 @@ export const cleanSampleReport: Report = {
         rationale:
           "Two interjections in eight minutes. No hedges, no verbal pauses, no tics.",
         evidence: [],
+        counts: [
+          { label: "um", count: 1 },
+          { label: "uh", count: 1 },
+        ],
         applicability_reason: null,
       },
-    },
-    delivery_habits: {
-      fillers: null,
-      pauses: null,
-      pace: null,
-      vocal_variety: null,
-      language: null,
     },
     priorities: [
       {
@@ -246,7 +253,7 @@ export const messySampleReport: Report = {
   audio_key: "samples/messy.mp3",
   created_at: "2026-05-15T16:08:00Z",
   duration_sec: 282.6,
-  schema_version: 4,
+  schema_version: 5,
   speech_type: "prepared",
   transcript: {
     text: "",
@@ -289,6 +296,9 @@ export const messySampleReport: Report = {
     ],
     filler_per_min: 3.8,
     long_pauses: 1,
+    pauses_over_0_6: 1,
+    pauses_over_2: 0,
+    total_pause_sec: 0.9,
     monotone_score: 0.62,
   },
   synthesis: {
@@ -343,8 +353,9 @@ export const messySampleReport: Report = {
       hook: {
         score: 2,
         rationale:
-          "An apology is not a hook. The real first line — the one with the substance — is buried twenty seconds in.",
+          "An apology is not a hook. The real first line — the one with the substance — is buried twenty seconds in. Cutting just the opening's three fillers would lift the whole talk's first impression.",
         evidence: [{ quote: "Sorry I'm last, um", t: 6 }],
+        counts: [],
         applicability_reason: null,
       },
       message_focus: {
@@ -352,6 +363,7 @@ export const messySampleReport: Report = {
         rationale:
           "The thesis is there but never stated as a single sentence. The talk circles it three times without landing it.",
         evidence: [{ quote: "what I'm kind of trying to say is", t: 194 }],
+        counts: [],
         applicability_reason: null,
       },
       structure: {
@@ -359,6 +371,7 @@ export const messySampleReport: Report = {
         rationale:
           "Beginning, middle, end exist but no signposting. The transition from problem to solution at 2:12 is the only marker.",
         evidence: [],
+        counts: [],
         applicability_reason: null,
       },
       closing: {
@@ -366,50 +379,44 @@ export const messySampleReport: Report = {
         rationale:
           "Ends on “yeah”. No call-back, no summary, no answer to the implied opening question.",
         evidence: [{ quote: "so yeah", t: 280 }],
+        counts: [],
         applicability_reason: null,
       },
       pacing: {
         score: 2,
         rationale:
-          "174 wpm average and one pause in four-and-a-half minutes. The audience never gets a beat to catch up.",
+          "174 wpm average and one pause in four-and-a-half minutes — the audience never gets a beat to catch up. The 30s data section at 1:50 climbs to 195 wpm and never recovers a settle point.",
         evidence: [{ quote: "and basically we needed to ship", t: 117 }],
+        counts: [
+          { label: "avg wpm", count: 174 },
+          { label: "peak wpm", count: 195 },
+        ],
         applicability_reason: null,
       },
       pauses: {
         score: 2,
         rationale:
-          "One long pause, on luck not design. Pauses are how the audience absorbs a number or a name — there are several here that needed one.",
+          "One long pause, on luck not design. Pauses are how the audience absorbs a number or a name — there are several here that needed one, and without them the room can't keep up with which sentences matter.",
         evidence: [],
+        counts: [{ label: "≥0.6s", count: 1 }],
         applicability_reason: null,
       },
       vocal_variety: {
         score: 2,
         rationale:
-          "Semitone range of 2.8 — flat. Pitch sits within a narrow band even on the strongest claims.",
+          "Semitone range of 2.8 — flat. Pitch sits within a narrow band even on the strongest claims; the strongest line of the talk (“this is the important part” at 2:45) is delivered flat, so the audience gets no acoustic signal that it matters.",
         evidence: [{ quote: "this is the important part", t: 165 }],
+        counts: [],
         applicability_reason: null,
       },
       language: {
         score: 1,
         rationale:
-          "Eighteen fillers in four-and-a-half minutes. Six hedges, six verbal pauses, six interjections. Each one tells the room the speaker isn't sure.",
+          "Eighteen fillers in four-and-a-half minutes — one every fifteen seconds — split across hedges, verbal pauses, and interjections. Each one tells the room the speaker isn't sure; strip them and the sentences still parse.",
         evidence: [
           { quote: "kind of the main thing", t: 22 },
           { quote: "you know, what I mean", t: 47 },
           { quote: "it's like, the thing is", t: 72 },
-        ],
-        applicability_reason: null,
-      },
-    },
-    delivery_habits: {
-      fillers: {
-        score: 1,
-        summary:
-          "Eighteen fillers in 4:42 — one every fifteen seconds on average. The cluster from 0:00 to 0:35 is the worst stretch; cutting just the opening's three would lift this from a 1 to a 3.",
-        examples: [
-          { quote: "um, sorry I'm last", t: 4 },
-          { quote: "kind of the main thing", t: 22 },
-          { quote: "you know, the second piece", t: 47 },
         ],
         counts: [
           { label: "um/uh", count: 6 },
@@ -417,43 +424,7 @@ export const messySampleReport: Report = {
           { label: "kind of", count: 4 },
           { label: "you know", count: 4 },
         ],
-      },
-      pauses: {
-        score: 2,
-        summary:
-          "Only one pause longer than 0.6s in the whole talk. The audience needs space after each claim — without it, the room can't keep up with which sentences matter.",
-        examples: [{ quote: "<long pause at 2:12>", t: 132 }],
-        counts: [{ label: "long pauses (>0.6s)", count: 1 }],
-      },
-      pace: {
-        score: 2,
-        summary:
-          "Sustained 173 wpm. The 30s data section at 1:50 climbs to 195 wpm and never recovers a settle point.",
-        examples: [{ quote: "and basically we needed to ship", t: 117 }],
-        counts: [
-          { label: "avg wpm", count: 174 },
-          { label: "peak wpm", count: 195 },
-        ],
-      },
-      vocal_variety: {
-        score: 2,
-        summary:
-          "Pitch sits within a 2.8-semitone band. The strongest claim of the talk (“this is the important part” at 2:45) is delivered flat — the audience has no acoustic signal that it matters.",
-        examples: [{ quote: "this is the important part", t: 165 }],
-        counts: [],
-      },
-      language: {
-        score: 1,
-        summary:
-          "Hedges (“kind of”, “sort of”) appear ten times. Each one softens the claim it precedes. Strip them; the sentences still parse.",
-        examples: [
-          { quote: "kind of the main thing", t: 22 },
-          { quote: "what I'm kind of trying to say", t: 194 },
-        ],
-        counts: [
-          { label: "hedges", count: 10 },
-          { label: "verbal pauses", count: 8 },
-        ],
+        applicability_reason: null,
       },
     },
     priorities: [

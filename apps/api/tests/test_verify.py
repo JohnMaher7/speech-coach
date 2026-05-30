@@ -17,7 +17,6 @@ from app.schemas import (
     Beat,
     Categories,
     CategoryScore,
-    DeliveryHabits,
     Evidence,
     Priority,
     Synthesis,
@@ -55,6 +54,7 @@ def _cat(score, evidence: list[Evidence] | None = None) -> CategoryScore:
         score=score,
         rationale="rationale",
         evidence=evidence or [],
+        counts=[],
         applicability_reason=None,
     )
 
@@ -78,9 +78,6 @@ def _synthesis(categories: Categories, priorities: list[Priority]) -> Synthesis:
             opening=_bare_beat(0.0), body=[], close=_bare_beat(25.0)
         ),
         categories=categories,
-        delivery_habits=DeliveryHabits(
-            fillers=None, pauses=None, pace=None, vocal_variety=None, language=None
-        ),
         priorities=priorities,
         rewrites=[],
     )
