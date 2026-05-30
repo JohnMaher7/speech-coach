@@ -79,7 +79,7 @@ const FAQ_ITEMS: { q: string; a: string; open?: boolean }[] = [
     open: true,
   },
   {
-    q: "What languages does Rhetor support?",
+    q: "What languages does SpeakGrade support?",
     a: "English transcription is the most accurate today. We can analyze most major European languages, but the rubric prompts are tuned for English speech-coaching conventions for now.",
   },
   {
@@ -117,7 +117,7 @@ function Hero() {
           <span className="inline-flex h-7 items-center gap-[9px] rounded-full border border-[color-mix(in_oklch,var(--primary)_18%,transparent)] bg-accent px-[13px] text-xs font-medium text-primary">
             <span
               className="size-[6px] rounded-full bg-primary"
-              style={{ animation: "rhetor-pulse 1.8s infinite" }}
+              style={{ animation: "speakgrade-pulse 1.8s infinite" }}
             />
             Free · no account · ~3 minute turnaround
           </span>
@@ -141,7 +141,7 @@ function Hero() {
           </h1>
 
           <p className="mb-8 max-w-[44ch] text-[17.5px] leading-[1.55] text-[oklch(0.35_0.01_264)]">
-            Upload a recording. Rhetor returns a scored report on fillers,
+            Upload a recording. SpeakGrade returns a scored report on fillers,
             pacing, vocal variety, and structure — plus the three things to work
             on next.
           </p>
@@ -439,7 +439,7 @@ function ListeningBand() {
                 className="size-2 rounded-full"
                 style={{
                   background: "oklch(0.75 0.18 142)",
-                  animation: "rhetor-pulse-green 1.6s infinite",
+                  animation: "speakgrade-pulse-green 1.6s infinite",
                 }}
               />
               Listening · analysis in progress
@@ -451,7 +451,7 @@ function ListeningBand() {
             </h2>
           </div>
           <p className="max-w-[46ch] text-[16px] leading-[1.55] text-[oklch(0.78_0.01_264)]">
-            Rhetor measures four things you can act on. Each one is scored,
+            SpeakGrade measures four things you can act on. Each one is scored,
             timestamped, and explained in plain language — not a wall of
             numbers.
           </p>
@@ -526,7 +526,7 @@ function HowItWorks() {
             </h2>
           </div>
           <p className="max-w-[42ch] text-right text-sm leading-[1.55] text-muted-foreground sm:text-right">
-            No account, no install, no waiting room. Rhetor runs a
+            No account, no install, no waiting room. SpeakGrade runs a
             transcription, an acoustic pass, and an evaluator-style synthesis in
             parallel.
           </p>
@@ -550,7 +550,7 @@ function HowItWorks() {
             },
             {
               num: "ii",
-              title: "Rhetor analyses it",
+              title: "SpeakGrade analyses it",
               body: "Transcription, acoustic measurement, and an AI evaluator run together, not in sequence.",
               timing: "≈ 3 min",
             },

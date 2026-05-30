@@ -153,7 +153,7 @@
   }
 }
 
-@keyframes rhetor-pulse {
+@keyframes speakgrade-pulse {
   0% {
     box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 50%, transparent);
   }
@@ -165,7 +165,7 @@
   }
 }
 
-@keyframes rhetor-pulse-green {
+@keyframes speakgrade-pulse-green {
   0% {
     box-shadow: 0 0 0 0 oklch(0.75 0.18 142 / 0.55);
   }

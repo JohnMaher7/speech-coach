@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-rhetor-eval = "eval.run:main"
+speakgrade-eval = "eval.run:main"
 
 [build-system]
 requires = ["hatchling"]

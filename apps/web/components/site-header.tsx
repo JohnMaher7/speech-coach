@@ -36,7 +36,7 @@ export function SiteHeader() {
               <path d="M20 11h2" />
             </svg>
           </span>
-          Rhetor
+          SpeakGrade
         </Link>
         <nav className="flex items-center gap-7 text-sm text-muted-foreground">
           {NAV_LINKS.map(({ href, label }) => (

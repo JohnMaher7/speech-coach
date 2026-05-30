@@ -1,6 +1,6 @@
-# Rhetor — AI speech coach
+# SpeakGrade — AI speech coach
 
-Free web tool: upload a speech → evaluator-style report (fillers, pacing, vocal variety, structure, top-3 actions) + pace/pitch timeline chart. Two-week MVP, public deploy, AI-engineering portfolio piece. (Product name: **Rhetor** — the classical word for a teacher of oratory. Renamed from "Toastmasters Speech Coach" in Stage 24; the evaluation methodology is still evaluator-style.)
+Free web tool: upload a speech → evaluator-style report (fillers, pacing, vocal variety, structure, top-3 actions) + pace/pitch timeline chart. Two-week MVP, public deploy, AI-engineering portfolio piece. (Product name: **SpeakGrade**, on the domain **speakgrade.com**. Renamed "Toastmasters Speech Coach" → "Rhetor" (Stage 24) → "SpeakGrade" (for the Clerk production domain); the evaluation methodology is still evaluator-style.)
 
 ## Stack
 - Frontend: Next.js 15 + TS + Tailwind + shadcn/ui — `apps/web/`

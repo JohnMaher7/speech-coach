@@ -23,7 +23,7 @@ model change.
 
 from app.schemas import Categories, Overall, SpeechType
 
-WEIGHTS_VERSION = 1
+WEIGHTS_VERSION = 2
 
 _BASE_WEIGHTS: dict[str, float] = {
     # Content & craft = 0.60
@@ -39,13 +39,22 @@ _BASE_WEIGHTS: dict[str, float] = {
 }
 
 
+_PRESENTATION_STRUCTURE_BUMP = 0.06
+
+
 def _profile_for(speech_type: SpeechType | None) -> dict[str, float]:
     """Return the category→weight dict for the given speech type.
+
+    `prepared` (and `None`) use the full default profile.
 
     Impromptu speeches usually run short enough that `closing` is missing
     or vestigial, so we drop it from the profile entirely and redistribute
     its 0.10 across the remaining seven in proportion to their base
-    weights. `presentation` and `prepared` use the full default.
+    weights.
+
+    Presentations live or die on signposting and transitions, so we lift
+    `structure` and take the increment proportionally from the other seven.
+    Every profile still sums to 1.0.
     """
 
     profile = dict(_BASE_WEIGHTS)
@@ -54,6 +63,13 @@ def _profile_for(speech_type: SpeechType | None) -> dict[str, float]:
         remainder = sum(profile.values())
         for k in profile:
             profile[k] += dropped * profile[k] / remainder
+    elif speech_type == "presentation":
+        bump = _PRESENTATION_STRUCTURE_BUMP
+        donor_sum = sum(w for k, w in profile.items() if k != "structure")
+        for k in profile:
+            if k != "structure":
+                profile[k] -= bump * profile[k] / donor_sum
+        profile["structure"] += bump
     return profile
 
 

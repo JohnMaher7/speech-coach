@@ -1,6 +1,6 @@
-"""Eval harness for the Rhetor pipeline.
+"""Eval harness for the SpeakGrade pipeline.
 
-Run with: ``uv run rhetor-eval``
+Run with: ``uv run speakgrade-eval``
 
 Reads ``labels.json`` from this directory, runs each labelled case through the
 pipeline three times, computes MAE, test-retest variance, and the
@@ -39,7 +39,7 @@ from app.synthesize import synthesize
 from app.verify import verify
 from app.pipeline import run_pipeline
 
-logger = logging.getLogger("rhetor.eval")
+logger = logging.getLogger("speakgrade.eval")
 
 
 # ---------------------------------------------------------------------------
@@ -410,7 +410,7 @@ def _format_table(results: EvalResults, cases: list[Case]) -> str:
     lines: list[str] = []
     lines.append("")
     lines.append("=" * 78)
-    lines.append(f"  Rhetor eval — {results.timestamp_utc}")
+    lines.append(f"  SpeakGrade eval — {results.timestamp_utc}")
     lines.append("=" * 78)
 
     # Per-category MAE

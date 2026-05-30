@@ -26,10 +26,11 @@ const description =
   "Upload a recorded talk and get an evaluator-style report — fillers, pacing, vocal variety, structure, your top three actions, and a pitch-and-pace timeline chart.";
 
 export const metadata: Metadata = {
-  title: "Rhetor — AI speech coaching",
+  metadataBase: new URL("https://speakgrade.com"),
+  title: "SpeakGrade — AI speech coaching",
   description,
   openGraph: {
-    title: "Rhetor — AI speech coaching",
+    title: "SpeakGrade — AI speech coaching",
     description,
     type: "website",
   },

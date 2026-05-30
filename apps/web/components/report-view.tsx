@@ -187,7 +187,7 @@ function HeadlineSection({
       <div className="mx-auto w-full max-w-[920px] px-8">
         <div className="mb-[18px] flex items-center gap-[10px] font-mono text-[11px] tracking-[0.08em] text-muted-foreground uppercase">
           <Link href="/" className="transition-colors hover:text-foreground">
-            Rhetor
+            SpeakGrade
           </Link>
           <span className="opacity-50">/</span>
           <span>Report</span>

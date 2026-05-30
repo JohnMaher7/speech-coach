@@ -36,7 +36,7 @@ Rich walkthroughs live in `stages/<NN>-<slug>.md` (created when a stage starts).
 - ✅ 21 — Empty/error states + validation
 - ✅ 22 — Few-shots + eval harness
 - ✅ 23 — Two-pass prompting + cost engineering
-- ✅ 24 — Full UI polish + Rhetor branding (rename, design tokens, shell, all 4 surfaces)
+- ✅ 24 — Full UI polish + branding (rename → Rhetor, since renamed SpeakGrade; design tokens, shell, all 4 surfaces)
 - ✅ 25 — Hardening (rate limit, Sentry, min_containers, smoke test, launch)
 
 ## Phase F — Evaluation Engine v2
@@ -50,6 +50,12 @@ Per `spec.md`. Turn the four-category rubric scorer into a placement-aware coach
 - ✅ 32 — Report UI restructure (Headline → Walk-through → conditional Habits → Priorities → Rewrites → Scorecard)
 - ⏳ 33 — Evaluation harness (seed: 3 speeches)
 - ☐ 34 — (optional) Haiku critic pass — only if Stage 33 shows deterministic verification misses real hallucinations
+
+## Phase G — Speech-type tailoring
+Make the three upload types (prepared / impromptu / presentation) evaluate and present differently. Prepared is unchanged. Brief at the bottom of this file.
+- ✅ 35 — Per-type evaluation tuning (three focused system prompts + presentation weight profile)
+- ☐ 36 — Per-type sample reports + sample-page toggle
+- ✅ 37 — Dashboard filter by speech type
 
 ---
 
@@ -260,10 +266,10 @@ The work is large, so it ships as nine stages (one optional). Each stage is a si
     4. Re-run `verify()` on each output; report evidence-pass rate.
   - Output: a printed table + JSON summary at `apps/api/eval/results/<timestamp>.json`.
   - Failing thresholds (documented): MAE > 1.0, variance > 1.0, evidence-pass < 0.95.
-- `apps/api/pyproject.toml`: add an `[project.scripts]` entry `rhetor-eval = "eval.run:main"`.
+- `apps/api/pyproject.toml`: add an `[project.scripts]` entry `speakgrade-eval = "eval.run:main"`.
 - Note for grow-later: a `labels.json` schema doc so speeches can be added without touching code.
 
-**Verify:** `uv run rhetor-eval` on the seed set. Confirm it runs end-to-end, prints a sensible table, and writes a results JSON. The pass/fail line at the bottom should match the documented thresholds.
+**Verify:** `uv run speakgrade-eval` on the seed set. Confirm it runs end-to-end, prints a sensible table, and writes a results JSON. The pass/fail line at the bottom should match the documented thresholds.
 
 ---
 
@@ -302,7 +308,7 @@ The work is large, so it ships as nine stages (one optional). Each stage is a si
 ## End-to-end verification (across the whole phase)
 
 Once Stage 33 lands:
-1. `uv run rhetor-eval` is green on the seed set.
+1. `uv run speakgrade-eval` is green on the seed set.
 2. Upload a 60s prepared speech via the live UI. Confirm: headline + walk-through render; conditional habit sections hide cleanly when scores are 5; priorities cite quotes that resolve when you scrub the audio; overall score matches the weighted sum; report JSON has `schema_version: 2`, `verification.passed: true`, `overall.weights_version: 1`.
 3. Upload an impromptu (≤45s). Confirm: `closing` shows as `"n/a"` with reason; overall reweights cleanly.
 4. Check Modal logs: Haiku + Sonnet cost lines present, total per report stays in a sensible range (target: ≤ 2× current).
@@ -312,3 +318,52 @@ Once Stage 33 lands:
 - Labelled set grows from 3 → 10–15 as a follow-up. Stage 33's `labels.json` schema is the contract that lets that happen without code changes.
 - Critic pass (Stage 34) is conditional on Stage 33 evidence; don't pre-commit.
 - If Stage 33 ever shows Sonnet output truncating or category drift on the later fields, the spec's "clean split" (mechanical + content in two calls, plus a short synthesis) is the documented fallback — defer until evidence demands it.
+
+---
+
+# Phase G brief — Speech-type tailoring
+
+## Context
+
+The upload form already lets the user pick **prepared / impromptu / presentation**, and `speech_type` flows end-to-end (form → `/analyze` → `synthesize()` + `compute_overall()` → persisted in the JSONB payload → shown on the dashboard row and report header). Stage 31 wired the plumbing but the tailoring was thin: a one-line prompt hint per type and one weight tweak (impromptu drops `closing`). The three types still read almost identically.
+
+Phase G makes each type evaluate and present on its own terms — **without touching the prepared report or its samples**. What "good" looks like differs by type: an impromptu answer is judged on composure and answering the actual question (not a polished hook/close); a presentation lives on signposting and a landed takeaway. Decisions locked with the owner: keep the same 8-category rubric and report layout (no schema/UI fork, headings unchanged) — *tune the judgement, not the structure* — and ship **one** sample report per new type. Impromptu criteria are grounded in Toastmasters Table Topics judging, the PREP framework, Minto's answer-first principle, and composure guidance (calm, deliberate, **not** fast). Presentation criteria are grounded in standard oral-presentation rubrics (signposting, transitions, clear take-home message, audience adaptation).
+
+No DB migration: `speech_type` already persists in the payload, and the scoring change only affects new analyses.
+
+## Stage 35 — Per-type evaluation tuning ✅
+
+**Goal:** Impromptu and presentation analyses are judged by their own standard; prepared is unchanged.
+
+**Changes:**
+- `apps/api/app/synthesize.py` — split the single shared prompt into **three focused system prompts** selected by `speech_type` (`_SYSTEM_PROMPTS` dict; `None` → prepared). `_SYSTEM_PROMPT_PREPARED` is the original literal, only renamed — byte-for-byte unchanged. `_SYSTEM_PROMPT_IMPROMPTU` and `_SYSTEM_PROMPT_PRESENTATION` are built from shared `_INPUT_FORMAT_SECTION` + `_RULES_SECTION` constants plus a per-type intro, scoring rubric, and **one tailored worked example** each. Each prompt is cached (`ephemeral`) on its own. The old user-message `_SPEECH_TYPE_HINTS` injection is removed. Rationale (owner's call): a shorter single-type prompt keeps the model's attention on the rubric that applies and avoids it missing the type. Impromptu rubric is explicit that composure/fluidity beat speed and a thinking pause is a virtue; presentation centres on signposting + a strict close.
+- `apps/api/app/scoring.py` — added a `presentation` branch to `_profile_for()` that lifts `structure` by 0.06 (signposting is the centerpiece), drawing the increment proportionally from the other seven. Impromptu branch unchanged. Bumped `WEIGHTS_VERSION` 1 → 2.
+
+**Verify (done):** profiles sum to 1.0 for all four cases (`None`/prepared structure 0.18 + closing 0.10; impromptu drops closing, 7 cats; presentation structure 0.24). Modules compile; prepared prompt unchanged (239 lines, 3 examples); the two new prompts are ~125 lines each (one example), and both worked examples validate against the `Synthesis` schema. Full LLM behaviour confirmed by the owner against live audio (prepared baseline unchanged; impromptu shows lenient structure/closing + composure-framed pacing; presentation emphasises signposting + a strict, takeaway-focused close).
+
+## Stage 36 — Per-type sample reports + sample-page toggle ☐
+
+**Goal:** `/report/sample` offers a 3-way toggle; impromptu and presentation each have one rendered sample in the existing report format.
+
+**Changes:**
+- `apps/web/lib/sample-reports.ts` — add `impromptuSampleReport` (an "answering a tough question in a meeting" answer, ~75–110s, composed pacing, a thinking pause, answer-first PREP spine) and `presentationSampleReport` (~5–7 min, explicit signposting, landed takeaway). Mirror the exact `Report` shape of `cleanSampleReport`.
+- `apps/web/app/report/sample/impromptu/page.tsx` and `.../presentation/page.tsx` — thin pages rendering `<ReportView report={…} sampleLabel="Sample · impromptu|presentation" />`, like `clean/page.tsx`.
+- `apps/web/app/report/sample/page.tsx` — restructure into a 3-way segmented toggle (small `"use client"` component, lightweight buttons in the page's existing Tailwind style — no shadcn Tabs exist). Prepared shows the existing clean + messy pair unchanged; impromptu/presentation each show their single sample card.
+
+**Verify:** `pnpm dev`; open `/report/sample`, toggle all three, open each sample, confirm the new ones render fully and the prepared pair is untouched.
+
+## Stage 37 — Dashboard filter by speech type ✅
+
+**Goal:** Users can filter their report list by type.
+
+**Changes:**
+- `apps/web/app/dashboard/page.tsx` keeps fetching server-side, then passes the array to a new `"use client"` component (`apps/web/components/dashboard-report-list.tsx`) holding the active-type filter state and rendering the existing `DashboardReportRow`s.
+- Filter chips: **All · Prepared · Impromptu · Presentation**, client-side filtering (per-user lists are small — no backend param). `speech_type === null` reports appear under "All". The per-row label already exists.
+
+**Verify:** `pnpm dev`; on `/dashboard` with mixed types, each chip narrows the list and "All" restores it.
+
+## Notes
+
+- Prepared's behaviour is the safety baseline. Any change that would move a prepared report's score or prompt is out of scope for Phase G.
+- Stage 33's eval harness can attribute a presentation/impromptu score shift to the new `WEIGHTS_VERSION` 2 vs. a prompt change.
+- If the owner later wants type-native section headings (e.g. impromptu "Hook" → "Framing"), that's a display-only follow-up keyed on `report.speech_type` in `report-view.tsx` — deferred by decision.

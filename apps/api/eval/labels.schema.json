@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/johnmaher/rhetor/eval/labels.schema.json",
-  "title": "Rhetor eval labels",
+  "$id": "https://github.com/johnmaher/speakgrade/eval/labels.schema.json",
+  "title": "SpeakGrade eval labels",
   "description": "Schema for apps/api/eval/labels.json. One entry per labelled speech in the eval seed set. See notes/eval-harness-deep-dive.md for what each field is for.",
   "type": "array",
   "items": { "$ref": "#/$defs/case" },

@@ -1,4 +1,4 @@
-# Rhetor eval harness
+# SpeakGrade eval harness
 
 Operational reference for the eval harness. The conceptual deep dive lives in
 [`notes/eval-harness-deep-dive.md`](../../../notes/eval-harness-deep-dive.md) —
@@ -7,7 +7,7 @@ read that first if you haven't.
 ## Running the harness
 
 ```
-uv run rhetor-eval
+uv run speakgrade-eval
 ```
 
 What you'll see:
@@ -114,7 +114,7 @@ you have a JSON-aware editor it'll validate as you type.
 ### 5. Run and commit
 
 ```
-uv run rhetor-eval
+uv run speakgrade-eval
 ```
 
 Confirm the new case appears in the output table, then commit the audio file
@@ -174,7 +174,7 @@ apps/api/eval/
 
 ## Cost expectations
 
-Per `uv run rhetor-eval` invocation with the current seed (2 fixture + 1 audio):
+Per `uv run speakgrade-eval` invocation with the current seed (2 fixture + 1 audio):
 
 | Cost component | Approx |
 |---|---|

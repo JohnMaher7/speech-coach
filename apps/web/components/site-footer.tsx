@@ -5,7 +5,7 @@ export function SiteFooter() {
     <footer className="mt-auto border-t border-border/60">
       <div className="mx-auto flex w-full max-w-[1240px] flex-col items-center gap-2 px-8 py-8 text-center text-[12.5px] text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
         <p>
-          Rhetor — an independent speech-coaching tool. Not affiliated with any
+          SpeakGrade — an independent speech-coaching tool. Not affiliated with any
           public-speaking organisation.
         </p>
         <p>

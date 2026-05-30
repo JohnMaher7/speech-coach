@@ -2,11 +2,11 @@ import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { ArrowRight } from "lucide-react";
 
-import { DashboardReportRow } from "@/components/dashboard-report-row";
+import { DashboardReportList } from "@/components/dashboard-report-list";
 import { fetchMyReports, type DashboardReport } from "@/lib/api";
 
 export const metadata = {
-  title: "Your reports — Rhetor",
+  title: "Your reports — SpeakGrade",
 };
 
 export default async function DashboardPage() {
@@ -56,11 +56,7 @@ export default async function DashboardPage() {
             </Link>
           </div>
         ) : (
-          <ul className="space-y-3">
-            {reports.map((report) => (
-              <DashboardReportRow key={report.report_id} report={report} />
-            ))}
-          </ul>
+          <DashboardReportList reports={reports} />
         )}
       </div>
     </main>

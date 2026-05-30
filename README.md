@@ -1,4 +1,4 @@
-# Rhetor — AI speech coaching
+# SpeakGrade — AI speech coaching
 
 Free web tool that turns a recorded talk into an evaluator-style report — filler words, pacing, vocal variety, structure, top-3 actions — plus a pace + pitch timeline chart.
 
