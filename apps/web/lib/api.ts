@@ -7,6 +7,16 @@ function authHeaders(token: string): Record<string, string> {
   return { authorization: `Bearer ${token}` };
 }
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 export type SignResponse = {
   url: string;
   key: string;
@@ -23,6 +33,7 @@ export type AnalyzeEvent =
       data: { wpm: number; fillers: number; long_pauses: number };
     }
   | { event: "synthesis_done"; data: { priorities: number } }
+  | { event: "saving_report"; data: Record<string, never> }
   | { event: "done"; data: { report_id: string } }
   | { event: "error"; data: { message: string } };
 
@@ -76,6 +87,9 @@ export type Metrics = {
   fillers: FillerHit[];
   filler_per_min: number;
   long_pauses: number;
+  pauses_over_0_6: number;
+  pauses_over_2: number;
+  total_pause_sec: number;
   monotone_score: number;
 };
 
@@ -91,7 +105,13 @@ export type CategoryScore = {
   score: CategoryScoreValue;
   rationale: string;
   evidence: Evidence[];
+  counts: HabitCountItem[];
   applicability_reason: string | null;
+};
+
+export type HabitCountItem = {
+  label: string;
+  count: number;
 };
 
 export type Beat = {
@@ -121,27 +141,6 @@ export type CategoryKey =
 
 export type Categories = Record<CategoryKey, CategoryScore>;
 
-export type HabitCountItem = {
-  label: string;
-  count: number;
-};
-
-export type HabitSection = {
-  score: CategoryScoreValue;
-  summary: string;
-  examples: Evidence[];
-  counts: HabitCountItem[];
-};
-
-export type HabitKey =
-  | "fillers"
-  | "pauses"
-  | "pace"
-  | "vocal_variety"
-  | "language";
-
-export type DeliveryHabits = Record<HabitKey, HabitSection | null>;
-
 export type Priority = {
   title: string;
   observation: string;
@@ -162,7 +161,6 @@ export type Synthesis = {
   message_sentence: string | null;
   walkthrough: Walkthrough;
   categories: Categories;
-  delivery_habits: DeliveryHabits;
   priorities: Priority[];
   rewrites: Rewrite[];
 };
@@ -187,7 +185,7 @@ export type Report = {
   audio_key: string;
   created_at: string;
   duration_sec: number;
-  schema_version: 4;
+  schema_version: 5;
   speech_type: SpeechType | null;
   transcript: Transcript;
   acoustic: Acoustic;
@@ -230,6 +228,14 @@ export async function uploadToR2(url: string, file: File): Promise<void> {
     body: file,
   });
   if (!res.ok) throw new Error(`R2 upload failed: ${res.status}`);
+}
+
+export async function warmUpApi(token: string): Promise<void> {
+  const res = await fetch(`${API_URL}/warmup`, {
+    cache: "no-store",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw new ApiError(`warmup failed: ${res.status}`, res.status);
 }
 
 export async function* streamAnalyze(
@@ -282,7 +288,7 @@ export async function fetchReport(id: string, token: string): Promise<Report> {
     cache: "no-store",
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error(`fetch report failed: ${res.status}`);
+  if (!res.ok) throw new ApiError(`fetch report failed: ${res.status}`, res.status);
   return res.json();
 }
 

@@ -65,6 +65,11 @@ def test_compute_metrics_aggregates(short_transcript: Transcript, short_acoustic
     assert metrics.filler_per_min == 2.0
     # Only one pause is >= 1.0s threshold (the 2.5→4.0 one)
     assert metrics.long_pauses == 1
+    # Both pauses (1.5s and 0.6s) clear the 0.6s floor; neither clears 2.0s.
+    assert metrics.pauses_over_0_6 == 2
+    assert metrics.pauses_over_2 == 0
+    # Total meaningful silence = 1.5 + 0.6 = 2.1s.
+    assert metrics.total_pause_sec == 2.1
     # pitch_std_st=2.25, span=2.5, (3.5-2.25)/2.5 = 0.5
     assert metrics.monotone_score == 0.5
 

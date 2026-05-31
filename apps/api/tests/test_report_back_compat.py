@@ -1,6 +1,8 @@
 """Stage 29 bumped the persisted report schema to v2; Stage 31 bumped to v3
 (robust pitch) then v4 (intensity dynamics dropped — phonetic variation and
-uncalibrated recording levels made the metric unreliable). The `/reports/{id}`
+uncalibrated recording levels made the metric unreliable). Stage 38 bumped to
+v5: `delivery_habits` was folded into the categories (each `CategoryScore`
+gained `counts`) and `Metrics` gained the pause-stat fields. The `/reports/{id}`
 endpoint returns 410 Gone for anything not at the current `schema_version`.
 
 These tests pin two things:
@@ -16,13 +18,13 @@ from pydantic import ValidationError
 from app.schemas import CategoryScore, Report
 
 
-def _v4_payload() -> dict:
+def _v5_payload() -> dict:
     return {
         "report_id": "test-123",
         "audio_key": "uploads/test.mp3",
         "created_at": "2026-05-17T12:00:00+00:00",
         "duration_sec": 30.0,
-        "schema_version": 4,
+        "schema_version": 5,
         "transcript": {
             "text": "hello world",
             "words": [
@@ -44,6 +46,9 @@ def _v4_payload() -> dict:
             "fillers": [],
             "filler_per_min": 0.0,
             "long_pauses": 0,
+            "pauses_over_0_6": 2,
+            "pauses_over_2": 0,
+            "total_pause_sec": 3.4,
             "monotone_score": 0.4,
         },
         "synthesis": {
@@ -73,62 +78,58 @@ def _v4_payload() -> dict:
                     "score": 5,
                     "rationale": "Clean opening hook.",
                     "evidence": [],
+                    "counts": [],
                     "applicability_reason": None,
                 },
                 "message_focus": {
                     "score": 4,
                     "rationale": "Clear single idea.",
                     "evidence": [{"quote": "hello world", "t": 0.0}],
+                    "counts": [],
                     "applicability_reason": None,
                 },
                 "structure": {
                     "score": 5,
                     "rationale": "Three-act arc.",
                     "evidence": [],
+                    "counts": [],
                     "applicability_reason": None,
                 },
                 "closing": {
                     "score": "n/a",
                     "rationale": "Snippet too short to evaluate.",
                     "evidence": [],
+                    "counts": [],
                     "applicability_reason": "Recording is only 30 seconds with no concluding section.",
                 },
                 "pacing": {
                     "score": 5,
                     "rationale": "Lands in the ideal band.",
                     "evidence": [],
+                    "counts": [],
                     "applicability_reason": None,
                 },
                 "pauses": {
                     "score": 5,
                     "rationale": "Deliberate pauses on key words.",
                     "evidence": [],
+                    "counts": [{"label": "≥0.6s", "count": 2}],
                     "applicability_reason": None,
                 },
                 "vocal_variety": {
                     "score": 3,
-                    "rationale": "Moderate pitch range.",
+                    "rationale": "Moderate pitch range — could be wider.",
                     "evidence": [{"quote": "hello world", "t": 0.0}],
+                    "counts": [],
                     "applicability_reason": None,
                 },
                 "language": {
                     "score": 5,
                     "rationale": "Clean phrasing throughout.",
                     "evidence": [],
+                    "counts": [],
                     "applicability_reason": None,
                 },
-            },
-            "delivery_habits": {
-                "fillers": None,
-                "pauses": None,
-                "pace": None,
-                "vocal_variety": {
-                    "score": 3,
-                    "summary": "Pitch range could be wider.",
-                    "examples": [{"quote": "hello world", "t": 0.0}],
-                    "counts": [],
-                },
-                "language": None,
             },
             "priorities": [
                 {
@@ -180,16 +181,17 @@ def _v4_payload() -> dict:
     }
 
 
-def test_v4_payload_validates_and_round_trips():
-    report = Report.model_validate(_v4_payload())
-    assert report.schema_version == 4
+def test_v5_payload_validates_and_round_trips():
+    report = Report.model_validate(_v5_payload())
+    assert report.schema_version == 5
     assert report.cost is not None
     assert report.cost.total_usd == 0.013
     assert report.synthesis.categories.closing.score == "n/a"
     assert report.synthesis.categories.closing.applicability_reason is not None
     assert len(report.synthesis.priorities) == 2
-    assert report.synthesis.delivery_habits.fillers is None
-    assert report.synthesis.delivery_habits.vocal_variety is not None
+    assert report.synthesis.categories.pauses.counts[0].label == "≥0.6s"
+    assert report.synthesis.categories.hook.counts == []
+    assert report.metrics.total_pause_sec == 3.4
     assert report.verification.passed is True
     assert report.verification.issues == []
 
@@ -201,6 +203,7 @@ def test_sub_five_score_without_evidence_is_rejected():
                 "score": 3,
                 "rationale": "Decent.",
                 "evidence": [],
+                "counts": [],
                 "applicability_reason": None,
             }
         )
@@ -213,6 +216,7 @@ def test_na_without_applicability_reason_is_rejected():
                 "score": "n/a",
                 "rationale": "Inapplicable.",
                 "evidence": [],
+                "counts": [],
                 "applicability_reason": None,
             }
         )
@@ -224,6 +228,7 @@ def test_five_score_with_empty_evidence_is_fine():
             "score": 5,
             "rationale": "Excellent.",
             "evidence": [],
+            "counts": [],
             "applicability_reason": None,
         }
     )

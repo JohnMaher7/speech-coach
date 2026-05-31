@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import {
@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 
-import { signUpload, uploadToR2, type SpeechType } from "@/lib/api";
+import { signUpload, uploadToR2, warmUpApi, type SpeechType } from "@/lib/api";
 
 const ACCEPTED_MIME = "audio/mpeg,audio/wav,audio/mp4,audio/x-m4a,audio/mp3";
 const MAX_BYTES = 100 * 1024 * 1024;
@@ -51,6 +51,25 @@ export function UploadForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [speechType, setSpeechType] = useState<SpeechType>("prepared");
   const inputRef = useRef<HTMLInputElement>(null);
+  const warmupStartedRef = useRef(false);
+
+  useEffect(() => {
+    if (!isSignedIn || warmupStartedRef.current) return;
+    warmupStartedRef.current = true;
+
+    let cancelled = false;
+    (async () => {
+      const token = await getToken();
+      if (!token || cancelled) return;
+      await warmUpApi(token);
+    })().catch(() => {
+      // Warmup is opportunistic; upload/analyze still does the real error handling.
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [getToken, isSignedIn]);
 
   function pickFile(f: File | null) {
     setError(null);

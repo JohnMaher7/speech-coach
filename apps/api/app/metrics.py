@@ -35,6 +35,9 @@ SENTENCE_TERMINALS = frozenset({".", "!", "?"})
 # Pause-split fallback only fires when neither utterances nor punctuation
 # yielded boundaries; this threshold catches "between-thought" silences.
 PAUSE_SPLIT_THRESHOLD_SEC = 0.6
+# Pauses at/above this are long, weighty silences (used for the stat tile and
+# the red bands on the timeline chart).
+LONG_PAUSE_2S_SEC = 2.0
 
 
 def compute_metrics(
@@ -51,6 +54,13 @@ def compute_metrics(
     long_pauses = sum(
         1 for p in acoustic.pauses if (p.end - p.start) >= LONG_PAUSE_THRESHOLD_SEC
     )
+    pauses_over_0_6 = sum(
+        1 for p in acoustic.pauses if p.duration_sec >= PAUSE_SPLIT_THRESHOLD_SEC
+    )
+    pauses_over_2 = sum(
+        1 for p in acoustic.pauses if p.duration_sec >= LONG_PAUSE_2S_SEC
+    )
+    total_pause_sec = round(sum(p.duration_sec for p in acoustic.pauses), 1)
     monotone_score = _monotone_from_std_st(acoustic.pitch_std_st)
 
     return Metrics(
@@ -58,6 +68,9 @@ def compute_metrics(
         fillers=fillers,
         filler_per_min=round(filler_per_min, 2),
         long_pauses=long_pauses,
+        pauses_over_0_6=pauses_over_0_6,
+        pauses_over_2=pauses_over_2,
+        total_pause_sec=total_pause_sec,
         monotone_score=round(monotone_score, 3),
     )
 

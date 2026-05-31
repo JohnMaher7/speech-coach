@@ -56,6 +56,7 @@ Make the three upload types (prepared / impromptu / presentation) evaluate and p
 - ✅ 35 — Per-type evaluation tuning (three focused system prompts + presentation weight profile)
 - ☐ 36 — Per-type sample reports + sample-page toggle
 - ✅ 37 — Dashboard filter by speech type
+- ✅ 38 — Merge delivery-habits into the scorecard + stat dashboard + pause stats
 
 ---
 

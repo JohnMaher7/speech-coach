@@ -91,6 +91,9 @@ def _fixture() -> tuple[Transcript, Acoustic, Metrics]:
         fillers=[FillerHit(word="um", t=0.4, category="interjection")],
         filler_per_min=10.0,
         long_pauses=1,
+        pauses_over_0_6=2,
+        pauses_over_2=0,
+        total_pause_sec=2.6,
         monotone_score=0.5,
     )
     return transcript, acoustic, metrics
@@ -184,6 +187,9 @@ def test_empty_segments_returns_raw_text():
         fillers=[],
         filler_per_min=0.0,
         long_pauses=0,
+        pauses_over_0_6=0,
+        pauses_over_2=0,
+        total_pause_sec=0.0,
         monotone_score=0.0,
     )
     result = build_annotated_transcript(transcript, acoustic, metrics)

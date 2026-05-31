@@ -204,6 +204,17 @@ class Metrics(BaseModel):
     filler_per_min: float = Field(ge=0)
     long_pauses: int = Field(
         ge=0, description="Count of pauses longer than the threshold.")
+    pauses_over_0_6: int = Field(
+        ge=0, description="Count of pauses ≥0.6s — the 'deliberate pause' floor."
+    )
+    pauses_over_2: int = Field(
+        ge=0, description="Count of pauses ≥2.0s — long, weighty silences."
+    )
+    total_pause_sec: float = Field(
+        ge=0,
+        description="Sum of all detected pause durations. Pauses are floored at "
+        "0.3s (MIN_PAUSE_SEC), so this is meaningful silence, not micro-gaps.",
+    )
     monotone_score: float = Field(
         ge=0, le=1, description="0 = lots of pitch variation, 1 = flat monotone."
     )
@@ -230,6 +241,12 @@ class Evidence(BaseModel):
     t: float = Field(description="Seconds from start of audio.")
 
 
+class HabitCountItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    label: str
+    count: int
+
+
 class CategoryScore(BaseModel):
     """One of the eight rubric categories. Sub-5 scores must cite ≥1 piece of
     evidence; `"n/a"` requires an `applicability_reason`."""
@@ -241,6 +258,11 @@ class CategoryScore(BaseModel):
     )
     rationale: str
     evidence: list[Evidence]
+    counts: list[HabitCountItem] = Field(
+        description="Numeric breakdown where this category has one — filler "
+        "types on `language` (um×4, like×3), pause-length tallies on `pauses`. "
+        "Empty list for categories without a useful breakdown."
+    )
     applicability_reason: str | None = Field(
         description="Required when score == 'n/a'; null otherwise."
     )
@@ -296,38 +318,6 @@ class Categories(BaseModel):
     language: CategoryScore
 
 
-class HabitCountItem(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    label: str
-    count: int
-
-
-class HabitSection(BaseModel):
-    """Deep-dive on one delivery habit. UI renders this only when the
-    surrounding `delivery_habits.<key>` is non-null."""
-
-    model_config = ConfigDict(extra="forbid")
-    score: CategoryScoreValue
-    summary: str
-    examples: list[Evidence]
-    counts: list[HabitCountItem] = Field(
-        description="Optional numeric breakdown — e.g. {'um': 12, 'like': 8}. "
-        "Empty list when no useful counts apply."
-    )
-
-
-class DeliveryHabits(BaseModel):
-    """Each field is null when its category scored 5 (nothing to coach on).
-    Stage 32 will render only the non-null sections."""
-
-    model_config = ConfigDict(extra="forbid")
-    fillers: HabitSection | None
-    pauses: HabitSection | None
-    pace: HabitSection | None
-    vocal_variety: HabitSection | None
-    language: HabitSection | None
-
-
 class Priority(BaseModel):
     """One of the 2-3 ranked actions. Each must quote the speaker and give a
     drill that's specific to what was observed."""
@@ -354,9 +344,11 @@ class Rewrite(BaseModel):
 
 
 class Synthesis(BaseModel):
-    """Schema v2 — Stage 29. Layered: a headline, a chronological walk-through,
-    eight rubric categories (each with evidence), conditional deep-dive
-    `delivery_habits`, 2-3 ranked priorities, and 0-4 rewrites."""
+    """Schema v5 — Stage 38. Layered: a headline, a chronological walk-through,
+    eight rubric categories (each with evidence and an optional numeric
+    `counts` breakdown), 2-3 ranked priorities, and 0-4 rewrites. The old
+    `delivery_habits` deep-dive was folded into the categories' `rationale`/
+    `counts` so each dimension is reasoned about exactly once."""
 
     model_config = ConfigDict(extra="forbid")
     headline: str = Field(
@@ -367,7 +359,6 @@ class Synthesis(BaseModel):
     )
     walkthrough: Walkthrough
     categories: Categories
-    delivery_habits: DeliveryHabits
     priorities: list[Priority] = Field(
         description="2 or 3 ranked actions, highest-impact first."
     )
@@ -434,9 +425,12 @@ class Report(BaseModel):
     # Stage 31 when the prosody pipeline added robust pitch. Bumped to v4
     # within Stage 31 when intensity dynamics were dropped — phonetic
     # variation and recording-level confounds made the metric unreliable;
-    # `vocal_variety` now scores on pitch alone. The `/reports/{id}`
-    # endpoint returns 410 Gone for any persisted payload at an older version.
-    schema_version: Literal[4] = 4
+    # `vocal_variety` now scores on pitch alone. Bumped to v5 in Stage 38 when
+    # `delivery_habits` was folded into the categories (each `CategoryScore`
+    # gained `counts`) and `Metrics` gained the pause-stat fields. The
+    # `/reports/{id}` endpoint returns 410 Gone for any persisted payload at an
+    # older version.
+    schema_version: Literal[5] = 5
     speech_type: SpeechType | None = None
     transcript: Transcript
     acoustic: Acoustic

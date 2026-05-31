@@ -56,6 +56,9 @@ FILLERY_FAST = GoldenCase(
         ],
         filler_per_min=18.0,
         long_pauses=0,
+        pauses_over_0_6=0,
+        pauses_over_2=0,
+        total_pause_sec=0.0,
         monotone_score=0.74,
     ),
 )
@@ -82,6 +85,9 @@ CLEAN_PACED = GoldenCase(
         fillers=[],
         filler_per_min=0.0,
         long_pauses=3,
+        pauses_over_0_6=5,
+        pauses_over_2=1,
+        total_pause_sec=7.8,
         monotone_score=0.32,
     ),
 )
@@ -109,6 +115,9 @@ MONOTONE_STRUCTURED = GoldenCase(
         fillers=[],
         filler_per_min=0.0,
         long_pauses=2,
+        pauses_over_0_6=3,
+        pauses_over_2=0,
+        total_pause_sec=4.5,
         monotone_score=0.82,
     ),
 )
