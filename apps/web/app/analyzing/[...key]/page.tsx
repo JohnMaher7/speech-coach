@@ -29,7 +29,10 @@ const STEPS = [
   { id: "lexical_done", label: "Spotting filler words" },
   { id: "metrics_done", label: "Computing metrics" },
   { id: "synthesis_done", label: "Generating coaching" },
+  { id: "saving_report", label: "Saving report" },
 ] as const;
+
+const STEP_IDS = new Set<string>(STEPS.map((step) => step.id));
 
 const TIPS = [
   "Pauses feel longer to you than to your audience — let them breathe.",
@@ -51,6 +54,7 @@ export default function AnalyzingPage() {
   const [error, setError] = useState<string | null>(null);
   const [tipIdx, setTipIdx] = useState(0);
   const startedRef = useRef(false);
+  const tokenRefreshRef = useRef<Promise<string | null> | null>(null);
 
   useEffect(() => {
     if (startedRef.current) return;
@@ -65,14 +69,21 @@ export default function AnalyzingPage() {
         }
         for await (const ev of streamAnalyze(key, token, speechType)) {
           if (ev.event === "done") {
-            router.replace(`/report/${ev.data.report_id}`);
+            router.replace(`/report/${ev.data.report_id}?fresh=1`);
             return;
           }
           if (ev.event === "error") {
             setError(ev.data.message);
             return;
           }
-          setCompleted((prev) => new Set(prev).add(ev.event));
+          if (ev.event === "synthesis_done" && !tokenRefreshRef.current) {
+            tokenRefreshRef.current = getToken({ skipCache: true }).catch(
+              () => null,
+            );
+          }
+          if (STEP_IDS.has(ev.event)) {
+            setCompleted((prev) => new Set(prev).add(ev.event));
+          }
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Analysis failed.");

@@ -114,6 +114,12 @@ async def health() -> HealthResponse:
     return HealthResponse(status="ok")
 
 
+@app.get("/warmup")
+async def warmup(session: SessionDep, user: CurrentUser) -> HealthResponse:
+    await session.execute(select(1))
+    return HealthResponse(status="ok")
+
+
 @app.post("/uploads/sign")
 @limiter.limit("30/minute")
 async def sign_upload(
@@ -263,6 +269,7 @@ async def analyze(
             session.add(row)
             await session.commit()
 
+            yield sse_event("saving_report", {})
             yield sse_event("done", {"report_id": report.report_id})
 
         except AnalysisError as exc:
@@ -324,11 +331,9 @@ async def get_report(
     # would confirm the id exists.
     if row is None or row.user_id != user:
         raise HTTPException(status_code=404, detail="Report not found")
-    # Schema bumps: v2 (Stage 29), v3 (Stage 31 — robust pitch), v4 (Stage 31 —
-    # intensity dynamics dropped after they proved unreliable). Older payloads
-    # are rejected with 410 Gone; the prosody fields changed too much for a
-    # compat shim to be useful.
-    if row.payload.get("schema_version") != 4:
+    # Older payloads are rejected with 410 Gone; the report shape changes enough
+    # between schema bumps that a compatibility shim is not useful yet.
+    if row.payload.get("schema_version") != 5:
         raise HTTPException(
             status_code=410,
             detail=(
