@@ -6,17 +6,27 @@ arrays — never by re-opening the file. This keeps the pipeline cheap when
 segments arrive in Stage 26.
 """
 
-from dataclasses import dataclass
+import os
+import subprocess
+import tempfile
+from dataclasses import dataclass, field
 
 import librosa
 import numpy as np
 import parselmouth
+import soundfile as sf
 
 from app.schemas import BoundaryTone, Pause, ProminentWord, Word
 
 
 PITCH_TIME_STEP_SEC = 0.01
 TIMELINE_STEP_SEC = 0.5
+# Inputs libsndfile cannot decode (mp4/m4a/AAC, webm) get transcoded to this
+# mono sample rate before analysis. 16 kHz is the standard speech rate and far
+# above every feature we measure (pitch ceiling 600 Hz), so results are
+# unchanged within rounding while the two pitch passes + intensity run on ~3×
+# fewer samples than a 44.1/48 kHz original.
+DECODE_TARGET_SR_HZ = 16_000
 SILENCE_TOP_DB = 30.0
 MIN_PAUSE_SEC = 0.3
 # Window at the segment tail used to classify boundary tone, in seconds.
@@ -67,11 +77,59 @@ class AcousticFeatures:
     # Semitone SD is speaker-uniform (a 12-st octave reads the same at 100 Hz
     # and 200 Hz). Drives Metrics.monotone_score.
     pitch_std_st: float
+    # Per-timeline-window mean intensity (dB), aligned 1:1 with `pitch_times`.
+    # None on windows the pitch tracker found unvoiced (silence/pauses), so the
+    # series is gated to speech. Powers the volume chart and Metrics.volume_range_db.
+    # Defaulted so existing fixtures that build AcousticFeatures stay valid.
+    volume_timeline: list[float | None] = field(default_factory=list)
 
 
 def analyze_audio(path: str) -> AcousticFeatures:
-    y, sr = librosa.load(path, sr=None, mono=True)
+    decode_path, is_temp = _ensure_fast_decodable(path)
+    try:
+        y, sr = librosa.load(decode_path, sr=None, mono=True)
+    finally:
+        if is_temp:
+            try:
+                os.unlink(decode_path)
+            except FileNotFoundError:
+                pass
     return _analyze_array(y, sr)
+
+
+def _ensure_fast_decodable(path: str) -> tuple[str, bool]:
+    """Return a path librosa can decode through libsndfile's fast C path.
+
+    libsndfile reads WAV/FLAC/OGG/AIFF natively; for those we hand the file back
+    untouched. It cannot decode mp4/m4a/AAC or webm — without this, librosa falls
+    back to `audioread`, which pipes the file through ffmpeg and decodes it in a
+    slow, deprecated pure-Python loop (the "PySoundFile failed" warning). For
+    those inputs we transcode once with ffmpeg to a 16 kHz mono WAV and return
+    that temp path (caller deletes it).
+
+    Returns `(path, is_temp)`. `sf.info` reads only the header, so the fast-path
+    check is cheap, and it keys on content not extension — important because R2
+    downloads land in an extensionless temp file.
+    """
+
+    try:
+        sf.info(path)
+        return path, False
+    except Exception:
+        out = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+        out.close()
+        subprocess.run(
+            [
+                "ffmpeg", "-nostdin", "-v", "error", "-y",
+                "-i", path,
+                "-ac", "1",
+                "-ar", str(DECODE_TARGET_SR_HZ),
+                "-f", "wav",
+                out.name,
+            ],
+            check=True,
+        )
+        return out.name, True
 
 
 def _analyze_array(y: np.ndarray, sr: int) -> AcousticFeatures:
@@ -114,6 +172,13 @@ def _analyze_array(y: np.ndarray, sr: int) -> AcousticFeatures:
     intensity_times = np.asarray(intensity.xs(), dtype=np.float64)
     intensity_db = np.asarray(intensity.values, dtype=np.float64).reshape(-1)
 
+    # Per-window mean loudness on the same grid as the pitch timeline, gated to
+    # voiced windows so silence/pauses don't drag the series down. This is what
+    # the volume chart plots and what Metrics.volume_range_db measures.
+    volume_timeline = _downsample_intensity(
+        intensity_times, intensity_db, timeline_times, timeline_pitch, TIMELINE_STEP_SEC
+    )
+
     return AcousticFeatures(
         duration_sec=duration,
         pitch_times=timeline_times,
@@ -128,6 +193,7 @@ def _analyze_array(y: np.ndarray, sr: int) -> AcousticFeatures:
         pitch_mean_hz=voiced_mean_hz,
         pitch_std_hz=pitch_std_hz,
         pitch_std_st=pitch_std_st,
+        volume_timeline=volume_timeline,
     )
 
 
@@ -332,6 +398,33 @@ def _intervals_to_pauses(
     return pauses
 
 
+def _downsample_intensity(
+    intensity_times: np.ndarray,
+    intensity_db: np.ndarray,
+    grid_times: list[float],
+    pitch_timeline: list[float | None],
+    step: float,
+) -> list[float | None]:
+    """Mean intensity (dB) in each timeline window, aligned to `grid_times`.
+
+    A window is set to None wherever the pitch timeline is None — i.e. the
+    pitch tracker found no voiced frames there, which marks silence/pauses. This
+    gates the loudness series to actual speech so quiet gaps don't masquerade as
+    deliberate volume dips, in the chart or in the range metric.
+    """
+
+    out: list[float | None] = []
+    half = step / 2
+    for t, voiced in zip(grid_times, pitch_timeline):
+        if voiced is None:
+            out.append(None)
+            continue
+        mask = (intensity_times >= t - half) & (intensity_times < t + half)
+        window = intensity_db[mask] if intensity_db.size else np.array([])
+        out.append(float(np.mean(window)) if window.size else None)
+    return out
+
+
 def _downsample_pitch(
     times: np.ndarray, freqs: np.ndarray, step: float
 ) -> tuple[list[float], list[float | None]]:
@@ -381,6 +474,21 @@ if __name__ == "__main__":
                 )
                 if features.intensity_values_db
                 else None,
+                "volume_range_db": (
+                    round(
+                        float(
+                            np.subtract(
+                                *np.percentile(
+                                    [v for v in features.volume_timeline if v is not None],
+                                    [90, 10],
+                                )
+                            )
+                        ),
+                        2,
+                    )
+                    if [v for v in features.volume_timeline if v is not None]
+                    else None
+                ),
             },
             indent=2,
         )

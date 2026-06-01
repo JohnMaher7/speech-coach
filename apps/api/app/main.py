@@ -205,8 +205,13 @@ async def analyze(
                     "Please check the audio and try again."
                 )
 
-            metrics = compute_metrics(transcript, features, lexical_fillers=lex_hits)
             acoustic = build_acoustic(transcript, features)
+            metrics = compute_metrics(
+                transcript,
+                features,
+                segments=acoustic.segments,
+                lexical_fillers=lex_hits,
+            )
             yield sse_event(
                 "metrics_done",
                 {

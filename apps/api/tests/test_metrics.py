@@ -2,11 +2,12 @@ from app.acoustic import AcousticFeatures
 from app.metrics import (
     _detect_fillers,
     _monotone_from_std_st,
+    _volume_range_from_segments,
     build_acoustic,
     compute_metrics,
     compute_wpm_timeline,
 )
-from app.schemas import Pause, Transcript, Word
+from app.schemas import Pause, Segment, Transcript, Word
 
 
 def test_detect_fillers_lowercases_and_strips_punctuation():
@@ -156,6 +157,56 @@ def test_segment_pitch_range_st_is_percentile_based():
     # Range should reflect the bulk (≈0 st), not the outlier-driven 19.5.
     # Old max-min code would have produced ≈19.5 here.
     assert segments[0].pitch_range_st < 1.0
+
+
+def _seg(intensity_mean_db: float) -> Segment:
+    """Minimal Segment carrying a given per-phrase mean loudness."""
+    return Segment(
+        start=0.0,
+        end=1.0,
+        text="x",
+        word_indices=[0],
+        pitch_range_st=0.0,
+        intensity_mean_db=intensity_mean_db,
+        intensity_peak_db=intensity_mean_db + 1.0,
+        wpm_local=120.0,
+    )
+
+
+def test_compute_metrics_volume_range_uses_section_contrast():
+    """volume_range_db is the section-to-section spread of per-phrase loudness,
+    fed from the segments — so a monotone-volume speaker scores a tiny spread,
+    not the inflated window-level number that used to let them score high."""
+    transcript = Transcript(
+        text="hi",
+        words=[Word(text="hi", start=0.0, end=0.5, confidence=1.0)],
+        duration_sec=60.0,
+    )
+    acoustic = _empty_features()
+
+    # No segments supplied -> None (graceful default, keeps fixtures valid).
+    assert compute_metrics(transcript, acoustic).volume_range_db is None
+
+    # Every phrase at the same loudness -> tiny section spread.
+    flat = [_seg(60.0), _seg(60.1), _seg(59.9), _seg(60.0)]
+    flat_range = compute_metrics(transcript, acoustic, segments=flat).volume_range_db
+    assert flat_range is not None and flat_range < 1.0
+
+    # Phrases that swing loud/soft -> clear section-to-section contrast.
+    dynamic = [_seg(56.0), _seg(62.0), _seg(58.0), _seg(66.0)]
+    dyn_range = compute_metrics(
+        transcript, acoustic, segments=dynamic
+    ).volume_range_db
+    assert dyn_range is not None and dyn_range > flat_range + 3.0
+
+
+def test_volume_range_from_segments_ignores_zero_loudness_phrases():
+    # Segments with no measured loudness (0.0 dB) are dropped, so they neither
+    # count toward the minimum nor drag the spread down to silence.
+    segs = [_seg(0.0), _seg(60.0), _seg(64.0), _seg(68.0)]
+    # Only 3 real phrases survive -> still enough; the 0.0 isn't a quiet phrase.
+    assert _volume_range_from_segments(segs) is not None
+    assert _volume_range_from_segments([_seg(0.0), _seg(60.0), _seg(64.0)]) is None
 
 
 def test_long_pauses_threshold_is_exclusive_below_1_second():

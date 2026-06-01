@@ -119,6 +119,11 @@ MONOTONE_STRUCTURED = GoldenCase(
         pauses_over_2=0,
         total_pause_sec=4.5,
         monotone_score=0.82,
+        # Flat in BOTH channels. 3.0 dB is what a real monotone clip measures
+        # (calibrated against sample audio) — under the flat-< 4 cutoff, so it
+        # reads as flat, not modest. The point: a wide-ish volume number must
+        # NOT rescue the flat pitch to a high score.
+        volume_range_db=3.0,
     ),
 )
 
