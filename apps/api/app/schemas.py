@@ -95,6 +95,12 @@ class TimelinePoint(BaseModel):
     )
     wpm_local: float = Field(
         ge=0, description="Rolling words-per-minute around this point.")
+    volume_db: float | None = Field(
+        default=None,
+        description="Mean loudness (dB) in this window, or None during "
+        "silence/unvoiced. Optional for back-compat with reports saved before "
+        "volume tracking existed.",
+    )
 
 
 class Pause(BaseModel):
@@ -217,6 +223,17 @@ class Metrics(BaseModel):
     )
     monotone_score: float = Field(
         ge=0, le=1, description="0 = lots of pitch variation, 1 = flat monotone."
+    )
+    volume_range_db: float | None = Field(
+        default=None,
+        ge=0,
+        description="Section-to-section spread (P90−P10, dB) of per-phrase mean "
+        "loudness — how much the speaker varies volume between phrases for "
+        "emphasis. Measured across segments, not raw windows, so syllable-level "
+        "phonetic variation is averaged out. Gain-invariant (a constant mic-gain "
+        "offset cancels out of a spread). None when there are too few voiced "
+        "segments to judge. Optional for back-compat with reports saved before "
+        "volume tracking existed.",
     )
 
 

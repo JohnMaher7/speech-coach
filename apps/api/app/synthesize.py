@@ -68,20 +68,12 @@ Every speech is rated on eight categories. Each category gets either an integer 
 - 1: rushes through without pauses, or pauses are random.
 - **What to look for:** check `[pause Ns]` markers — do they land after `*emphasis*` words or section ends? Or are they mid-sentence between unimportant words?
 
-### vocal_variety — pitch modulation (speaker-relative)
-
-Two questions to answer:
-1. **Does the voice rise and fall at all?** Read `monotone_score` (0..1, 1 = flat) and per-segment `pitch_range_st`.
-2. **Do the prominent words actually land on a pitch lift?** Read `*word*` markers and compare each segment's `pitch_range_st` against where its prominent word sits. A speaker can have wide pitch range overall but still place the lifts on filler words and throwaway phrases — that's worse than narrower range used purposefully.
-
-- 5: monotone_score ≤ 0.2; most segments ≥ 5 st; prominent words sit at clear pitch peaks.
-- 3: monotone_score 0.4–0.6; most segments 2–4 st; prominent words get modest lifts only.
-- 1: monotone_score ≥ 0.8; most segments under 1.5 st; no audible emphasis anywhere.
-When pitch range is wide but lifts land on fillers, score down and cite the segment.
-
-When pitch range is wide but the lifts land on fillers (`<um>`, `<like>`) or transition words rather than the prominent word, **score down for placement** and cite the segment by timestamp.
-
-Evidence at score ≤ 4 should reference either a numeric signal (e.g. "`monotone_score` 0.71 with most segments under 2 st") or a specific placement gap ("the prominent word 'mattered' at t=12.0 sits in the flattest segment").
+### vocal_variety — pitch and volume modulation (speaker-relative)
+Two channels: **pitch** (`monotone_score` 0..1, 1 = flat; per-segment `pitch_range_st`) and **volume** (`volume_range_db` — the gain-invariant, section-to-section spread of phrase loudness; per-segment `intensity_db` shows where it moves). Score both. The decisive test is **placement**: does the range land on the `*prominent*` words / key points? Range that lands there is emphasis; range that drifts onto fillers (`<um>`, `<like>`) or transition words is just movement — score it down and cite the segment by timestamp.
+- 5: pitch and/or volume vary clearly (`monotone_score` ≤ 0.2 or `volume_range_db` ≥ 7) AND the lifts/swells land on the key words. Wide range alone never earns a 5, and one strong channel cannot rescue a flat other — flat pitch with loud-but-aimless volume (or the reverse) is mid-scale, not top.
+- 3: modest movement (`monotone_score` 0.4–0.6, `volume_range_db` ~4–7), or clear range that mostly misses the prominent words.
+- 1: flat in **both** — `monotone_score` ≥ 0.8 and `volume_range_db` under ~4 — no audible emphasis anywhere.
+`volume_range_db` may be null on very short clips (too few segments) — judge on pitch alone then. Evidence at score ≤ 4 must cite a number or a placement gap (e.g. "`monotone_score` 0.85 and `volume_range_db` 3.1 — flat on both", or "the prominent word 'mattered' at t=12.0 sits in the flattest segment").
 
 ### language — word choice, fillers, hedges, vagueness
 - 5: under 1 filler/min; sharp verbs; specifics over abstractions.
@@ -107,7 +99,7 @@ Three example evaluations from past speeches. Use them to calibrate scoring stri
 <example index="1">
 <input>
 Duration: 95 seconds
-Metrics: {"wpm": 186.0, "filler_per_min": 9.5, "long_pauses": 0, "monotone_score": 0.78}
+Metrics: {"wpm": 186.0, "filler_per_min": 9.5, "long_pauses": 0, "monotone_score": 0.78, "volume_range_db": 2.8}
 Annotated transcript:
 So <um> yeah I wanted to talk about, you know, productivity in the modern *workplace.* <Uh> <like> basically the thing is, we all kind of feel busy but we're not, you know, actually getting stuff done. So <um> <like> the first thing I want to mention is *meetings* right, because, you know, meetings take up so much time.
 Segment table: WPM mostly 180-195, pitch_range_st avg 1.8, boundary_tone mostly flat.
@@ -131,7 +123,7 @@ Segment table: WPM mostly 180-195, pitch_range_st avg 1.8, boundary_tone mostly 
     "closing": {"score": 1, "rationale": "The speech does not end so much as stop, mid-meetings paragraph — no callback, no call to action. Write a final line that restates the thesis or asks for something concrete.", "evidence": [{"quote": "meetings take up so much time", "t": 88.0}], "counts": [], "applicability_reason": null},
     "pacing": {"score": 2, "rationale": "186 WPM is well above the 130-160 band, with zero `[pace]` shifts and zero long pauses — the delivery races without rhythm. The whole speech sounds like a sprint, which buries the moments that should land slowly; deliberately dropping the pace on the key sentences would give them room.", "evidence": [{"quote": "we all kind of feel busy but we're not, you know, actually getting stuff done", "t": 22.0}], "counts": [], "applicability_reason": null},
     "pauses": {"score": 1, "rationale": "Zero long pauses across 95 seconds — the speaker pushes through every breath-point where the meaning would benefit from settling. Nothing lands because nothing is given space; even one beat after the main claim would help it register.", "evidence": [{"quote": "the first thing I want to mention is meetings", "t": 58.0}], "counts": [{"label": "≥0.6s", "count": 0}, {"label": "≥2s", "count": 0}], "applicability_reason": null},
-    "vocal_variety": {"score": 2, "rationale": "Segment pitch_range_st averages 1.8 semitones and boundary tones are mostly flat — narrow enough that the prominent words ('workplace', 'meetings') receive no audible lift. Practising a clear pitch rise on each key word would give the delivery contour.", "evidence": [{"quote": "productivity in the modern workplace", "t": 7.0}], "counts": [], "applicability_reason": null},
+    "vocal_variety": {"score": 2, "rationale": "Flat on both channels — segment pitch_range_st averages 1.8 semitones and volume_range_db is just 2.8, so the prominent words ('workplace', 'meetings') get neither a pitch lift nor a volume swell. Practising a clear pitch rise and a small push in volume on each key word would give the delivery contour.", "evidence": [{"quote": "productivity in the modern workplace", "t": 7.0}], "counts": [], "applicability_reason": null},
     "language": {"score": 1, "rationale": "9.5 fillers/min — almost every clause opens with 'so um', 'you know', or 'uh like', the fillers acting as a runway before the speaker commits to a thought. Hedges ('kind of', 'basically', 'actually') compound the softening, so the speech reads as uncertain even where it has a point. Replacing the clause-opening fillers with silence is the single largest available unlock.", "evidence": [{"quote": "So um yeah I wanted to talk about", "t": 0.5}, {"quote": "kind of feel busy but we're not, you know, actually getting stuff done", "t": 22.0}], "counts": [{"label": "um", "count": 4}, {"label": "uh", "count": 2}, {"label": "you know", "count": 5}, {"label": "like", "count": 3}, {"label": "kind of", "count": 2}], "applicability_reason": null}
   },
   "priorities": [
@@ -151,7 +143,7 @@ Segment table: WPM mostly 180-195, pitch_range_st avg 1.8, boundary_tone mostly 
 <example index="2">
 <input>
 Duration: 240 seconds
-Metrics: {"wpm": 141.0, "filler_per_min": 0.3, "long_pauses": 4, "monotone_score": 0.71}
+Metrics: {"wpm": 141.0, "filler_per_min": 0.3, "long_pauses": 4, "monotone_score": 0.71, "volume_range_db": 3.0}
 Annotated transcript:
 My *grandmother* kept a small notebook. [pause 1.2s] In it, she wrote one word every day — the word that mattered *most.* [pause 2.0s] Today I will show you how borrowing that practice changed how I run my *team.* There are three *habits* worth taking from her notebook. The first is to name the *day* before you live it.
 Segment table: WPM 138-148, pitch_range_st avg 2.2, boundary_tone mostly falling.
@@ -175,7 +167,7 @@ Segment table: WPM 138-148, pitch_range_st avg 2.2, boundary_tone mostly falling
     "closing": {"score": 4, "rationale": "Callback to the notebook image lands cleanly, but the final beat could use one more sentence of synthesis.", "evidence": [{"quote": "Today I will show you how borrowing that practice changed how I run my team", "t": 14.0}], "counts": [], "applicability_reason": null},
     "pacing": {"score": 5, "rationale": "141 WPM lands squarely in the ideal band, with four long pauses used as deliberate emphasis (notably after 'the word that mattered most').", "evidence": [], "counts": [], "applicability_reason": null},
     "pauses": {"score": 5, "rationale": "Four ≥0.6s pauses land after key prominent words ('most', 'team', 'habits') — placement, not just presence.", "evidence": [], "counts": [{"label": "≥0.6s", "count": 4}, {"label": "≥2s", "count": 1}], "applicability_reason": null},
-    "vocal_variety": {"score": 2, "rationale": "Average pitch_range_st of 2.2 across segments — the narrative is well-paced but flat, so the words designed to land hardest ('most', 'team', 'habits') arrive without audible emphasis. The pace and structure earn attention; pitch flatness then gives some of it back. Lifting pitch on those key words is the one upgrade available.", "evidence": [{"quote": "the word that mattered most", "t": 12.0}, {"quote": "three habits worth taking from her notebook", "t": 38.0}], "counts": [], "applicability_reason": null},
+    "vocal_variety": {"score": 2, "rationale": "Average pitch_range_st of 2.2 across segments and volume_range_db just 3.0 — the narrative is well-paced but flat in both pitch and energy, so the words designed to land hardest ('most', 'team', 'habits') arrive without audible emphasis. The pace and structure earn attention; the flatness then gives some of it back. Lifting pitch and varying volume on those key words is the upgrade available.", "evidence": [{"quote": "the word that mattered most", "t": 12.0}, {"quote": "three habits worth taking from her notebook", "t": 38.0}], "counts": [], "applicability_reason": null},
     "language": {"score": 5, "rationale": "0.3 fillers/min — essentially clean. No audible 'um's in the opening or transitions.", "evidence": [], "counts": [], "applicability_reason": null}
   },
   "priorities": [
@@ -193,7 +185,7 @@ Segment table: WPM 138-148, pitch_range_st avg 2.2, boundary_tone mostly falling
 <example index="3">
 <input>
 Duration: 70 seconds
-Metrics: {"wpm": 148.0, "filler_per_min": 2.1, "long_pauses": 1, "monotone_score": 0.55}
+Metrics: {"wpm": 148.0, "filler_per_min": 2.1, "long_pauses": 1, "monotone_score": 0.55, "volume_range_db": 5.0}
 Annotated transcript:
 Today I want to share something I learned about *decision-making.* We make a lot of decisions every day, you know, and most of them turn out fine. [pause 0.7s] But the big ones, the ones we worry about, those tend to be where we get *stuck.* Here is what I figured out. When you cannot decide, it usually means the options are roughly equal in value. So pick one, and move on. The cost of indecision is almost always higher than the cost of picking the wrong path. That is what I wanted to share.
 Segment table: WPM 142-156, pitch_range_st avg 3.1, boundary_tone mostly falling.
@@ -217,7 +209,7 @@ Segment table: WPM 142-156, pitch_range_st avg 3.1, boundary_tone mostly falling
     "closing": {"score": 2, "rationale": "Ends on a meta-line ('That is what I wanted to share') instead of the insight itself — no callback to decision-making. Replace it with the speech's own imperative so the energy the body built isn't thrown away.", "evidence": [{"quote": "That is what I wanted to share", "t": 65.0}], "counts": [], "applicability_reason": null},
     "pacing": {"score": 4, "rationale": "148 WPM lands in the ideal band; one deliberate pause before 'stuck'. Loses a point because pace is otherwise uniform across all segments — vary it to mark the important beats.", "evidence": [{"quote": "those tend to be where we get stuck", "t": 22.0}], "counts": [], "applicability_reason": null},
     "pauses": {"score": 3, "rationale": "One well-placed pause (before 'stuck') but only one across 70 seconds — the thesis sentence and the closing both arrive without space to land. The placement shows the speaker can use pauses; they just need more of them, especially around the thesis and the close.", "evidence": [{"quote": "When you cannot decide, it usually means the options are roughly equal in value", "t": 38.0}], "counts": [{"label": "≥0.6s", "count": 1}], "applicability_reason": null},
-    "vocal_variety": {"score": 3, "rationale": "Pitch_range_st averages 3.1 — moderate variety with the bones of contour there, but prominent words like 'stuck' and 'decision-making' get only modest lifts. Pushing the lift higher on those words would turn decent range into real emphasis.", "evidence": [{"quote": "those tend to be where we get stuck", "t": 22.0}], "counts": [], "applicability_reason": null},
+    "vocal_variety": {"score": 3, "rationale": "Pitch_range_st averages 3.1 and volume_range_db 5.0 — moderate variety in both, the bones of contour there, but prominent words like 'stuck' and 'decision-making' get only modest lifts in pitch and volume. Pushing both higher on those words would turn decent range into real emphasis.", "evidence": [{"quote": "those tend to be where we get stuck", "t": 22.0}], "counts": [], "applicability_reason": null},
     "language": {"score": 3, "rationale": "2.1 fillers/min is acceptable and mostly concentrated in the body where the speaker reasons live, but the core argument is hedge-heavy ('usually', 'roughly', 'almost always') — exactly where softeners hurt most. The certainty the message implies is not in the phrasing; cutting the hedges from the thesis would make it land as a decision.", "evidence": [{"quote": "it usually means the options are roughly equal in value", "t": 38.0}, {"quote": "the cost of indecision is almost always higher", "t": 50.0}], "counts": [{"label": "you know", "count": 2}], "applicability_reason": null}
   },
   "priorities": [
@@ -335,10 +327,12 @@ Never reward a fast WPM for its own sake, and never mark a measured, composed pa
 - 1: no pauses at all (a nervous gabble), or pauses that read as lost-for-words.
 A short silence before a good sentence is a strength, not dead air.
 
-### vocal_variety — pitch modulation (speaker-relative)
-- 5: monotone_score ≤ 0.2; key words land on a clear pitch lift.
-- 3: monotone_score 0.4-0.6; modest lifts only.
-- 1: monotone_score ≥ 0.8; flat throughout.
+### vocal_variety — pitch and volume modulation (speaker-relative)
+Two channels: pitch (`monotone_score`, per-segment `pitch_range_st`) and volume (`volume_range_db` — gain-invariant section-to-section spread of loudness; per-segment `intensity_db` shows where it moves). Score on both, and check the decisive third thing: do the lifts/swells land on the `*prominent*` words?
+- 5: clear pitch and/or volume variation (`monotone_score` ≤ 0.2 or `volume_range_db` ≥ 7) AND the emphasis lands on the key words. Wide range alone is never a 5.
+- 3: modest movement (`monotone_score` 0.4-0.6, `volume_range_db` ~4-7), or clear range that mostly misses the prominent words.
+- 1: flat in both — `monotone_score` ≥ 0.8 and `volume_range_db` under ~4.
+A flat pitch can't be rescued to a 5 by a wide volume spread alone, or vice versa. Strong in one channel but flat in the other sits mid-scale. `volume_range_db` may be null on very short clips — judge on pitch alone then.
 
 ### language — clarity under pressure
 - 5: clean and direct; specifics over vagueness; almost no fillers.
@@ -353,7 +347,7 @@ One example evaluation. Use it to calibrate scoring strictness, evidence depth, 
 <example>
 <input>
 Duration: 40 seconds
-Metrics: {"wpm": 112.0, "filler_per_min": 1.2, "long_pauses": 2, "monotone_score": 0.42}
+Metrics: {"wpm": 112.0, "filler_per_min": 1.2, "long_pauses": 2, "monotone_score": 0.42, "volume_range_db": 4.5}
 Annotated transcript:
 [pause 1.5s] The honest answer is that we *underestimated* the integration work. [pause 0.8s] When we scoped it, we assumed the vendor's API would behave like the *docs* said — and it didn't, so two weeks went into *workarounds* nobody planned for. The fix is already moving: we pulled in a second *engineer* and re-sequenced the rest so the next milestone holds. So the delay is real, but it's *contained* — and we know exactly what caused it.
 Segment table: WPM 105-120, pitch_range_st avg 2.4, boundary_tone mostly falling.
@@ -377,7 +371,7 @@ Segment table: WPM 105-120, pitch_range_st avg 2.4, boundary_tone mostly falling
     "closing": {"score": 4, "rationale": "Restates the verdict cleanly and stops. One forward-looking sentence — what changes next — would lift it to a 5.", "evidence": [{"quote": "the delay is real, but it's contained", "t": 34.0}], "counts": [], "applicability_reason": null},
     "pacing": {"score": 4, "rationale": "112 WPM sits below the usual band, but the delivery is calm and easy to follow — composure under a hard question, not hesitation. The measured pace is a strength here; the only available lift is contrast — slow further on the verdict and move a little quicker through the setup.", "evidence": [{"quote": "two weeks went into workarounds nobody planned for", "t": 16.0}], "counts": [], "applicability_reason": null},
     "pauses": {"score": 5, "rationale": "The 1.5s beat before answering and the 0.8s pause before the example are deliberate thinking time — silence used as composure, not dead air.", "evidence": [], "counts": [{"label": "≥0.6s", "count": 2}], "applicability_reason": null},
-    "vocal_variety": {"score": 3, "rationale": "monotone_score 0.42 with pitch range averaging 2.4 st — the answer is composed, but the verdict words ('underestimated', 'contained') don't land on an audible lift, so the ending is flatter than its content deserves. Lifting pitch on the closing verdict would carry it.", "evidence": [{"quote": "underestimated", "t": 4.0}, {"quote": "but it's contained", "t": 35.0}], "counts": [], "applicability_reason": null},
+    "vocal_variety": {"score": 3, "rationale": "monotone_score 0.42 and volume_range_db 4.5 — moderate variety, but the verdict words ('underestimated', 'contained') don't land on an audible lift in pitch or volume, so the ending is flatter than its content deserves. Lifting pitch and leaning into the volume on the closing verdict would carry it.", "evidence": [{"quote": "underestimated", "t": 4.0}, {"quote": "but it's contained", "t": 35.0}], "counts": [], "applicability_reason": null},
     "language": {"score": 4, "rationale": "Clean and direct, with specifics ('two weeks', 'a second engineer') instead of vagueness — strong for an unscripted answer. One mild hedge at the open ('the honest answer is'); dropping it would make the ownership land even faster.", "evidence": [{"quote": "The honest answer is", "t": 2.0}], "counts": [{"label": "the honest answer is", "count": 1}], "applicability_reason": null}
   },
   "priorities": [
@@ -430,10 +424,12 @@ A presentation that informs well but never resolves to a "so what" should not sc
 - 3: pauses exist but mostly fill gaps rather than mark importance.
 - 1: rushes through without letting anything land.
 
-### vocal_variety — pitch modulation (speaker-relative)
-- 5: monotone_score ≤ 0.2; emphasis lands on the data and takeaways.
-- 3: monotone_score 0.4-0.6; modest lifts only.
-- 1: monotone_score ≥ 0.8; flat throughout — deadly over a longer talk.
+### vocal_variety — pitch and volume modulation (speaker-relative)
+Two channels: pitch (`monotone_score`, per-segment `pitch_range_st`) and volume (`volume_range_db` — gain-invariant section-to-section spread of loudness; per-segment `intensity_db` shows where it moves). Score on both; over a longer talk, varying energy by section matters as much as pitch. The decisive question: do the lifts land on the data and takeaways?
+- 5: clear pitch and/or volume variation (`monotone_score` ≤ 0.2 or `volume_range_db` ≥ 7) AND emphasis lands on the data and takeaways. Wide range alone is never a 5.
+- 3: modest movement (`monotone_score` 0.4-0.6, `volume_range_db` ~4-7), or clear range that mostly misses the key points.
+- 1: flat in both — `monotone_score` ≥ 0.8 and `volume_range_db` under ~4 — deadly over a longer talk.
+A flat pitch can't be rescued to a 5 by a wide volume spread alone, or vice versa. Strong in one channel but flat in the other sits mid-scale. `volume_range_db` may be null on very short clips — judge on pitch alone then.
 
 ### language — credible and precise
 - 5: concrete specifics, accurate terms, almost no fillers.
@@ -447,7 +443,7 @@ One example evaluation. Use it to calibrate scoring strictness, evidence depth, 
 <example>
 <input>
 Duration: 280 seconds
-Metrics: {"wpm": 138.0, "filler_per_min": 0.6, "long_pauses": 5, "monotone_score": 0.32}
+Metrics: {"wpm": 138.0, "filler_per_min": 0.6, "long_pauses": 5, "monotone_score": 0.32, "volume_range_db": 7.5}
 Annotated transcript:
 Today I want to show you why our *checkout* funnel is leaking revenue — and the three fixes that recover it. [pause 1.0s] First, the *numbers*: forty percent of carts are abandoned at the shipping step. [pause 0.8s] Now that we've seen the scale of it, let's look at the *cause.* Shipping cost shows up *late*, so people feel ambushed and leave. So what do we do? *Three* things: show shipping on the *product* page, default to the *cheapest* option, and add a *progress* bar. In short — surface the cost early, and the funnel stops leaking. Any questions?
 Segment table: WPM 130-146, pitch_range_st avg 4.1, boundary_tone mixed.
@@ -471,7 +467,7 @@ Segment table: WPM 130-146, pitch_range_st avg 4.1, boundary_tone mixed.
     "closing": {"score": 3, "rationale": "Summarises the takeaway cleanly but then stops on 'Any questions?' — it informs without driving a call to action or a next step. Scored strictly, as a presentation should land its 'so what'.", "evidence": [{"quote": "Any questions?", "t": 278.0}], "counts": [], "applicability_reason": null},
     "pacing": {"score": 4, "rationale": "138 WPM sits in the ideal band and the list is easy to follow. The one upgrade is contrast — drop the pace and add a beat on the 40% statistic so the problem's scale lands before you move to the cause.", "evidence": [{"quote": "forty percent of carts are abandoned at the shipping step", "t": 45.0}], "counts": [], "applicability_reason": null},
     "pauses": {"score": 5, "rationale": "Five deliberate pauses, landing after the headline statistic and before 'So what do we do?' — giving the audience time to absorb the key beats.", "evidence": [], "counts": [{"label": "≥0.6s", "count": 5}], "applicability_reason": null},
-    "vocal_variety": {"score": 4, "rationale": "monotone_score 0.32 with emphasis landing on the right words through the body ('forty percent', 'three', 'cheapest'), but it flattens on the closing takeaway — the one line you most want the room to keep. Lifting 'surface the cost early' would carry the message out the door and make it a 5.", "evidence": [{"quote": "default to the cheapest option", "t": 210.0}, {"quote": "surface the cost early", "t": 268.0}], "counts": [], "applicability_reason": null},
+    "vocal_variety": {"score": 4, "rationale": "monotone_score 0.32 and volume_range_db 7.5 — good pitch and volume variety landing on the right words through the body ('forty percent', 'three', 'cheapest'), but both flatten on the closing takeaway — the one line you most want the room to keep. Lifting pitch and energy on 'surface the cost early' would carry the message out the door and make it a 5.", "evidence": [{"quote": "default to the cheapest option", "t": 210.0}, {"quote": "surface the cost early", "t": 268.0}], "counts": [], "applicability_reason": null},
     "language": {"score": 5, "rationale": "Concrete and precise — '40%', 'three things', named fixes — with essentially no fillers across nearly five minutes.", "evidence": [], "counts": [], "applicability_reason": null}
   },
   "priorities": [

@@ -6,6 +6,9 @@ inputs of known properties so a future regression breaks loudly.
 """
 
 import math
+import os
+import shutil
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -14,12 +17,14 @@ import soundfile as sf
 
 from app.acoustic import (
     _analyze_array,
+    _ensure_fast_decodable,
     _suppress_vocal_fry,
     analyze_audio,
     classify_boundary_tone,
     find_prominent_word,
 )
-from app.schemas import Word
+from app.metrics import _volume_range_from_segments
+from app.schemas import Segment, Word
 
 SR = 22050
 
@@ -195,6 +200,95 @@ def test_analyze_audio_round_trips_from_disk(tmp_path: Path):
     assert features.voiced_mean_hz == pytest.approx(220.0, abs=2.0)
     assert len(features.pitch_frame_times) == len(features.pitch_st_values)
     assert len(features.intensity_frame_times) == len(features.intensity_values_db)
+    # Volume timeline is aligned 1:1 with the pitch timeline.
+    assert len(features.volume_timeline) == len(features.pitch_times)
+
+
+def test_ensure_fast_decodable_passes_wav_through(tmp_path: Path):
+    """A WAV is libsndfile-readable, so it must NOT be transcoded — same path,
+    is_temp False. This is what keeps the fast path drift-free for WAV uploads."""
+    path = tmp_path / "tone.wav"
+    sf.write(str(path), _sine(220.0, duration=0.5), SR)
+
+    decode_path, is_temp = _ensure_fast_decodable(str(path))
+    assert decode_path == str(path)
+    assert is_temp is False
+
+
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg not installed")
+def test_analyze_audio_decodes_non_wav_via_ffmpeg(tmp_path: Path):
+    """mp4/m4a is NOT libsndfile-readable, so analyze_audio must transcode it
+    through ffmpeg and still measure the tone correctly."""
+    wav = tmp_path / "tone.wav"
+    sf.write(str(wav), _sine(220.0, duration=1.5), SR)
+    m4a = tmp_path / "tone.m4a"
+    subprocess.run(
+        ["ffmpeg", "-nostdin", "-v", "error", "-y", "-i", str(wav),
+         "-c:a", "aac", str(m4a)],
+        check=True,
+    )
+
+    # libsndfile cannot read it -> the transcode branch fires.
+    decode_path, is_temp = _ensure_fast_decodable(str(m4a))
+    assert is_temp is True
+    if is_temp:
+        os.unlink(decode_path)
+
+    features = analyze_audio(str(m4a))
+    assert features.voiced_mean_hz == pytest.approx(220.0, abs=3.0)
+    assert features.duration_sec == pytest.approx(1.5, abs=0.15)
+
+
+def _seg(intensity_mean_db: float, start: float = 0.0) -> Segment:
+    """Minimal Segment carrying a given per-phrase mean loudness, for the
+    section-level volume metric."""
+    return Segment(
+        start=start,
+        end=start + 1.0,
+        text="x",
+        word_indices=[0],
+        pitch_range_st=0.0,
+        intensity_mean_db=intensity_mean_db,
+        intensity_peak_db=intensity_mean_db + 1.0,
+        wpm_local=120.0,
+    )
+
+
+def test_volume_range_is_gain_invariant():
+    """Section-to-section loudness *variation* must not depend on recording
+    gain. A constant mic-gain offset shifts every phrase's mean dB equally and
+    cancels out of a spread, so adding a constant leaves volume_range_db
+    unchanged."""
+    means = (58.0, 61.0, 64.0, 67.0, 70.0)
+    base = [_seg(db) for db in means]
+    louder = [_seg(db + 6.0) for db in means]
+
+    r_base = _volume_range_from_segments(base)
+    r_louder = _volume_range_from_segments(louder)
+
+    assert r_base is not None and r_base > 3.0  # clear section-to-section spread
+    assert r_louder == pytest.approx(r_base, abs=0.01)
+
+
+def test_volume_range_near_zero_for_flat_amplitude():
+    # Every phrase sits at essentially the same loudness -> tiny section spread.
+    segs = [_seg(db) for db in (60.0, 60.1, 59.9, 60.0, 60.05)]
+    r = _volume_range_from_segments(segs)
+    assert r is not None and r < 1.0
+
+
+def test_volume_range_none_when_too_few_voiced_segments():
+    # Fewer than VOLUME_RANGE_MIN_SEGMENTS voiced segments -> not enough to judge.
+    assert _volume_range_from_segments([_seg(60.0), _seg(64.0)]) is None
+    assert _volume_range_from_segments([]) is None
+    # Segments with no measured loudness (0.0 dB) are ignored, not counted as
+    # silent phrases — only 2 real segments survive here, below the floor.
+    zeros = [_seg(0.0), _seg(0.0), _seg(0.0), _seg(60.0), _seg(64.0)]
+    assert _volume_range_from_segments(zeros) is None
+    # Three real segments clear the floor.
+    assert (
+        _volume_range_from_segments([_seg(58.0), _seg(62.0), _seg(66.0)]) is not None
+    )
 
 
 def test_suppress_vocal_fry_zeros_subharmonic_frames():

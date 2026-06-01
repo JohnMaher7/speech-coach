@@ -102,6 +102,8 @@ async def test_clean_paced_speech_scores_high_on_language_and_pacing():
 async def test_monotone_structured_speech_calls_out_pitch():
     result = await _run(MONOTONE_STRUCTURED)
 
+    # Flat in BOTH channels (monotone_score 0.82, volume_range_db 3.0 — under
+    # the flat-< 4 cutoff). The volume number must NOT rescue the flat pitch.
     vv = result.categories.vocal_variety.score
     assert isinstance(vv, int) and vv <= 2, (
         f"vocal_variety.score={vv}: {result.categories.vocal_variety.rationale}"
@@ -111,8 +113,11 @@ async def test_monotone_structured_speech_calls_out_pitch():
         f"structure.score={result.categories.structure.score}: {result.categories.structure.rationale}"
     )
     rationale = result.categories.vocal_variety.rationale.lower()
-    assert any(kw in rationale for kw in ("pitch", "monoton", "flat", "narrow")), (
-        f"vocal_variety rationale must reference pitch/monotone: {result.categories.vocal_variety.rationale}"
+    assert any(
+        kw in rationale
+        for kw in ("pitch", "monoton", "flat", "narrow", "volume", "energy")
+    ), (
+        f"vocal_variety rationale must reference the flat delivery: {result.categories.vocal_variety.rationale}"
     )
     _assert_rewrites_quote_the_transcript(result, MONOTONE_STRUCTURED.transcript.text)
     _assert_evidence_rule(result)

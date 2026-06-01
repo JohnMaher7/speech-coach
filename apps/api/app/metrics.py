@@ -31,6 +31,17 @@ MONOTONE_HIGH_ST = 3.5
 # would otherwise inflate the range by 12 semitones.
 SEGMENT_PITCH_RANGE_LOW_PCT = 5
 SEGMENT_PITCH_RANGE_HIGH_PCT = 95
+# Volume range (Metrics.volume_range_db) = section-to-section spread of
+# per-segment mean loudness. Averaging within a phrase cancels syllable-level
+# phonetic variation (vowels run 8-12 dB hotter than nasals/fricatives), so the
+# spread between phrase means reflects deliberate "louder here, softer there"
+# modulation rather than articulation. Percentiles (not max−min) keep one
+# shouted phrase from inflating it; the spread is gain-invariant (a constant mic
+# offset cancels). Needs a few voiced segments before section contrast means
+# anything.
+VOLUME_RANGE_LOW_PCT = 10
+VOLUME_RANGE_HIGH_PCT = 90
+VOLUME_RANGE_MIN_SEGMENTS = 3
 SENTENCE_TERMINALS = frozenset({".", "!", "?"})
 # Pause-split fallback only fires when neither utterances nor punctuation
 # yielded boundaries; this threshold catches "between-thought" silences.
@@ -43,6 +54,7 @@ LONG_PAUSE_2S_SEC = 2.0
 def compute_metrics(
     transcript: Transcript,
     acoustic: AcousticFeatures,
+    segments: Sequence[Segment] = (),
     lexical_fillers: Sequence[FillerHit] = (),
 ) -> Metrics:
     duration_min = max(transcript.duration_sec / 60.0, 1e-6)
@@ -62,6 +74,7 @@ def compute_metrics(
     )
     total_pause_sec = round(sum(p.duration_sec for p in acoustic.pauses), 1)
     monotone_score = _monotone_from_std_st(acoustic.pitch_std_st)
+    volume_range_db = _volume_range_from_segments(segments)
 
     return Metrics(
         wpm=round(wpm, 1),
@@ -72,7 +85,31 @@ def compute_metrics(
         pauses_over_2=pauses_over_2,
         total_pause_sec=total_pause_sec,
         monotone_score=round(monotone_score, 3),
+        volume_range_db=volume_range_db,
     )
+
+
+def _volume_range_from_segments(segments: Sequence[Segment]) -> float | None:
+    """P90−P10 spread of per-segment mean loudness, in dB.
+
+    Section-to-section contrast, not window-to-window: a phrase mean averages out
+    the syllable-level phonetic variation (vowels run hotter than consonants) that
+    bloated the old per-window spread, so what survives is deliberate "louder here,
+    softer there" modulation. Gain-invariant — a constant mic-gain/distance offset
+    shifts every segment equally and cancels out of a spread. Returns None when too
+    few voiced segments survive to judge dynamics; `build_segments` leaves
+    `intensity_mean_db` at 0.0 only when a segment had no intensity frames, so the
+    `> 0` filter drops those.
+    """
+
+    means = np.asarray(
+        [s.intensity_mean_db for s in segments if s.intensity_mean_db > 0],
+        dtype=np.float64,
+    )
+    if means.size < VOLUME_RANGE_MIN_SEGMENTS:
+        return None
+    hi, lo = np.percentile(means, [VOLUME_RANGE_HIGH_PCT, VOLUME_RANGE_LOW_PCT])
+    return round(float(hi - lo), 2)
 
 
 def _merge_fillers(
@@ -128,13 +165,19 @@ def build_acoustic(transcript: Transcript, features: AcousticFeatures) -> Acoust
         features.pitch_times,
         duration=features.duration_sec,
     )
+    volume = features.volume_timeline
+    if len(volume) != len(features.pitch_times):
+        # Fixtures may build AcousticFeatures without a volume timeline; keep the
+        # points aligned by padding to None rather than truncating via zip.
+        volume = [None] * len(features.pitch_times)
     timeline = [
-        TimelinePoint(t=t, pitch_hz=p, pitch_st=p_st, wpm_local=w)
-        for t, p, p_st, w in zip(
+        TimelinePoint(t=t, pitch_hz=p, pitch_st=p_st, wpm_local=w, volume_db=vol)
+        for t, p, p_st, w, vol in zip(
             features.pitch_times,
             features.pitch_values,
             features.pitch_st_timeline,
             wpm_locals,
+            volume,
         )
     ]
     pauses = _enrich_pauses(features.pauses, transcript.words)

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { TimelineChart } from "@/components/timeline-chart";
+import { VolumeChart } from "@/components/volume-chart";
 import type {
   Beat,
   CategoryKey,
@@ -488,6 +489,26 @@ function ScorecardSection({ report }: { report: Report }) {
               </span>{" "}
               with the 130–160 sweet spot highlighted · grey bands are pauses
               ≥ 0.6s, red bands are long pauses ≥ 2s (hover for duration).
+            </p>
+
+            <VolumeChart
+              timeline={acoustic.timeline}
+              pauses={acoustic.pauses}
+              duration_sec={duration_sec}
+            />
+
+            <p className="mt-[10px] px-1 text-[12px] leading-[1.5] text-muted-foreground">
+              <span
+                className="font-medium"
+                style={{ color: "#f59e0b" }}
+              >
+                Volume
+              </span>{" "}
+              as <em>± decibels from your recent delivery</em>, not absolute
+              loudness — so it doesn&apos;t depend on your mic. The line sits near
+              0 when you hold a steady level; peaks above it are where you pushed
+              louder for emphasis, dips below where you dropped softer. The line
+              breaks on silences.
             </p>
           </div>
         </div>

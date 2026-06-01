@@ -78,8 +78,13 @@ async def run_pipeline(
         logger.exception("lexical filler pass failed; continuing without it")
         lex_hits, lex_cost = [], 0.0
 
-    metrics = compute_metrics(transcript, features, lexical_fillers=lex_hits)
     acoustic = build_acoustic(transcript, features)
+    metrics = compute_metrics(
+        transcript,
+        features,
+        segments=acoustic.segments,
+        lexical_fillers=lex_hits,
+    )
 
     synthesis, synth_cost = await synthesize(
         transcript, acoustic, metrics, speech_type=speech_type

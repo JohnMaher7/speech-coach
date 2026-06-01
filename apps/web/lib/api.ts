@@ -55,6 +55,9 @@ export type TimelinePoint = {
   pitch_hz: number | null;
   pitch_st: number | null;
   wpm_local: number;
+  // Mean loudness (dB) in this window; null during silence/unvoiced. Optional
+  // for reports saved before volume tracking existed.
+  volume_db?: number | null;
 };
 
 export type Pause = {
@@ -91,6 +94,9 @@ export type Metrics = {
   pauses_over_2: number;
   total_pause_sec: number;
   monotone_score: number;
+  // Spread (P90−P10, dB) of windowed loudness — how much the speaker varies
+  // volume. null when there's too little voiced speech to judge.
+  volume_range_db?: number | null;
 };
 
 // Schema v2 (Stage 29) — replaces the four-category v1 Synthesis.

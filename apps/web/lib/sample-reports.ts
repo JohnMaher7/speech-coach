@@ -5,6 +5,7 @@ function timeline(
   pitchCurve: (t: number) => number | null,
   wpmCurve: (t: number) => number,
   pitchMeanHz: number,
+  volumeCurve?: (t: number) => number | null,
   stepSec = 1.5,
 ): TimelinePoint[] {
   const pts: TimelinePoint[] = [];
@@ -14,11 +15,13 @@ function timeline(
       hz === null || pitchMeanHz <= 0
         ? null
         : Number((12 * Math.log2(hz / pitchMeanHz)).toFixed(2));
+    const vol = volumeCurve ? volumeCurve(t) : null;
     pts.push({
       t: Number(t.toFixed(2)),
       pitch_hz: hz,
       pitch_st: st,
       wpm_local: Number(wpmCurve(t).toFixed(1)),
+      volume_db: vol === null ? null : Number(vol.toFixed(1)),
     });
   }
   return pts;
@@ -52,6 +55,7 @@ export const cleanSampleReport: Report = {
       (t) => 140 + 22 * Math.sin(t / 18) + (t > 60 && t < 90 ? 18 : 0),
       (t) => 142 + 8 * Math.sin(t / 14),
       142,
+      (t) => 63 + 5 * Math.sin(t / 16) + (t > 60 && t < 90 ? 4 : 0),
     ),
     pauses: [
       { start: 74.1, end: 75.6 },
@@ -75,6 +79,7 @@ export const cleanSampleReport: Report = {
     pauses_over_2: 0,
     total_pause_sec: 5.6,
     monotone_score: 0.18,
+    volume_range_db: 8.4,
   },
   synthesis: {
     headline:
@@ -266,6 +271,7 @@ export const messySampleReport: Report = {
       (t) => 122 + 6 * Math.sin(t / 8),
       (t) => 170 + 14 * Math.sin(t / 6) + (t > 110 && t < 140 ? -40 : 0),
       124,
+      (t) => 60 + 1.5 * Math.sin(t / 10),
     ),
     pauses: [{ start: 132.1, end: 133.0 }],
     pitch_mean_hz: 124,
@@ -300,6 +306,7 @@ export const messySampleReport: Report = {
     pauses_over_2: 0,
     total_pause_sec: 0.9,
     monotone_score: 0.62,
+    volume_range_db: 2.1,
   },
   synthesis: {
     headline:
