@@ -74,10 +74,29 @@ def _claim_has_slug(claim: str | None, slug: str) -> bool:
     return False
 
 
+def _has_comp_access(payload: dict) -> bool:
+    """Whether the user is allowlisted for free access via Clerk public metadata.
+
+    Set `{"compAccess": true}` on a user's public metadata in the Clerk
+    dashboard to comp them. For this to be visible here, the session token must
+    expose public metadata as a `metadata` claim (Clerk dashboard → Sessions →
+    customize session token: `{"metadata": "{{user.public_metadata}}"}`).
+    """
+
+    meta = payload.get("metadata") or {}
+    value = meta.get("compAccess")
+    return value is True or (
+        isinstance(value, str) and value.strip().lower() in ("true", "1", "yes")
+    )
+
+
 async def require_active_plan(state: AuthState) -> None:
-    """Reject (402) a verified user who isn't on the paid plan or its trial."""
+    """Reject (402) a verified user who isn't on the paid plan, its trial, or
+    an allowlisted comp account."""
 
     payload = state.payload or {}
+    if _has_comp_access(payload):
+        return
     if not _claim_has_slug(payload.get("pla"), settings.billing_plan_slug):
         raise HTTPException(
             status_code=402,

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import {
   AlertCircle,
   ArrowRight,
@@ -45,6 +45,7 @@ type Status = "idle" | "signing" | "uploading";
 export function UploadForm() {
   const router = useRouter();
   const { isSignedIn, has, getToken } = useAuth();
+  const { user } = useUser();
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -132,8 +133,12 @@ export function UploadForm() {
   }
 
   const busy = status !== "idle";
+  // Allowlisted comp accounts (Clerk public metadata) get free access.
+  const hasComp = Boolean(user?.publicMetadata?.compAccess);
   // `has` is undefined until Clerk loads; treat unknown as "not subscribed".
-  const isSubscribed = Boolean(isSignedIn && has?.({ plan: "pro" }));
+  const isSubscribed = Boolean(
+    isSignedIn && (hasComp || has?.({ plan: "pro" })),
+  );
   const buttonLabel = {
     idle: !isSignedIn
       ? "Sign in to analyze"
