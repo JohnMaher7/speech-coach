@@ -13,7 +13,6 @@
       "WebSearch(*)",
       "Skill(*)",
       "NotebookEdit(*)",
-      "mcp__*",
       "mcp__playwright__browser_navigate",
       "WebFetch(domain:clerk.com)"
     ],

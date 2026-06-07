@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.acoustic import AcousticFeatures, analyze_audio
-from app.auth import CurrentUser
+from app.auth import CurrentUser, RequireActivePlan
 from app.config import settings
 from app.db import get_session, init_db
 from app.errors import (
@@ -123,7 +123,7 @@ async def warmup(session: SessionDep, user: CurrentUser) -> HealthResponse:
 @app.post("/uploads/sign")
 @limiter.limit("30/minute")
 async def sign_upload(
-    request: Request, req: SignRequest, user: CurrentUser
+    request: Request, req: SignRequest, user: CurrentUser, _plan: RequireActivePlan
 ) -> SignResponse:
     url, key, expires_at = presign_put(req.content_type)
     return SignResponse(url=url, key=key, expires_at=expires_at)
@@ -132,7 +132,11 @@ async def sign_upload(
 @app.post("/analyze")
 @limiter.limit("5/hour;20/day")
 async def analyze(
-    request: Request, req: AnalyzeRequest, session: SessionDep, user: CurrentUser
+    request: Request,
+    req: AnalyzeRequest,
+    session: SessionDep,
+    user: CurrentUser,
+    _plan: RequireActivePlan,
 ) -> StreamingResponse:
     if not await asyncio.to_thread(audio_exists, req.key):
         raise HTTPException(

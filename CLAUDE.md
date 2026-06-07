@@ -21,13 +21,16 @@ Free web tool: upload a speech → evaluator-style report (fillers, pacing, voca
 Browser → R2 (presigned PUT) → `POST /analyze` (SSE): `asyncio.gather(transcribe, acoustic)` → derived metrics → Claude synthesis → persist → `done` event with `report_id`. Pydantic models in `apps/api/app/schemas.py` are the spine.
 
 ## Rules
-- Owner is a beginner Python dev / beginner web dev. Teach Python + AI engineering deeply; stay brief on frontend/devops/infra.
+- Owner is a beginner Python dev / beginner web dev. Teach Python + AI engineering deeply; stay brief on frontend/devops/infra. On a follow-up ("still confused", "what do you mean") drop an altitude — explain the specific line or token, don't restate the concept.
 - Type hints everywhere (3.10+: `list[X]`, `X | None`). Pydantic at every boundary (HTTP, DB, external APIs, LLM).
 - `async def` for I/O. `asyncio.gather` for independent awaits.
 - `uv add <pkg>` to install. `uv run <cmd>` to execute.
 - Always cache the system prompt + few-shots. Always use tool-use for structured outputs. Log `cache_read_input_tokens`.
+- Treat system-prompt length as an attention budget. When editing `synthesize.py` prompts, prefer condensing, and make each instruction or few-shot example earn its place — question whether it helps the model or just dilutes attention.
 - Reference real docs when introducing a library — don't paraphrase.
 - Don't add teaching comments in code. Teaching lives in chat + `notes/`.
+- When blocked or debugging, you may ask for more context — but ask ≤3 targeted questions, and only when the missing info would change the answer; otherwise proceed on stated assumptions.
+- When asked to evaluate or recommend, reason it through and give one honest, non-biased call. Recommending *no change* is always valid — don't bias toward action.
 
 
 ## Resuming work across sessions
