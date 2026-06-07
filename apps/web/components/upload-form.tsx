@@ -44,7 +44,7 @@ type Status = "idle" | "signing" | "uploading";
 
 export function UploadForm() {
   const router = useRouter();
-  const { isSignedIn, getToken } = useAuth();
+  const { isSignedIn, has, getToken } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -102,6 +102,12 @@ export function UploadForm() {
       router.push("/sign-in");
       return;
     }
+    // ...and an active plan or trial. Unsubscribed users go to pricing. The
+    // backend enforces this too (402), so this is just the friendly path.
+    if (!isSubscribed) {
+      router.push("/pricing");
+      return;
+    }
     if (!file) {
       openPicker();
       return;
@@ -126,8 +132,16 @@ export function UploadForm() {
   }
 
   const busy = status !== "idle";
+  // `has` is undefined until Clerk loads; treat unknown as "not subscribed".
+  const isSubscribed = Boolean(isSignedIn && has?.({ plan: "pro" }));
   const buttonLabel = {
-    idle: !isSignedIn ? "Sign in to analyze" : file ? "Analyze" : "Choose file",
+    idle: !isSignedIn
+      ? "Sign in to analyze"
+      : !isSubscribed
+        ? "Start free trial"
+        : file
+          ? "Analyze"
+          : "Choose file",
     signing: "Preparing…",
     uploading: "Uploading…",
   }[status];

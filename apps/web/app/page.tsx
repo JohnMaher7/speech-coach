@@ -91,8 +91,12 @@ const FAQ_ITEMS: { q: string; a: string; open?: boolean }[] = [
     a: "A single adaptive-thinking Claude Sonnet call handles synthesis; Deepgram does transcription; Parselmouth and librosa handle the acoustic pass. Two-pass prompting keeps cost under a tenth of a cent per minute.",
   },
   {
+    q: "How much does it cost?",
+    a: "Every plan starts with a 7-day free trial. We ask for a card up front, but you're only charged after the trial and you can cancel any time before then. After that it's a simple monthly or yearly subscription for unlimited analyses — see the pricing page for current rates.",
+  },
+  {
     q: "Do I need an account?",
-    a: "No. Upload, get a report, share the link. If you want history across devices, an optional account lets you keep them in one place — but it's never required to analyze a recording.",
+    a: "Yes — you sign in so your reports stay together across devices and your subscription follows you. Start the free trial, upload a recording, and your report is saved to your dashboard.",
   },
 ];
 
@@ -119,7 +123,7 @@ function Hero() {
               className="size-[6px] rounded-full bg-primary"
               style={{ animation: "speakgrade-pulse 1.8s infinite" }}
             />
-            Free · no account · ~3 minute turnaround
+            7-day free trial · cancel anytime · ~3 minute turnaround
           </span>
 
           <h1 className="my-[22px] max-w-[14ch] text-balance font-serif text-[clamp(44px,5.2vw,64px)] leading-none font-medium tracking-[-0.022em]">
@@ -526,7 +530,7 @@ function HowItWorks() {
             </h2>
           </div>
           <p className="max-w-[42ch] text-right text-sm leading-[1.55] text-muted-foreground sm:text-right">
-            No account, no install, no waiting room. SpeakGrade runs a
+            No install, no waiting room, no setup. SpeakGrade runs a
             transcription, an acoustic pass, and an evaluator-style synthesis in
             parallel.
           </p>

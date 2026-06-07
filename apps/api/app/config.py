@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     clerk_secret_key: str
     clerk_authorized_parties: str = "http://localhost:3000"
 
+    # Slug of the paid plan (configured in the Clerk dashboard). The backend
+    # gates money-spending routes on the user's session token carrying this
+    # plan in its `pla` claim — which it does during the free trial too.
+    billing_plan_slug: str = "pro"
+
     # Optional — when unset, Sentry init is a no-op (local dev / preview).
     sentry_dsn: str | None = None
 
