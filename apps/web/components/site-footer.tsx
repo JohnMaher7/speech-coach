@@ -9,7 +9,13 @@ export function SiteFooter() {
           public-speaking organisation.
         </p>
         <p>
-          An AI-engineering portfolio project ·{" "}
+          <Link
+            href="/tips"
+            className="underline underline-offset-2 transition-colors hover:text-foreground"
+          >
+            Speaking tips
+          </Link>{" "}
+          · An AI-engineering portfolio project ·{" "}
           <Link
             href="https://github.com/JohnMaher7/speech-coach"
             className="underline underline-offset-2 transition-colors hover:text-foreground"
