@@ -34,7 +34,15 @@ app = modal.App("speech-coach-api", image=image)
 # `min_containers=0` scales the app to zero when idle, so it bills nothing
 # between visits. The tradeoff is a 1–3 s cold start on the first request
 # after the app has been idle — acceptable for a low-traffic portfolio app.
-@app.function(secrets=[modal.Secret.from_dotenv()], min_containers=0)
+# Secrets are applied in order: later entries override earlier ones, so the
+# named prod secret always beats whatever the local .env holds at deploy time.
+@app.function(
+    secrets=[
+        modal.Secret.from_dotenv(),
+        modal.Secret.from_name("speech-coach-clerk-prod"),
+    ],
+    min_containers=0,
+)
 @modal.asgi_app()
 def web():
     from app.main import app as fastapi_app
