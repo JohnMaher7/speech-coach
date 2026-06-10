@@ -41,4 +41,4 @@ Browser → R2 (presigned PUT) → `POST /analyze` (SSE): `asyncio.gather(transc
 
 
 ## Out of scope (V1)
-Browser recording, multi-speaker, accounts, queues, comparison reports, mobile app, real-time analysis.
+Multi-speaker, accounts, queues, comparison reports, mobile app, real-time analysis.

@@ -125,6 +125,8 @@ async def warmup(session: SessionDep, user: CurrentUser) -> HealthResponse:
 async def sign_upload(
     request: Request, req: SignRequest, user: CurrentUser, _plan: RequireActivePlan
 ) -> SignResponse:
+    if not req.content_type.startswith("audio/"):
+        raise HTTPException(status_code=400, detail="Only audio uploads are supported.")
     url, key, expires_at = presign_put(req.content_type)
     return SignResponse(url=url, key=key, expires_at=expires_at)
 

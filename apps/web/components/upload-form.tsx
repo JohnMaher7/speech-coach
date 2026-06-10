@@ -8,11 +8,14 @@ import {
   ArrowRight,
   FileAudio,
   Loader2,
+  Mic,
   UploadCloud,
   X,
 } from "lucide-react";
 
 import { signUpload, uploadToR2, warmUpApi, type SpeechType } from "@/lib/api";
+import { RecordPanel } from "@/components/record-panel";
+import { formatSize } from "@/lib/utils";
 
 const ACCEPTED_MIME = "audio/mpeg,audio/wav,audio/mp4,audio/x-m4a,audio/mp3";
 const MAX_BYTES = 100 * 1024 * 1024;
@@ -35,12 +38,9 @@ const SPEECH_TYPES: { value: SpeechType; label: string; hint: string }[] = [
   },
 ];
 
-function formatSize(bytes: number): string {
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 type Status = "idle" | "signing" | "uploading";
+
+type Mode = "upload" | "record";
 
 export function UploadForm() {
   const router = useRouter();
@@ -51,6 +51,8 @@ export function UploadForm() {
   const [dragOver, setDragOver] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [speechType, setSpeechType] = useState<SpeechType>("prepared");
+  const [mode, setMode] = useState<Mode>("upload");
+  const [recorderActive, setRecorderActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const warmupStartedRef = useRef(false);
 
@@ -96,23 +98,24 @@ export function UploadForm() {
     inputRef.current?.click();
   }
 
-  async function handleAnalyze() {
-    if (busy) return;
+  // Returns true if it redirected (signed-out → /sign-in, no plan → /pricing).
+  function redirectIfGated(): boolean {
     // Analysis requires an account. Signed-out visitors are sent to sign in.
     if (!isSignedIn) {
       router.push("/sign-in");
-      return;
+      return true;
     }
     // ...and an active plan or trial. Unsubscribed users go to pricing. The
     // backend enforces this too (402), so this is just the friendly path.
     if (!isSubscribed) {
       router.push("/pricing");
-      return;
+      return true;
     }
-    if (!file) {
-      openPicker();
-      return;
-    }
+    return false;
+  }
+
+  async function startAnalysis(f: File) {
+    if (busy || redirectIfGated()) return;
     setError(null);
     try {
       setStatus("signing");
@@ -122,14 +125,24 @@ export function UploadForm() {
         router.push("/sign-in");
         return;
       }
-      const { url, key } = await signUpload(file.type, token);
+      const { url, key } = await signUpload(f.type, token);
       setStatus("uploading");
-      await uploadToR2(url, file);
+      await uploadToR2(url, f);
       router.push(`/analyzing/${key}?type=${speechType}`);
     } catch (err) {
       setStatus("idle");
       setError(err instanceof Error ? err.message : "Upload failed.");
     }
+  }
+
+  async function handleAnalyze() {
+    if (busy) return;
+    if (redirectIfGated()) return;
+    if (!file) {
+      openPicker();
+      return;
+    }
+    await startAnalysis(file);
   }
 
   const busy = status !== "idle";
@@ -150,12 +163,68 @@ export function UploadForm() {
     signing: "Preparing…",
     uploading: "Uploading…",
   }[status];
+  const recordAnalyzeLabel = {
+    idle: !isSignedIn
+      ? "Sign in to analyze"
+      : !isSubscribed
+        ? "Start free trial"
+        : "Analyze",
+    signing: "Preparing…",
+    uploading: "Uploading…",
+  }[status];
+
+  const MODES: { value: Mode; label: string; icon: typeof UploadCloud }[] = [
+    { value: "upload", label: "Upload", icon: UploadCloud },
+    { value: "record", label: "Record", icon: Mic },
+  ];
 
   return (
     <div
       id="upload"
       className="rounded-[18px] border border-border bg-card p-[18px] shadow-[0_1px_0_rgba(0,0,0,0.02),0_12px_28px_-20px_rgba(20,20,40,0.18)] transition-[border-color,box-shadow] duration-150 hover:border-[color-mix(in_oklch,var(--primary)_35%,var(--border))] hover:shadow-[0_1px_0_rgba(0,0,0,0.02),0_18px_36px_-22px_color-mix(in_oklch,var(--primary)_30%,transparent)]"
     >
+      <div role="tablist" aria-label="Audio source" className="mb-[14px] flex gap-[10px]">
+        {MODES.map((m) => {
+          const selected = mode === m.value;
+          const locked = busy || recorderActive;
+          const Icon = m.icon;
+          return (
+            <button
+              key={m.value}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              disabled={locked && !selected}
+              title={recorderActive && !selected ? "Stop recording first" : undefined}
+              onClick={() => {
+                if (mode === m.value) return;
+                setError(null);
+                setMode(m.value);
+              }}
+              className={`inline-flex items-center gap-[6px] rounded-full border px-[14px] py-[5px] text-[12.5px] font-medium transition-colors ${
+                selected
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-card text-muted-foreground hover:text-foreground"
+              } ${locked && !selected ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+            >
+              <Icon className="size-[13px]" strokeWidth={2.2} />
+              {m.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {mode === "record" && (
+        <RecordPanel
+          busy={busy}
+          analyzeLabel={recordAnalyzeLabel}
+          onAnalyze={(f) => void startAnalysis(f)}
+          onError={setError}
+          onActiveChange={setRecorderActive}
+        />
+      )}
+
+      {mode === "upload" && (
       <div
         role="button"
         tabIndex={0}
@@ -251,6 +320,7 @@ export function UploadForm() {
           disabled={busy}
         />
       </div>
+      )}
 
       <fieldset
         className="mt-[14px] flex flex-wrap items-center gap-[10px] px-[6px]"
