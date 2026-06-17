@@ -5,7 +5,7 @@ const SAMPLES = [
   {
     href: "/report/sample/clean",
     title: "Clean speech",
-    subtitle: "Prepared · 8:24 · overall 4.7",
+    subtitle: "Prepared · 4:35 · overall 4.6",
     body: "Every category lands 4 or 5. Walk-through reads as praise; no delivery-habit deep-dives; no rewrites. Use this to sanity-check the “quiet” branches of the layout.",
   },
   {

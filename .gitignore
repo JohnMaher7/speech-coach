@@ -43,3 +43,6 @@ stages/
 
 # Local audio dropped in for threshold calibration (scripts/calibrate_volume.py)
 calibration_samples/
+
+# Personal speech drafts
+toastmasters_speech*.html

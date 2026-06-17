@@ -444,7 +444,7 @@ function ScorecardSection({ report }: { report: Report }) {
             <div className="mb-4 flex flex-wrap gap-[22px] text-[12.5px] text-muted-foreground">
               <span className="inline-flex items-center gap-2">
                 <span className="size-3 rounded-[3px] bg-primary" />
-                <b className="font-medium text-foreground">Pitch</b> · semitones from your average
+                <b className="font-medium text-foreground">Vocal variety</b> · pitch above/below your baseline
               </span>
               <span className="inline-flex items-center gap-2">
                 <span
@@ -479,8 +479,9 @@ function ScorecardSection({ report }: { report: Report }) {
             />
 
             <p className="mt-[10px] px-1 text-[12px] leading-[1.5] text-muted-foreground">
-              <span className="font-medium text-primary">Pitch</span> in semitones
-              from your average voice ·{" "}
+              <span className="font-medium text-primary">Vocal variety</span> — flat
+              at your baseline, spiking when your pitch moves notably higher or
+              lower (hover for the actual pitch) ·{" "}
               <span
                 className="font-medium"
                 style={{ color: "var(--score-good)" }}
@@ -744,8 +745,7 @@ function StatDashboard({ report }: { report: Report }) {
         <div className="grid grid-cols-2 gap-[14px] lg:grid-cols-4">
           <Stat
             label="Duration"
-            value={(duration_sec / 60).toFixed(1)}
-            unit="min"
+            value={formatDuration(duration_sec)}
             context={`${wordCount.toLocaleString()} words`}
           />
           <Stat

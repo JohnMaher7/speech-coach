@@ -17,7 +17,7 @@ _SYSTEM_PROMPT_PREPARED = """You are a speech evaluator. You read an annotated t
 
 # What the inputs look like
 
-You receive an **annotated transcript** rather than the raw transcript. Inline markers tell you what the speaker did with their voice:
+You receive an **annotated transcript** rather than the raw transcript. It is machine-transcribed from the audio, so individual words can be misheard — treat a lone grammar or spelling oddity (a homophone like 'being'/'been', a dropped or swapped function word) as a likely transcription error, not a speaker mistake. Inline markers tell you what the speaker did with their voice:
 
 | Marker | Meaning |
 |---|---|
@@ -88,7 +88,7 @@ Two channels: **pitch** (`monotone_score` 0..1, 1 = flat; per-segment `pitch_ran
 - **`"n/a"` requires a reason.** Set `applicability_reason` to one sentence; leave `evidence` empty.
 - **Anchor every claim in transcript markers, segment numbers, or metrics.** 
 - **Priorities are ranked 2-3 actions** ordered by impact across all eight categories. Each priority must quote a real moment (`example_quote`, `example_t`) and end with a `drill` that is specific to what you observed in THIS speech — not generic advice like "practice more".
-- **Rewrites: 0-4.** Quote a weak phrasing verbatim (`original`), suggest a sharper alternative in the speaker's voice (`suggested`), and explain in one sentence what the rewrite fixes (`why`). Skip when nothing is worth rewriting.
+- **Rewrites: 0-4.** Quote a weak phrasing verbatim (`original`), suggest a sharper alternative in the speaker's voice (`suggested`), and explain in one sentence what the rewrite fixes (`why`). Rewrite phrasing the speaker *chose* — wordiness, hedges, weak verbs, clichés — never a likely transcription slip: if the fix turns on one homophone or function word ('being' vs 'been'), the audio probably said it right, so skip it. Skip when nothing is worth rewriting.
 - **`walkthrough` is chronological.** `opening` covers roughly the first 15%, `close` the last 15%, `body` is 2-4 beats in between. Each `Beat` has an `observation` (what happened) and at least one of `praise`/`critique` populated when the moment warrants it; `quote_t` points at the key word.
 - **`headline` is one short sentence** that captures the speech's character — a verdict line, not a stat dump.
 
@@ -262,7 +262,7 @@ def _format_segment_table(rows: list[dict]) -> str:
 
 _INPUT_FORMAT_SECTION = """# What the inputs look like
 
-You receive an **annotated transcript** rather than the raw transcript. Inline markers tell you what the speaker did with their voice:
+You receive an **annotated transcript** rather than the raw transcript. It is machine-transcribed from the audio, so individual words can be misheard — treat a lone grammar or spelling oddity (a homophone like 'being'/'been', a dropped or swapped function word) as a likely transcription error, not a speaker mistake. Inline markers tell you what the speaker did with their voice:
 
 | Marker | Meaning |
 |---|---|
@@ -281,7 +281,7 @@ _RULES_SECTION = """# Rules
 - **`"n/a"` requires a reason.** Set `applicability_reason` to one sentence; leave `evidence` empty.
 - **Anchor every claim in transcript markers, segment numbers, or metrics.**
 - **Priorities are ranked 2-3 actions** ordered by impact across the categories. Each priority must quote a real moment (`example_quote`, `example_t`) and end with a `drill` that is specific to what you observed in THIS speech — not generic advice like "practice more".
-- **Rewrites: 0-4.** Quote a weak phrasing verbatim (`original`), suggest a sharper alternative in the speaker's voice (`suggested`), and explain in one sentence what the rewrite fixes (`why`). Skip when nothing is worth rewriting.
+- **Rewrites: 0-4.** Quote a weak phrasing verbatim (`original`), suggest a sharper alternative in the speaker's voice (`suggested`), and explain in one sentence what the rewrite fixes (`why`). Rewrite phrasing the speaker *chose* — wordiness, hedges, weak verbs, clichés — never a likely transcription slip: if the fix turns on one homophone or function word ('being' vs 'been'), the audio probably said it right, so skip it. Skip when nothing is worth rewriting.
 - **`walkthrough` is chronological.** `opening` covers roughly the first 15%, `close` the last 15%, `body` is 2-4 beats in between. Each `Beat` has an `observation` (what happened) and at least one of `praise`/`critique` populated when the moment warrants it; `quote_t` points at the key word.
 - **`headline` is one short sentence** that captures the speech's character — a verdict line, not a stat dump."""
 

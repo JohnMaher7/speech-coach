@@ -13,6 +13,7 @@ import {
   YAxis,
 } from "recharts";
 import type { Pause, TimelinePoint } from "@/lib/api";
+import { pitchVarietySeries } from "@/lib/pitch-variety";
 
 const PITCH_COLOR = "#6366f1";
 const WPM_COLOR = "#10b981";
@@ -56,6 +57,7 @@ type TooltipPayloadEntry = {
   value: number | null;
   color: string;
   name: string;
+  payload?: { pitch_st?: number | null };
 };
 
 function ChartTooltip({
@@ -90,11 +92,18 @@ function ChartTooltip({
         </div>
       )}
       {payload?.map((p) => {
-        if (p.value === null || p.value === undefined) return null;
-        const isPitch = p.dataKey === "pitch_st";
+        const isPitch = p.dataKey === "pitch_var";
+        // The plotted pitch line is the variety indicator; surface the real
+        // pitch (semitones vs. the speaker's average) in the tooltip instead.
+        const realPitch = isPitch ? p.payload?.pitch_st : null;
+        if (isPitch) {
+          if (realPitch === null || realPitch === undefined) return null;
+        } else if (p.value === null || p.value === undefined) {
+          return null;
+        }
         const display = isPitch
-          ? formatSemitones(p.value)
-          : Math.round(p.value).toString();
+          ? formatSemitones(realPitch as number)
+          : Math.round(p.value as number).toString();
         return (
           <div key={p.dataKey} className="flex items-center gap-2">
             <span
@@ -123,11 +132,14 @@ export function TimelineChart({
     (p) => p.end - p.start >= PAUSE_MIN_SEC,
   );
 
+  const variety = pitchVarietySeries(timeline);
+  const data = timeline.map((point, i) => ({ ...point, pitch_var: variety[i] }));
+
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
-          data={timeline}
+          data={data}
           margin={{ top: 20, right: 24, bottom: 8, left: 16 }}
         >
           <defs>
@@ -163,7 +175,7 @@ export function TimelineChart({
             domain={[PITCH_AXIS_MIN, PITCH_AXIS_MAX]}
             allowDataOverflow
             label={{
-              value: "Pitch (st)",
+              value: "Vocal variety (st)",
               angle: -90,
               position: "insideLeft",
               offset: 14,
@@ -250,9 +262,10 @@ export function TimelineChart({
           />
           <Area
             yAxisId="pitch"
-            type="monotone"
-            dataKey="pitch_st"
+            type="linear"
+            dataKey="pitch_var"
             name="Pitch"
+            baseValue={0}
             stroke={PITCH_COLOR}
             strokeWidth={2}
             fill="url(#pitchFill)"
