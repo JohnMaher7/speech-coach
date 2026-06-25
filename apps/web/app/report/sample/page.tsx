@@ -20,7 +20,7 @@ export default function SampleIndexPage() {
   return (
     <main className="flex-1">
       <section className="py-12 pb-6">
-        <div className="mx-auto w-full max-w-[920px] px-8">
+        <div className="mx-auto w-full max-w-[920px] px-5 sm:px-8">
           <div className="mb-[18px] flex items-center gap-[10px] font-mono text-[11px] tracking-[0.08em] text-muted-foreground uppercase">
             <Link href="/" className="transition-colors hover:text-foreground">
               SpeakGrade
@@ -42,7 +42,7 @@ export default function SampleIndexPage() {
       </section>
 
       <section className="py-6 pb-20">
-        <div className="mx-auto grid w-full max-w-[920px] gap-3 px-8 sm:grid-cols-2">
+        <div className="mx-auto grid w-full max-w-[920px] gap-3 px-5 sm:grid-cols-2 sm:px-8">
           {SAMPLES.map((s) => (
             <Link
               key={s.href}

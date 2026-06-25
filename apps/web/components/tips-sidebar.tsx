@@ -17,7 +17,7 @@ export function TipsSidebar() {
         Speaking tips
       </Link>
 
-      <ul className="-mx-8 flex gap-2 overflow-x-auto px-8 pb-1 lg:mx-0 lg:mt-4 lg:flex-col lg:gap-[2px] lg:overflow-visible lg:px-0 lg:pb-0">
+      <ul className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 sm:-mx-8 sm:px-8 lg:mx-0 lg:mt-4 lg:flex-col lg:gap-[2px] lg:overflow-visible lg:px-0 lg:pb-0">
         {TIPS_SECTIONS.map((section, i) => {
           const href = `/tips/${section.slug}`;
           const active = pathname === href;

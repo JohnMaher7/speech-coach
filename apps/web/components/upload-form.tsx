@@ -247,7 +247,7 @@ export function UploadForm() {
           setDragOver(false);
           if (!busy) pickFile(e.dataTransfer.files[0] ?? null);
         }}
-        className={`flex items-center gap-[18px] rounded-[14px] border-[1.5px] border-dashed px-[22px] py-[26px] transition-colors ${
+        className={`flex flex-col items-start gap-3 rounded-[14px] border-[1.5px] border-dashed px-[22px] py-[26px] transition-colors sm:flex-row sm:items-center sm:gap-[18px] ${
           dragOver
             ? "border-primary bg-accent/60"
             : "border-[oklch(0.85_0.01_264)] bg-[linear-gradient(180deg,oklch(0.995_0.002_264),oklch(0.98_0.003_264))]"
@@ -301,7 +301,7 @@ export function UploadForm() {
             handleAnalyze();
           }}
           disabled={busy}
-          className="inline-flex h-11 shrink-0 items-center gap-2 rounded-[11px] bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-[oklch(0.45_0.22_277)] disabled:cursor-not-allowed disabled:opacity-70"
+          className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-[11px] bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-[oklch(0.45_0.22_277)] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto sm:justify-start"
         >
           {busy ? (
             <Loader2 className="size-[14px] animate-spin" strokeWidth={2.4} />

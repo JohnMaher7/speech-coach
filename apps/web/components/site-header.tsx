@@ -4,7 +4,9 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Show, UserButton } from "@clerk/nextjs";
 
-const NAV_LINKS: { href: string; label: string }[] = [
+import { MobileNav } from "@/components/mobile-nav";
+
+export const NAV_LINKS: { href: string; label: string }[] = [
   { href: "/#how", label: "How it works" },
   { href: "/#measure", label: "What we measure" },
   { href: "/report/sample", label: "Sample report" },
@@ -16,7 +18,7 @@ const NAV_LINKS: { href: string; label: string }[] = [
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md backdrop-saturate-150">
-      <div className="mx-auto flex h-16 w-full max-w-[1240px] items-center justify-between px-8">
+      <div className="mx-auto flex h-16 w-full max-w-[1240px] items-center justify-between px-5 sm:px-8">
         <Link
           href="/"
           className="inline-flex items-center gap-[10px] font-serif text-[19px] font-medium tracking-[-0.005em]"
@@ -40,12 +42,14 @@ export function SiteHeader() {
           </span>
           SpeakGrade
         </Link>
-        <nav className="flex items-center gap-7 text-sm text-muted-foreground">
+
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-7 text-sm text-muted-foreground sm:flex">
           {NAV_LINKS.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className="hidden transition-colors hover:text-foreground sm:inline"
+              className="transition-colors hover:text-foreground"
             >
               {label}
             </Link>
@@ -53,7 +57,7 @@ export function SiteHeader() {
           <Show when="signed-in">
             <Link
               href="/dashboard"
-              className="hidden transition-colors hover:text-foreground sm:inline"
+              className="transition-colors hover:text-foreground"
             >
               Dashboard
             </Link>
@@ -77,6 +81,14 @@ export function SiteHeader() {
             <UserButton />
           </Show>
         </nav>
+
+        {/* Mobile nav */}
+        <div className="flex items-center gap-2 sm:hidden">
+          <Show when="signed-in">
+            <UserButton />
+          </Show>
+          <MobileNav />
+        </div>
       </div>
     </header>
   );

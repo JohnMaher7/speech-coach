@@ -136,7 +136,7 @@ export function TimelineChart({
   const data = timeline.map((point, i) => ({ ...point, pitch_var: variety[i] }));
 
   return (
-    <div className="h-72 w-full">
+    <div className="h-56 w-full sm:h-72">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
           data={data}
@@ -166,7 +166,7 @@ export function TimelineChart({
           <YAxis
             yAxisId="pitch"
             orientation="left"
-            width={72}
+            width={52}
             tick={{ fontSize: 11 }}
             tickFormatter={formatPitchTick}
             tickLine={false}
@@ -189,7 +189,7 @@ export function TimelineChart({
           <YAxis
             yAxisId="wpm"
             orientation="right"
-            width={48}
+            width={40}
             tick={{ fontSize: 11 }}
             tickLine={false}
             axisLine={false}

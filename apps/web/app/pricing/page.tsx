@@ -19,7 +19,7 @@ export default function PricingPage() {
   return (
     <main className="flex-1">
       <section className="py-[72px]">
-        <div className="mx-auto w-full max-w-[1240px] px-8">
+        <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
           {/* Header */}
           <div className="mx-auto max-w-[640px] text-center">
             <span className="inline-flex h-7 items-center gap-[9px] rounded-full border border-[color-mix(in_oklch,var(--primary)_18%,transparent)] bg-accent px-[13px] text-xs font-medium text-primary">

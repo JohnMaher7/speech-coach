@@ -7,7 +7,7 @@ export default function TipsSectionLayout({
 }>) {
   return (
     <main className="flex-1">
-      <div className="mx-auto w-full max-w-[1240px] px-8 py-10 lg:py-16">
+      <div className="mx-auto w-full max-w-[1240px] px-5 py-10 sm:px-8 lg:py-16">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[232px_minmax(0,720px)] lg:gap-16">
           <aside className="lg:sticky lg:top-[88px] lg:self-start">
             <TipsSidebar />

@@ -99,7 +99,7 @@ export function VolumeChart({
   if (!hasVolume) return null;
 
   return (
-    <div className="h-44 w-full">
+    <div className="h-36 w-full sm:h-44">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
           data={data}
@@ -127,7 +127,7 @@ export function VolumeChart({
             className="text-muted-foreground"
           />
           <YAxis
-            width={72}
+            width={52}
             tick={{ fontSize: 11 }}
             tickLine={false}
             axisLine={false}

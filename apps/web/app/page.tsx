@@ -115,7 +115,7 @@ export default function Home() {
 function Hero() {
   return (
     <section className="py-[72px] pb-16">
-      <div className="mx-auto grid w-full max-w-[1240px] grid-cols-1 items-stretch gap-14 px-8 lg:grid-cols-[1.05fr_1fr]">
+      <div className="mx-auto grid w-full max-w-[1240px] grid-cols-1 items-stretch gap-14 px-5 sm:px-8 lg:grid-cols-[1.05fr_1fr]">
         {/* LEFT */}
         <div>
           <span className="inline-flex h-7 items-center gap-[9px] rounded-full border border-[color-mix(in_oklch,var(--primary)_18%,transparent)] bg-accent px-[13px] text-xs font-medium text-primary">
@@ -435,7 +435,7 @@ function ListeningBand() {
             "radial-gradient(ellipse at 18% 35%, oklch(0.4 0.18 277 / 0.22), transparent 55%),radial-gradient(ellipse at 82% 65%, oklch(0.45 0.16 320 / 0.16), transparent 60%)",
         }}
       />
-      <div className="relative mx-auto w-full max-w-[1240px] px-8">
+      <div className="relative mx-auto w-full max-w-[1240px] px-5 sm:px-8">
         <div className="mb-9 grid grid-cols-1 items-end gap-14 lg:grid-cols-[1.1fr_1fr]">
           <div>
             <span className="inline-flex items-center gap-[10px] font-mono text-[11px] tracking-[0.12em] text-[oklch(0.7_0.08_277)] uppercase">
@@ -517,7 +517,7 @@ function RubricTile({ tile }: { tile: (typeof RUBRIC_TILES)[number] }) {
 function HowItWorks() {
   return (
     <section id="how" className="bg-background py-[88px] pb-16">
-      <div className="mx-auto w-full max-w-[1240px] px-8">
+      <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
         <div className="mb-10 flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
           <div>
             <span className="inline-flex items-center gap-3 font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">
@@ -594,7 +594,7 @@ function HowItWorks() {
 function BeyondTheScore() {
   return (
     <section id="beyond" className="bg-background py-[72px] pb-24">
-      <div className="mx-auto w-full max-w-[1240px] px-8">
+      <div className="mx-auto w-full max-w-[1240px] px-5 sm:px-8">
         <div className="mb-10 flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
           <div>
             <span className="inline-flex items-center gap-3 font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">
@@ -967,7 +967,7 @@ function RewriteCard() {
 function Faq() {
   return (
     <section id="faq" className="bg-background py-14 pb-24">
-      <div className="mx-auto grid w-full max-w-[1240px] grid-cols-1 items-start gap-14 px-8 lg:grid-cols-[1fr_1.4fr]">
+      <div className="mx-auto grid w-full max-w-[1240px] grid-cols-1 items-start gap-14 px-5 sm:px-8 lg:grid-cols-[1fr_1.4fr]">
         <div>
           <span className="inline-flex items-center gap-3 font-mono text-[11px] tracking-[0.1em] text-muted-foreground uppercase">
             <span className="h-px w-7 bg-current opacity-50" />

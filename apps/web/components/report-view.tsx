@@ -154,7 +154,7 @@ function HeadlineSection({
 
   return (
     <section className="py-12 pb-6">
-      <div className="mx-auto w-full max-w-[920px] px-8">
+      <div className="mx-auto w-full max-w-[920px] px-5 sm:px-8">
         <div className="mb-[18px] flex items-center gap-[10px] font-mono text-[11px] tracking-[0.08em] text-muted-foreground uppercase">
           <Link href="/" className="transition-colors hover:text-foreground">
             SpeakGrade
@@ -246,7 +246,7 @@ function WalkthroughSection({ walkthrough }: { walkthrough: Walkthrough }) {
 
   return (
     <section className="py-14 pb-0">
-      <div className="mx-auto w-full max-w-[920px] px-8">
+      <div className="mx-auto w-full max-w-[920px] px-5 sm:px-8">
         <SectionEyebrow>Walk-through · how it unfolded</SectionEyebrow>
         <SectionTitle>
           Listen back to{" "}
@@ -265,7 +265,7 @@ function WalkthroughSection({ walkthrough }: { walkthrough: Walkthrough }) {
 
 function BeatCard({ label, beat }: { label: string; beat: Beat }) {
   return (
-    <li className="grid grid-cols-[110px_1fr] items-start gap-4 rounded-[18px] border border-border bg-card px-5 py-[18px]">
+    <li className="grid grid-cols-1 items-start gap-2 rounded-[18px] border border-border bg-card px-5 py-[18px] sm:grid-cols-[110px_1fr] sm:gap-4">
       <div className="flex flex-col gap-[6px] font-mono text-[11px] tracking-[0.08em] text-muted-foreground uppercase">
         <span className="font-semibold text-foreground">{label}</span>
         <span>
@@ -318,7 +318,7 @@ function BeatCard({ label, beat }: { label: string; beat: Beat }) {
 function PrioritiesSection({ priorities }: { priorities: Priority[] }) {
   return (
     <section className="py-14 pb-0">
-      <div className="mx-auto w-full max-w-[920px] px-8">
+      <div className="mx-auto w-full max-w-[920px] px-5 sm:px-8">
         <SectionEyebrow>
           Top {priorities.length}{" "}
           {priorities.length === 1 ? "priority" : "priorities"} · ranked
@@ -367,7 +367,7 @@ function PrioritiesSection({ priorities }: { priorities: Priority[] }) {
 function RewritesSection({ rewrites }: { rewrites: Rewrite[] }) {
   return (
     <section className="py-14 pb-0">
-      <div className="mx-auto w-full max-w-[920px] px-8">
+      <div className="mx-auto w-full max-w-[920px] px-5 sm:px-8">
         <div className="mb-[22px] flex items-baseline justify-between gap-4">
           <div className="inline-flex items-center gap-3 font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase">
             <span className="h-px w-[22px] bg-current opacity-50" />
@@ -419,7 +419,7 @@ function ScorecardSection({ report }: { report: Report }) {
 
   return (
     <section className="py-14 pb-0">
-      <div className="mx-auto w-full max-w-[920px] px-8">
+      <div className="mx-auto w-full max-w-[920px] px-5 sm:px-8">
         <SectionEyebrow>Scorecard · eight categories</SectionEyebrow>
         <SectionTitle>How you scored.</SectionTitle>
 
@@ -537,9 +537,9 @@ function CategoryCard({
       style={{ color }}
     >
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-[10px] text-foreground">
+        <div className="flex min-w-0 items-center gap-[10px] text-foreground">
           <span
-            className="flex size-[30px] items-center justify-center rounded-[9px]"
+            className="flex size-[30px] shrink-0 items-center justify-center rounded-[9px]"
             style={{
               background: "color-mix(in oklch, currentColor 14%, var(--card))",
               color,
@@ -547,12 +547,12 @@ function CategoryCard({
           >
             <Icon className="size-4" strokeWidth={2} />
           </span>
-          <b className="text-[15px] font-semibold tracking-[-0.005em] text-foreground">
+          <b className="truncate text-[15px] font-semibold tracking-[-0.005em] text-foreground">
             {meta.label}
           </b>
         </div>
         <span
-          className="rounded-full border px-3 py-[3px] font-mono text-[11.5px] font-medium"
+          className="shrink-0 rounded-full border px-3 py-[3px] font-mono text-[11.5px] font-medium"
           style={{
             background: "color-mix(in oklch, currentColor 12%, var(--card))",
             borderColor: "color-mix(in oklch, currentColor 22%, transparent)",
@@ -621,7 +621,7 @@ function CategoryCard({
 function FooterSection({ report }: { report: Report }) {
   return (
     <section className="py-14 pb-20">
-      <div className="mx-auto w-full max-w-[920px] px-8">
+      <div className="mx-auto w-full max-w-[920px] px-5 sm:px-8">
         <div className="flex flex-col items-center gap-[14px] text-center">
           <Link
             href="/"
@@ -741,8 +741,8 @@ function StatDashboard({ report }: { report: Report }) {
 
   return (
     <section className="pb-2">
-      <div className="mx-auto w-full max-w-[920px] px-8">
-        <div className="grid grid-cols-2 gap-[14px] lg:grid-cols-4">
+      <div className="mx-auto w-full max-w-[920px] px-5 sm:px-8">
+        <div className="grid grid-cols-1 gap-[14px] min-[360px]:grid-cols-2 lg:grid-cols-4">
           <Stat
             label="Duration"
             value={formatDuration(duration_sec)}
@@ -773,7 +773,7 @@ function StatDashboard({ report }: { report: Report }) {
           <div className="font-mono text-[10.5px] tracking-[0.08em] text-muted-foreground uppercase">
             Pauses
           </div>
-          <div className="mt-3 grid grid-cols-3 gap-4">
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
             <PauseStat value={metrics.pauses_over_0_6} label="≥ 0.6s · deliberate" />
             <PauseStat value={metrics.pauses_over_2} label="≥ 2s · long" />
             <PauseStat
