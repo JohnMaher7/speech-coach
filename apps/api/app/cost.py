@@ -16,6 +16,9 @@ class ModelPricing:
 
 # Source: https://platform.claude.com/docs/en/about-claude/pricing (May 2026).
 PRICING: dict[str, ModelPricing] = {
+    "claude-sonnet-5": ModelPricing(
+        input=3.00, output=15.00, cache_write_5m=3.75, cache_read=0.30
+    ),
     "claude-sonnet-4-6": ModelPricing(
         input=3.00, output=15.00, cache_write_5m=3.75, cache_read=0.30
     ),

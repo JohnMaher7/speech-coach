@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any
 
 from deepgram import AsyncDeepgramClient
@@ -12,19 +13,22 @@ _dg = AsyncDeepgramClient(api_key=settings.deepgram_api_key)
 async def transcribe(audio_key: str) -> Transcript:
     audio_url = presign_get(audio_key)
 
-    response = await _dg.listen.v1.media.transcribe_url(
-        url=audio_url,
-        model="nova-3",
-        language="en",
-        smart_format=True,
-        punctuate=True,
-        filler_words=True,
-        # Sentence boundaries for Stage 26's `build_segments`. `paragraphs=True`
-        # gives us sentence start/end inside paragraph[].sentences[]; the SDK
-        # passes it through as extras on the Pydantic alternative.
-        paragraphs=True,
-        utterances=True,
-    )
+    # The Deepgram SDK sets no request timeout; without a bound a stalled
+    # request would hang the SSE stream indefinitely.
+    async with asyncio.timeout(600):
+        response = await _dg.listen.v1.media.transcribe_url(
+            url=audio_url,
+            model="nova-3",
+            language="en",
+            smart_format=True,
+            punctuate=True,
+            filler_words=True,
+            # Sentence boundaries for Stage 26's `build_segments`. `paragraphs=True`
+            # gives us sentence start/end inside paragraph[].sentences[]; the SDK
+            # passes it through as extras on the Pydantic alternative.
+            paragraphs=True,
+            utterances=True,
+        )
 
     duration = float(response.metadata.duration)
     alt = response.results.channels[0].alternatives[0]

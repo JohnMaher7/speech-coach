@@ -42,13 +42,16 @@ async def get_auth_state(request: Request) -> RequestState:
 AuthState = Annotated[RequestState, Depends(get_auth_state)]
 
 
-async def get_current_user(state: AuthState) -> str:
+async def get_current_user(request: Request, state: AuthState) -> str:
     """The verified Clerk user id from the session token's `sub` claim."""
 
     payload = state.payload or {}
     user_id = payload.get("sub")
     if not user_id:
         raise HTTPException(status_code=401, detail="Token has no subject.")
+    # Stashed on request.state so the rate limiter can key on the verified
+    # user instead of the client IP (which is Modal's proxy, not the user).
+    request.state.user_id = user_id
     return user_id
 
 

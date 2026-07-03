@@ -20,6 +20,7 @@ from app.config import settings
 from app.db import get_session, init_db
 from app.errors import (
     MAX_DURATION_SEC,
+    MAX_UPLOAD_BYTES,
     MIN_DURATION_SEC,
     MIN_WORDS,
     AnalysisError,
@@ -27,7 +28,7 @@ from app.errors import (
 from app.lexical_fillers import detect_lexical_fillers
 from app.metrics import build_acoustic, compute_metrics
 from app.models import ReportRow
-from app.r2 import audio_exists, download_to_tempfile, presign_put
+from app.r2 import audio_size, download_to_tempfile, presign_put
 from app.rate_limit import limiter, rate_limit_handler
 from app.schemas import (
     AnalyzeRequest,
@@ -140,10 +141,16 @@ async def analyze(
     user: CurrentUser,
     _plan: RequireActivePlan,
 ) -> StreamingResponse:
-    if not await asyncio.to_thread(audio_exists, req.key):
+    size = await asyncio.to_thread(audio_size, req.key)
+    if size is None:
         raise HTTPException(
             status_code=404,
             detail="Audio file not found. Your upload may have expired — please upload again.",
+        )
+    if size > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail="Audio file is too large. Please upload a file under 250 MB.",
         )
 
     async def stream() -> AsyncIterator[str]:
@@ -163,35 +170,42 @@ async def analyze(
             lex_cost = 0.0
 
             pending: set[asyncio.Task] = {transcribe_task, acoustic_task}
-            while pending:
-                done, pending = await asyncio.wait(
-                    pending, return_when=asyncio.FIRST_COMPLETED
-                )
-                for task in done:
-                    if task is transcribe_task:
-                        transcript = task.result()
-                        yield sse_event(
-                            "transcribed",
-                            {
-                                "words": len(transcript.words),
-                                "duration_sec": transcript.duration_sec,
-                            },
-                        )
-                        lexical_task = asyncio.create_task(
-                            run_lexical_fillers(transcript)
-                        )
-                        pending.add(lexical_task)
-                    elif task is acoustic_task:
-                        features = task.result()
-                        yield sse_event(
-                            "acoustic_done",
-                            {"pitch_mean_hz": round(features.pitch_mean_hz, 1)},
-                        )
-                    elif task is lexical_task:
-                        lex_hits, lex_cost = task.result()
-                        yield sse_event(
-                            "lexical_done", {"fillers": len(lex_hits)}
-                        )
+            try:
+                while pending:
+                    done, pending = await asyncio.wait(
+                        pending, return_when=asyncio.FIRST_COMPLETED
+                    )
+                    for task in done:
+                        if task is transcribe_task:
+                            transcript = task.result()
+                            yield sse_event(
+                                "transcribed",
+                                {
+                                    "words": len(transcript.words),
+                                    "duration_sec": transcript.duration_sec,
+                                },
+                            )
+                            lexical_task = asyncio.create_task(
+                                run_lexical_fillers(transcript)
+                            )
+                            pending.add(lexical_task)
+                        elif task is acoustic_task:
+                            features = task.result()
+                            yield sse_event(
+                                "acoustic_done",
+                                {"pitch_mean_hz": round(features.pitch_mean_hz, 1)},
+                            )
+                        elif task is lexical_task:
+                            lex_hits, lex_cost = task.result()
+                            yield sse_event(
+                                "lexical_done", {"fillers": len(lex_hits)}
+                            )
+            except BaseException:
+                # A failed task re-raises out of the loop above; the sibling
+                # tasks in `pending` would otherwise keep running detached.
+                for task in pending:
+                    task.cancel()
+                raise
 
             assert transcript is not None and features is not None
 

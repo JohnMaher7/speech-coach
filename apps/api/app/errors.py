@@ -1,6 +1,7 @@
 MIN_DURATION_SEC = 10.0
 MAX_DURATION_SEC = 25 * 60.0
 MIN_WORDS = 5
+MAX_UPLOAD_BYTES = 250 * 1024 * 1024
 
 
 class AnalysisError(Exception):

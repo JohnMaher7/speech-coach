@@ -85,6 +85,11 @@ export default function AnalyzingPage() {
             setCompleted((prev) => new Set(prev).add(ev.event));
           }
         }
+        // The stream ended without a terminal "done"/"error" event (e.g. a
+        // proxy idle timeout closed the connection cleanly mid-analysis).
+        setError(
+          "The connection was interrupted before the analysis finished. Please try again.",
+        );
       } catch (e) {
         setError(e instanceof Error ? e.message : "Analysis failed.");
       }

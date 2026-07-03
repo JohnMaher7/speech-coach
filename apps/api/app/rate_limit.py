@@ -4,10 +4,18 @@ from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-# One limiter for the whole app. `get_remote_address` keys by client IP
-# (request.client.host). Modal forwards the real client IP, so this works
-# behind their edge without extra config.
-limiter = Limiter(key_func=get_remote_address)
+def rate_limit_key(request: Request) -> str:
+    """Key limits on the verified Clerk user id (set by `get_current_user`
+    before the handler runs). Behind Modal's proxy `request.client.host` is
+    the proxy address, so IP-based keying would lump all users into one
+    bucket — the IP is only a fallback for unauthenticated routes.
+    """
+    user_id = getattr(request.state, "user_id", None)
+    return user_id or get_remote_address(request)
+
+
+# One limiter for the whole app.
+limiter = Limiter(key_func=rate_limit_key)
 
 
 async def rate_limit_handler(_request: Request, _exc: RateLimitExceeded) -> JSONResponse:

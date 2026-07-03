@@ -45,15 +45,16 @@ def presign_get(key: str, expires_in: int = 600) -> str:
     )
 
 
-def audio_exists(key: str) -> bool:
+def audio_size(key: str) -> int | None:
+    """Object size in bytes, or None if the object doesn't exist."""
     try:
-        _client.head_object(Bucket=settings.r2_bucket, Key=key)
+        head = _client.head_object(Bucket=settings.r2_bucket, Key=key)
     except ClientError as e:
         code = e.response.get("Error", {}).get("Code")
         if code in {"404", "NotFound", "NoSuchKey"}:
-            return False
+            return None
         raise
-    return True
+    return int(head.get("ContentLength", 0))
 
 
 @asynccontextmanager

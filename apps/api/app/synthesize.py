@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 _client = AsyncAnthropic(api_key=settings.anthropic_api_key)
 
-_MODEL = "claude-sonnet-4-6"
+_MODEL = "claude-sonnet-5"
 
 _SYSTEM_PROMPT_PREPARED = """You are a speech evaluator. You read an annotated transcript of a recorded speech, a segment-level table of prosody numbers, and the headline metrics — and you return a structured evaluator report as JSON matching the provided schema.
 
@@ -534,7 +534,8 @@ async def synthesize(
 
     response = await _client.messages.create(
         model=_MODEL,
-        max_tokens=8192,
+        max_tokens=12000,
+        thinking={"type": "disabled"},
         system=[
             {
                 "type": "text",
