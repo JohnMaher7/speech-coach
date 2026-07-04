@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 import tempfile
 from collections.abc import AsyncIterator
@@ -11,6 +12,8 @@ from botocore.config import Config
 from botocore.exceptions import ClientError
 
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 _client = boto3.client(
     "s3",
@@ -43,6 +46,14 @@ def presign_get(key: str, expires_in: int = 600) -> str:
         Params={"Bucket": settings.r2_bucket, "Key": key},
         ExpiresIn=expires_in,
     )
+
+
+def delete_audio(key: str) -> None:
+    """Best-effort delete — a failed cleanup must never fail the request."""
+    try:
+        _client.delete_object(Bucket=settings.r2_bucket, Key=key)
+    except Exception:
+        logger.warning("failed to delete audio object %s", key, exc_info=True)
 
 
 def audio_size(key: str) -> int | None:

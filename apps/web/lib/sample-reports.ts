@@ -1917,11 +1917,7 @@ export const cleanSampleReport: Report = {
       "language",
     ],
   },
-  cost: {
-    total_usd: 0.114023,
-    synthesis_usd: 0.1066,
-    lexical_fillers_usd: 0.007423,
-  },
+  cost: null,
 };
 
 export const messySampleReport: Report = {
@@ -2188,9 +2184,5 @@ export const messySampleReport: Report = {
       "language",
     ],
   },
-  cost: {
-    total_usd: 0.0072,
-    synthesis_usd: 0.0063,
-    lexical_fillers_usd: 0.0009,
-  },
+  cost: null,
 };

@@ -28,7 +28,7 @@ from app.errors import (
 from app.lexical_fillers import detect_lexical_fillers
 from app.metrics import build_acoustic, compute_metrics
 from app.models import ReportRow
-from app.r2 import audio_size, download_to_tempfile, presign_put
+from app.r2 import audio_size, delete_audio, download_to_tempfile, presign_put
 from app.rate_limit import limiter, rate_limit_handler
 from app.schemas import (
     AnalyzeRequest,
@@ -294,13 +294,21 @@ async def analyze(
             session.add(row)
             await session.commit()
 
+            await asyncio.to_thread(delete_audio, req.key)
+
             yield sse_event("saving_report", {})
             yield sse_event("done", {"report_id": report.report_id})
 
+        # Terminal failures also delete the audio: the client always restarts
+        # from a fresh upload, and audio must not outlive the analysis. A
+        # client disconnect (GeneratorExit) is not terminal — a page refresh
+        # retries /analyze with the same key, so the object stays.
         except AnalysisError as exc:
+            await asyncio.to_thread(delete_audio, req.key)
             yield sse_event("error", {"message": exc.user_message})
         except Exception:
             logger.exception("analyze stream failed for key=%s", req.key)
+            await asyncio.to_thread(delete_audio, req.key)
             yield sse_event(
                 "error",
                 {"message": "Something went wrong analyzing your speech. Please try again."},
@@ -366,7 +374,9 @@ async def get_report(
                 "and is no longer viewable. Please record a new speech."
             ),
         )
-    return Report.model_validate(row.payload)
+    report = Report.model_validate(row.payload)
+    # LLM cost is internal telemetry — stored, but never sent to clients.
+    return report.model_copy(update={"cost": None})
 
 
 @app.delete("/reports/{report_id}", status_code=204)

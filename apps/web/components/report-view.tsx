@@ -634,28 +634,10 @@ function FooterSection({ report }: { report: Report }) {
 
         <details className="mt-9 rounded-xl border border-border bg-card px-5 py-4 text-[13.5px] text-muted-foreground">
           <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
-            <span>Details · cost &amp; raw response</span>
+            <span>Details · raw report data</span>
             <span className="font-mono text-muted-foreground">+</span>
           </summary>
           <div className="mt-[14px] border-t border-border pt-[14px] text-[12.5px] leading-[1.6]">
-            {report.cost && (
-              <>
-                Generated with one Claude Sonnet call (adaptive thinking) for{" "}
-                <b className="font-medium text-foreground">
-                  ${report.cost.total_usd.toFixed(4)}
-                </b>
-                {report.cost.lexical_fillers_usd > 0 && (
-                  <>
-                    {" "}
-                    — synthesis $
-                    {report.cost.synthesis_usd.toFixed(4)} plus a Haiku lexical
-                    filler pass at $
-                    {report.cost.lexical_fillers_usd.toFixed(4)}
-                  </>
-                )}
-                .{" "}
-              </>
-            )}
             Deepgram transcription, Parselmouth + librosa acoustic pass,
             annotated transcript, schema v{report.schema_version}.
             <pre className="mt-3 overflow-x-auto rounded-lg bg-[oklch(0.97_0.003_264)] px-[14px] py-3 font-mono text-[11px] text-[oklch(0.35_0.01_264)]">

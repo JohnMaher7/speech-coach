@@ -15,12 +15,12 @@ export function SiteFooter() {
           >
             Speaking tips
           </Link>{" "}
-          · An AI-engineering portfolio project ·{" "}
+          ·{" "}
           <Link
-            href="https://github.com/JohnMaher7/speech-coach"
+            href="/pricing"
             className="underline underline-offset-2 transition-colors hover:text-foreground"
           >
-            source
+            Pricing
           </Link>
         </p>
       </div>

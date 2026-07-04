@@ -75,7 +75,7 @@ const RUBRIC_TILES: {
 const FAQ_ITEMS: { q: string; a: string; open?: boolean }[] = [
   {
     q: "Is my recording stored anywhere?",
-    a: "No. Audio is processed in memory and discarded as soon as the report is generated. We keep the report itself behind an unguessable URL so you can come back to it; you can delete it at any time.",
+    a: "No. Audio is kept only while your report is being generated, then deleted. We keep the report itself so you can come back to it from your dashboard; you can delete it at any time.",
     open: true,
   },
   {
@@ -88,7 +88,7 @@ const FAQ_ITEMS: { q: string; a: string; open?: boolean }[] = [
   },
   {
     q: "What models is this built on?",
-    a: "A single adaptive-thinking Claude Sonnet call handles synthesis; Deepgram does transcription; Parselmouth and librosa handle the acoustic pass. Two-pass prompting keeps cost under a tenth of a cent per minute.",
+    a: "A single adaptive-thinking Claude Sonnet call handles synthesis; Deepgram does transcription; Parselmouth and librosa handle the acoustic pass.",
   },
   {
     q: "How much does it cost?",
