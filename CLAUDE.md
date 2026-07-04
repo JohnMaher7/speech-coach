@@ -22,7 +22,6 @@ Browser → R2 (presigned PUT) → `POST /analyze` (SSE): `asyncio.gather(transc
 
 ## Rules
 - Owner is a beginner Python dev / beginner web dev. Teach Python + AI engineering deeply; stay brief on frontend/devops/infra. On a follow-up ("still confused", "what do you mean") drop an altitude — explain the specific line or token, don't restate the concept.
-- Type hints everywhere (3.10+: `list[X]`, `X | None`). Pydantic at every boundary (HTTP, DB, external APIs, LLM).
 - `async def` for I/O. `asyncio.gather` for independent awaits.
 - `uv add <pkg>` to install. `uv run <cmd>` to execute.
 - Always cache the system prompt + few-shots. Always use tool-use for structured outputs. Log `cache_read_input_tokens`.
@@ -32,13 +31,3 @@ Browser → R2 (presigned PUT) → `POST /analyze` (SSE): `asyncio.gather(transc
 - When blocked or debugging, you may ask for more context — but ask ≤3 targeted questions, and only when the missing info would change the answer; otherwise proceed on stated assumptions.
 - When asked to evaluate or recommend, reason it through and give one honest, non-biased call. Recommending *no change* is always valid — don't bias toward action.
 
-
-## Resuming work across sessions
-- `BUILD_STAGES.md` (root) is the source of truth for what's done and what's next. Checklist on top (☐ todo · ⏳ in progress · ✅ done), detailed brief for the active phase below.
-- When the owner says **"next stage"**, read `BUILD_STAGES.md`, find the first ☐ in the checklist, and execute that stage's `Goal` + `Changes` + `Verify` block. When they say **"stage N"**, jump to that stage's block.
-- Mark the stage ⏳ when starting and ✅ when its `Verify` block passes. Append a teaching walkthrough at `stages/<NN>-<slug>.md` after the stage runs (existing Phase A–E pattern).
-- Advise when to clear context and start a new session.
-
-
-## Out of scope (V1)
-Multi-speaker, accounts, queues, comparison reports, mobile app, real-time analysis.

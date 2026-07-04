@@ -7,7 +7,7 @@ import { TIPS_SECTIONS } from "@/lib/tips-content";
 export const metadata: Metadata = {
   title: "Public Speaking Tips — SpeakGrade",
   description:
-    "A research-backed field guide to public speaking: beating the fear, delivery, prepared speeches, impromptu speaking, presentations, speaking online — and the myths to unlearn.",
+    "A research-backed field guide to public speaking: beating the fear, delivery, prepared speeches, impromptu speaking, presentations, speaking online, and the myths to unlearn.",
 };
 
 export default function TipsIndexPage() {
@@ -26,7 +26,7 @@ export default function TipsIndexPage() {
             </h1>
 
             <p className="mx-auto max-w-[54ch] text-[16.5px] leading-relaxed text-muted-foreground">
-              Eight short sections of advice that survives scrutiny — from
+              Eight short sections of advice that survives scrutiny, from
               beating the fear to landing an impromptu answer. Sourced from
               research and expert consensus, not recycled listicles.
             </p>

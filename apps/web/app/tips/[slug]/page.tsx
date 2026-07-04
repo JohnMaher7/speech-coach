@@ -70,7 +70,7 @@ export default async function TipsSectionPage({
               </p>
               {tip.attribution && (
                 <p className="mt-3 font-mono text-[11px] tracking-wide text-muted-foreground/80">
-                  — {tip.attribution}
+                  {tip.attribution}
                 </p>
               )}
             </div>
