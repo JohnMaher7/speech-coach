@@ -1,24 +1,28 @@
 import Link from "next/link";
 
+import { BrandMark } from "@/components/site-header";
+
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-border/60">
-      <div className="mx-auto flex w-full max-w-[1240px] flex-col items-center gap-2 px-5 py-8 text-center text-[12.5px] text-muted-foreground sm:flex-row sm:justify-between sm:px-8 sm:text-left">
-        <p>
-          SpeakGrade — an independent speech-coaching tool. Not affiliated with any
-          public-speaking organisation.
-        </p>
-        <p>
+    <footer className="mt-auto border-t-[3px] border-foreground bg-card">
+      <div className="wrap flex flex-col gap-4 py-8 text-[14.5px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <BrandMark />
+          <p>
+            SpeakGrade — an independent speech-coaching tool. Not affiliated
+            with any public-speaking organisation.
+          </p>
+        </div>
+        <p className="flex shrink-0 gap-5 font-medium">
           <Link
             href="/tips"
-            className="underline underline-offset-2 transition-colors hover:text-foreground"
+            className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
             Speaking tips
-          </Link>{" "}
-          ·{" "}
+          </Link>
           <Link
             href="/pricing"
-            className="underline underline-offset-2 transition-colors hover:text-foreground"
+            className="underline-offset-4 transition-colors hover:text-foreground hover:underline"
           >
             Pricing
           </Link>

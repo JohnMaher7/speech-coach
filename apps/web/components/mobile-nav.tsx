@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { ArrowRight, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Show } from "@clerk/nextjs";
 
 import { NAV_LINKS } from "@/components/site-header";
@@ -37,7 +37,7 @@ export function MobileNav() {
         aria-label="Open menu"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="inline-flex size-9 items-center justify-center rounded-[10px] border border-border text-foreground transition-colors hover:bg-muted"
+        className="inline-flex size-10 items-center justify-center border-[1.5px] border-foreground text-foreground transition-colors hover:bg-muted"
       >
         <Menu className="size-5" strokeWidth={2} />
       </button>
@@ -51,18 +51,16 @@ export function MobileNav() {
             aria-label="Close menu"
             tabIndex={-1}
             onClick={close}
-            className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-foreground/50"
           />
-          <div className="absolute inset-y-0 right-0 flex w-[82%] max-w-[320px] flex-col border-l border-border bg-background px-6 pt-5 pb-8 shadow-2xl">
+          <div className="absolute inset-y-0 right-0 flex w-[86%] max-w-[340px] flex-col border-l-[3px] border-foreground bg-card px-6 pt-4 pb-8">
             <div className="mb-4 flex items-center justify-between">
-              <span className="font-serif text-[18px] font-medium tracking-[-0.005em]">
-                Menu
-              </span>
+              <span className="font-display text-[24px] font-bold">Menu</span>
               <button
                 type="button"
                 aria-label="Close menu"
                 onClick={close}
-                className="inline-flex size-9 items-center justify-center rounded-[10px] border border-border text-muted-foreground transition-colors hover:text-foreground"
+                className="inline-flex size-10 items-center justify-center border-[1.5px] border-foreground text-foreground transition-colors hover:bg-muted"
               >
                 <X className="size-5" strokeWidth={2} />
               </button>
@@ -74,7 +72,7 @@ export function MobileNav() {
                   key={href}
                   href={href}
                   onClick={close}
-                  className="border-b border-border/60 py-3 text-[15px] text-foreground transition-colors hover:text-primary"
+                  className="border-b border-border py-3 font-display text-[22px] font-semibold text-foreground transition-colors hover:text-muted-foreground"
                 >
                   {label}
                 </Link>
@@ -83,7 +81,7 @@ export function MobileNav() {
                 <Link
                   href="/dashboard"
                   onClick={close}
-                  className="border-b border-border/60 py-3 text-[15px] text-foreground transition-colors hover:text-primary"
+                  className="border-b border-border py-3 font-display text-[22px] font-semibold text-foreground transition-colors hover:text-muted-foreground"
                 >
                   Dashboard
                 </Link>
@@ -92,7 +90,7 @@ export function MobileNav() {
                 <Link
                   href="/sign-in"
                   onClick={close}
-                  className="border-b border-border/60 py-3 text-[15px] text-foreground transition-colors hover:text-primary"
+                  className="border-b border-border py-3 font-display text-[22px] font-semibold text-foreground transition-colors hover:text-muted-foreground"
                 >
                   Log in
                 </Link>
@@ -102,10 +100,9 @@ export function MobileNav() {
             <Link
               href="/#upload"
               onClick={close}
-              className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-[11px] bg-foreground px-5 text-sm font-medium text-background transition-colors hover:bg-[oklch(0.22_0.01_264)]"
+              className="btn btn-ink mt-6 w-full"
             >
               New analysis
-              <ArrowRight className="size-[14px]" strokeWidth={2} />
             </Link>
           </div>
         </div>,

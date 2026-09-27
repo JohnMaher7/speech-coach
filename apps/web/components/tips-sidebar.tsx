@@ -12,29 +12,27 @@ export function TipsSidebar() {
     <nav aria-label="Speaking tips sections">
       <Link
         href="/tips"
-        className="hidden font-mono text-[10.5px] tracking-[0.14em] text-muted-foreground uppercase transition-colors hover:text-foreground lg:block"
+        className="hidden font-display text-[22px] font-bold transition-colors hover:text-muted-foreground lg:block"
       >
         Speaking tips
       </Link>
 
-      <ul className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 sm:-mx-8 sm:px-8 lg:mx-0 lg:mt-4 lg:flex-col lg:gap-[2px] lg:overflow-visible lg:px-0 lg:pb-0">
+      <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 lg:mx-0 lg:mt-3 lg:block lg:overflow-visible lg:border-t-[3px] lg:border-foreground lg:bg-card lg:px-0 lg:pb-0">
         {TIPS_SECTIONS.map((section, i) => {
           const href = `/tips/${section.slug}`;
           const active = pathname === href;
           return (
-            <li key={section.slug} className="shrink-0 lg:shrink">
+            <li key={section.slug} className="shrink-0 lg:border-b lg:border-border">
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`inline-flex h-8 items-center gap-2.5 rounded-full border px-[13px] text-[13px] whitespace-nowrap transition-colors lg:flex lg:h-auto lg:rounded-[9px] lg:border-0 lg:px-[10px] lg:py-[7px] lg:text-[13.5px] lg:whitespace-normal ${
+                className={`flex h-9 items-center gap-2.5 border-[1.5px] px-3 text-[15px] whitespace-nowrap transition-colors lg:h-auto lg:border-0 lg:border-l-[3px] lg:py-2.5 lg:pr-3 lg:pl-3 lg:whitespace-normal ${
                   active
-                    ? "border-[color-mix(in_oklch,var(--primary)_28%,transparent)] bg-accent text-accent-foreground lg:font-medium"
-                    : "border-border text-muted-foreground hover:text-foreground lg:hover:bg-secondary"
+                    ? "border-foreground bg-foreground font-semibold text-card lg:border-l-foreground lg:bg-muted lg:text-foreground"
+                    : "border-foreground bg-card text-foreground hover:bg-muted lg:border-l-transparent lg:text-muted-foreground lg:hover:text-foreground"
                 }`}
               >
-                <span
-                  className={`font-mono text-[10.5px] ${active ? "text-primary" : "text-muted-foreground/70"}`}
-                >
+                <span className="font-display text-[16px] font-bold">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 {section.navLabel}

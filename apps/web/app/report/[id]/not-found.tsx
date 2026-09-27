@@ -1,27 +1,25 @@
 import Link from "next/link";
-import { ArrowRight, FileX2 } from "lucide-react";
-
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 export default function ReportNotFound() {
   return (
-    <main className="mx-auto flex w-full max-w-md flex-col items-center gap-4 px-6 py-24 text-center">
-      <span className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        <FileX2 className="size-6" />
-      </span>
-      <h1 className="text-2xl font-semibold tracking-tight">Report not found</h1>
-      <p className="text-muted-foreground">
-        This report doesn&apos;t exist, or it may have been removed. Upload your
-        speech again to start a new analysis.
-      </p>
-      <Link
-        href="/"
-        className={cn(buttonVariants({ size: "lg" }), "h-11 px-6 text-base")}
-      >
-        Upload a new speech
-        <ArrowRight className="size-4" />
-      </Link>
+    <main className="flex-1">
+      <div className="mx-auto w-full max-w-[640px] px-4 py-16 sm:px-6 sm:py-24">
+        <div aria-hidden className="mb-6 grid w-max gap-[5px]">
+          <span className="lamp size-3.5 bg-lamp-off" />
+          <span className="lamp size-3.5 bg-lamp-off" />
+          <span className="lamp size-3.5 bg-stop" />
+        </div>
+        <h1 className="font-display text-[clamp(48px,6vw,68px)] leading-[0.9] font-bold">
+          Report not found
+        </h1>
+        <p className="mt-4 max-w-[48ch] text-[18px] leading-[1.55] text-[#2D302D]">
+          This report doesn&apos;t exist, or it may have been removed. Upload your
+          speech again to start a new analysis.
+        </p>
+        <Link href="/" className="btn btn-ink mt-8">
+          Upload a new speech
+        </Link>
+      </div>
     </main>
   );
 }

@@ -1,70 +1,86 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 
-const SAMPLES = [
+import { Lamp, SignalBar } from "@/components/signal";
+import type { ScoreTone } from "@/lib/scores";
+
+const SAMPLES: {
+  href: string;
+  title: string;
+  meta: string;
+  score: number;
+  tone: ScoreTone;
+  body: string;
+}[] = [
   {
     href: "/report/sample/clean",
-    title: "Clean speech",
-    subtitle: "Prepared · 4:35 · overall 4.6",
-    body: "Every category lands 4 or 5. Walk-through reads as praise; no delivery-habit deep-dives; no rewrites. Use this to sanity-check the “quiet” branches of the layout.",
+    title: "A polished talk",
+    meta: "Prepared · 4:35",
+    score: 4.6,
+    tone: "good",
+    body: "Every category lands a 4 or 5. The walk-through reads mostly as praise, with a few hedges to trim and three small phrasing rewrites.",
   },
   {
     href: "/report/sample/messy",
-    title: "Messy speech",
-    subtitle: "Prepared · 4:42 · overall 2.0",
-    body: "Eighteen fillers, one pause, flat pitch, trailing close. Every delivery-habit section is non-null, four rewrites land, priorities all critique. The full deep-dive branch.",
+    title: "A talk that needs work",
+    meta: "Prepared · 4:42",
+    score: 2.0,
+    tone: "low",
+    body: "Eighteen fillers, one pause, flat pitch and a trailing close. You get the full treatment: ranked priorities, drills and four phrasing rewrites.",
   },
 ];
 
 export default function SampleIndexPage() {
   return (
     <main className="flex-1">
-      <section className="py-12 pb-6">
-        <div className="mx-auto w-full max-w-[920px] px-5 sm:px-8">
-          <div className="mb-[18px] flex items-center gap-[10px] font-mono text-[11px] tracking-[0.08em] text-muted-foreground uppercase">
-            <Link href="/" className="transition-colors hover:text-foreground">
-              SpeakGrade
-            </Link>
-            <span className="opacity-50">/</span>
-            <span>Sample reports</span>
-          </div>
+      <section className="wrap py-12 sm:py-16">
+        <div className="flex flex-wrap items-center gap-2 text-[14.5px] font-medium text-muted-foreground">
+          <Link href="/" className="transition-colors hover:text-foreground">
+            SpeakGrade
+          </Link>
+          <span className="text-border">/</span>
+          <span>Sample reports</span>
+        </div>
 
-          <h1 className="my-[6px] mb-[22px] text-balance font-serif text-[clamp(36px,4vw,48px)] leading-[1.05] font-medium tracking-[-0.02em]">
-            Two fixtures, two{" "}
-            <em className="font-medium text-primary italic">branches</em>.
+        <div className="mt-4 grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-end lg:gap-14">
+          <h1 className="max-w-[14ch] font-display text-[clamp(48px,6.4vw,84px)] leading-[0.9] font-bold">
+            See a report before you record.
           </h1>
-          <p className="max-w-[640px] text-[15px] leading-[1.6] text-[oklch(0.35_0.01_264)]">
-            Stage 32 fixtures for visual QA. The clean speech hits the
-            short-circuit paths (no delivery habits, no rewrites). The messy
-            speech hits every conditional branch.
+          <p className="max-w-[52ch] text-[18px] leading-[1.55] text-[#2D302D]">
+            Two real-format reports from two very different talks. Open either
+            one to see every section a SpeakGrade report returns.
           </p>
         </div>
-      </section>
 
-      <section className="py-6 pb-20">
-        <div className="mx-auto grid w-full max-w-[920px] gap-3 px-5 sm:grid-cols-2 sm:px-8">
+        <div className="mt-10 grid gap-[3px] md:grid-cols-2">
           {SAMPLES.map((s) => (
             <Link
               key={s.href}
               href={s.href}
-              className="group rounded-[18px] border border-border bg-card px-6 py-[22px] transition-colors hover:border-primary/40"
+              className="group flex flex-col border-t-[3px] border-foreground bg-card px-5 pt-5 pb-6 transition-colors hover:bg-muted sm:px-6"
             >
-              <div className="mb-[10px] font-mono text-[10.5px] tracking-[0.1em] text-muted-foreground uppercase">
-                {s.subtitle}
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[14.5px] font-medium text-muted-foreground">
+                    {s.meta}
+                  </p>
+                  <h2 className="mt-1 font-display text-[34px] leading-none font-bold underline-offset-4 group-hover:underline">
+                    {s.title}
+                  </h2>
+                </div>
+                <span className="flex items-center gap-2 font-display text-[44px] leading-none font-bold">
+                  <Lamp tone={s.tone} className="size-3" />
+                  {s.score.toFixed(1)}
+                </span>
               </div>
-              <h2 className="mb-[10px] font-serif text-[24px] leading-[1.15] font-medium tracking-[-0.01em] text-foreground">
-                {s.title}
-              </h2>
-              <p className="text-[14px] leading-[1.6] text-[oklch(0.35_0.01_264)]">
+              <SignalBar
+                filled={Math.round(s.score)}
+                tone={s.tone}
+                className="mt-4"
+              />
+              <p className="mt-4 flex-1 text-[16px] leading-[1.55] text-[#2D302D]">
                 {s.body}
               </p>
-              <div className="mt-4 inline-flex items-center gap-[6px] text-[13px] font-medium text-primary">
-                Open
-                <ArrowRight
-                  className="size-3.5 transition-transform group-hover:translate-x-[2px]"
-                  strokeWidth={2.2}
-                />
-              </div>
+              <span className="btn btn-ink mt-6 self-start">Open report</span>
             </Link>
           ))}
         </div>

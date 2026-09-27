@@ -14,9 +14,9 @@ import {
 import type { Pause, TimelinePoint } from "@/lib/api";
 import { volumeDeviationSeries } from "@/lib/volume-series";
 
-const VOLUME_COLOR = "#f59e0b";
-const PAUSE_COLOR = "#94a3b8";
-const LONG_PAUSE_COLOR = "#ef4444";
+const VOLUME_COLOR = "#D48D00";
+const PAUSE_COLOR = "#8C928B";
+const LONG_PAUSE_COLOR = "#DA3A2B";
 const PAUSE_MIN_SEC = 0.6;
 const LONG_PAUSE_SEC = 2.0;
 // Fixed, symmetric axis around the speaker's own baseline (mirrors the pitch
@@ -65,15 +65,15 @@ function VolumeTooltip({
   const entry = payload.find((p) => p.value !== null && p.value !== undefined);
   if (!entry) return null;
   return (
-    <div className="rounded-md border bg-background px-3 py-2 text-xs shadow-md">
-      <div className="font-mono text-muted-foreground">{formatTime(label)}</div>
+    <div className="bg-foreground px-3 py-2 text-[13px] leading-snug text-card">
+      <div className="font-semibold">{formatTime(label)}</div>
       <div className="flex items-center gap-2">
         <span
           className="inline-block size-2 rounded-full"
           style={{ background: VOLUME_COLOR }}
         />
         <span>Volume:</span>
-        <span className="font-medium">
+        <span className="font-semibold">
           {formatVolumeDelta(entry.value as number)}
         </span>
       </div>
@@ -107,13 +107,12 @@ export function VolumeChart({
         >
           <defs>
             <linearGradient id="volumeFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={VOLUME_COLOR} stopOpacity={0.22} />
-              <stop offset="100%" stopColor={VOLUME_COLOR} stopOpacity={0.02} />
+              <stop offset="0%" stopColor={VOLUME_COLOR} stopOpacity={0.1} />
+              <stop offset="100%" stopColor={VOLUME_COLOR} stopOpacity={0.1} />
             </linearGradient>
           </defs>
           <CartesianGrid
-            strokeDasharray="3 3"
-            className="stroke-border"
+            stroke="#E3E6E0"
             vertical={false}
           />
           <XAxis
@@ -121,14 +120,14 @@ export function VolumeChart({
             type="number"
             domain={[0, duration_sec]}
             tickFormatter={formatTime}
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 12 }}
             tickLine={false}
             stroke="currentColor"
             className="text-muted-foreground"
           />
           <YAxis
             width={52}
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 12 }}
             tickLine={false}
             axisLine={false}
             stroke={VOLUME_COLOR}
@@ -157,7 +156,7 @@ export function VolumeChart({
                 x1={p.start}
                 x2={p.end}
                 fill={isLong ? LONG_PAUSE_COLOR : PAUSE_COLOR}
-                fillOpacity={isLong ? 0.22 : 0.14}
+                fillOpacity={isLong ? 0.28 : 0.22}
                 stroke="none"
               />
             );

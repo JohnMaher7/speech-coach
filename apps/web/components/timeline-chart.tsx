@@ -15,10 +15,10 @@ import {
 import type { Pause, TimelinePoint } from "@/lib/api";
 import { pitchVarietySeries } from "@/lib/pitch-variety";
 
-const PITCH_COLOR = "#6366f1";
-const WPM_COLOR = "#10b981";
-const PAUSE_COLOR = "#94a3b8";
-const LONG_PAUSE_COLOR = "#ef4444";
+const PITCH_COLOR = "#151515";
+const WPM_COLOR = "#0E9F5B";
+const PAUSE_COLOR = "#8C928B";
+const LONG_PAUSE_COLOR = "#DA3A2B";
 const PAUSE_MIN_SEC = 0.6;
 const LONG_PAUSE_SEC = 2.0;
 const WPM_SWEET_LOW = 130;
@@ -79,8 +79,8 @@ function ChartTooltip({
   const pauseIsLong = pauseDur >= LONG_PAUSE_SEC;
 
   return (
-    <div className="rounded-md border bg-background px-3 py-2 text-xs shadow-md">
-      <div className="font-mono text-muted-foreground">{formatTime(label)}</div>
+    <div className="bg-foreground px-3 py-2 text-[13px] leading-snug text-card">
+      <div className="font-semibold">{formatTime(label)}</div>
       {hoveredPause && (
         <div className="flex items-center gap-2">
           <span
@@ -88,7 +88,7 @@ function ChartTooltip({
             style={{ background: pauseIsLong ? LONG_PAUSE_COLOR : PAUSE_COLOR }}
           />
           <span>Pause:</span>
-          <span className="font-medium">{pauseDur.toFixed(1)}s</span>
+          <span className="font-semibold">{pauseDur.toFixed(1)}s</span>
         </div>
       )}
       {payload?.map((p) => {
@@ -111,7 +111,7 @@ function ChartTooltip({
               style={{ background: p.color }}
             />
             <span>{p.name}:</span>
-            <span className="font-medium">{display}</span>
+            <span className="font-semibold">{display}</span>
           </div>
         );
       })}
@@ -144,13 +144,12 @@ export function TimelineChart({
         >
           <defs>
             <linearGradient id="pitchFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={PITCH_COLOR} stopOpacity={0.22} />
-              <stop offset="100%" stopColor={PITCH_COLOR} stopOpacity={0.02} />
+              <stop offset="0%" stopColor={PITCH_COLOR} stopOpacity={0.1} />
+              <stop offset="100%" stopColor={PITCH_COLOR} stopOpacity={0.1} />
             </linearGradient>
           </defs>
           <CartesianGrid
-            strokeDasharray="3 3"
-            className="stroke-border"
+            stroke="#E3E6E0"
             vertical={false}
           />
           <XAxis
@@ -158,7 +157,7 @@ export function TimelineChart({
             type="number"
             domain={[0, duration_sec]}
             tickFormatter={formatTime}
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 12 }}
             tickLine={false}
             stroke="currentColor"
             className="text-muted-foreground"
@@ -167,7 +166,7 @@ export function TimelineChart({
             yAxisId="pitch"
             orientation="left"
             width={52}
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 12 }}
             tickFormatter={formatPitchTick}
             tickLine={false}
             axisLine={false}
@@ -189,8 +188,8 @@ export function TimelineChart({
           <YAxis
             yAxisId="wpm"
             orientation="right"
-            width={40}
-            tick={{ fontSize: 11 }}
+            width={54}
+            tick={{ fontSize: 12 }}
             tickLine={false}
             axisLine={false}
             stroke={WPM_COLOR}
@@ -214,8 +213,8 @@ export function TimelineChart({
             label={{
               value: "sweet spot 130–160 wpm",
               position: "top",
-              fill: WPM_COLOR,
-              fontSize: 10,
+              fill: "#0A7A45",
+              fontSize: 12,
               fillOpacity: 0.9,
               offset: 4,
             }}
@@ -238,7 +237,7 @@ export function TimelineChart({
                 x1={p.start}
                 x2={p.end}
                 fill={isLong ? LONG_PAUSE_COLOR : PAUSE_COLOR}
-                fillOpacity={isLong ? 0.22 : 0.14}
+                fillOpacity={isLong ? 0.28 : 0.22}
                 stroke="none"
               />
             );

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { Show, UserButton } from "@clerk/nextjs";
 
 import { MobileNav } from "@/components/mobile-nav";
@@ -15,75 +15,67 @@ export const NAV_LINKS: { href: string; label: string }[] = [
   { href: "/#faq", label: "FAQ" },
 ];
 
+export function BrandMark({ className = "" }: { className?: string }) {
+  return (
+    <span aria-hidden className={`grid gap-[3px] ${className}`}>
+      <span className="lamp size-[7px] bg-go" />
+      <span className="lamp size-[7px] bg-caution" />
+      <span className="lamp size-[7px] bg-stop" />
+    </span>
+  );
+}
+
+function NavLink({ href, label }: { href: string; label: string }) {
+  const pathname = usePathname();
+  const active =
+    !href.startsWith("/#") &&
+    (pathname === href || pathname.startsWith(`${href}/`));
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={`py-1 transition-colors hover:text-foreground ${
+        active
+          ? "text-foreground underline decoration-2 underline-offset-[6px]"
+          : "text-muted-foreground"
+      }`}
+    >
+      {label}
+    </Link>
+  );
+}
+
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md backdrop-saturate-150">
-      <div className="mx-auto flex h-16 w-full max-w-[1240px] items-center justify-between px-5 sm:px-8">
+    <header className="sticky top-0 z-50 border-b-[3px] border-foreground bg-card">
+      <div className="wrap flex h-[62px] items-center justify-between gap-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-[10px] font-serif text-[19px] font-medium tracking-[-0.005em]"
+          className="inline-flex items-center gap-[10px] font-display text-[25px] leading-none font-bold"
         >
-          <span className="inline-flex size-[30px] items-center justify-center rounded-[9px] bg-foreground text-background">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              className="size-4"
-              aria-hidden
-            >
-              <path d="M4 12h2" />
-              <path d="M8 8v8" />
-              <path d="M12 5v14" />
-              <path d="M16 8v8" />
-              <path d="M20 11h2" />
-            </svg>
-          </span>
+          <BrandMark />
           SpeakGrade
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-7 text-sm text-muted-foreground sm:flex">
-          {NAV_LINKS.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className="transition-colors hover:text-foreground"
-            >
-              {label}
-            </Link>
+        <nav className="hidden items-center gap-6 text-[15.5px] font-medium lg:flex">
+          {NAV_LINKS.map((link) => (
+            <NavLink key={link.href} {...link} />
           ))}
           <Show when="signed-in">
-            <Link
-              href="/dashboard"
-              className="transition-colors hover:text-foreground"
-            >
-              Dashboard
-            </Link>
+            <NavLink href="/dashboard" label="Dashboard" />
           </Show>
           <Show when="signed-out">
-            <Link
-              href="/sign-in"
-              className="transition-colors hover:text-foreground"
-            >
-              Log in
-            </Link>
+            <NavLink href="/sign-in" label="Log in" />
           </Show>
-          <Link
-            href="/#upload"
-            className="inline-flex h-9 items-center gap-2 rounded-[10px] bg-foreground px-[14px] text-[13.5px] font-medium text-background transition-colors hover:bg-[oklch(0.22_0.01_264)]"
-          >
+          <Link href="/#upload" className="btn btn-ink btn-sm">
             New analysis
-            <ArrowRight className="size-[14px]" strokeWidth={2} />
           </Link>
           <Show when="signed-in">
             <UserButton />
           </Show>
         </nav>
 
-        {/* Mobile nav */}
-        <div className="flex items-center gap-2 sm:hidden">
+        <div className="flex items-center gap-3 lg:hidden">
           <Show when="signed-in">
             <UserButton />
           </Show>

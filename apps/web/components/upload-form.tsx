@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth, useUser } from "@clerk/nextjs";
 import {
   AlertCircle,
-  ArrowRight,
   FileAudio,
   Loader2,
   Mic,
@@ -178,12 +177,18 @@ export function UploadForm() {
     { value: "record", label: "Record", icon: Mic },
   ];
 
+  const selectedType = SPEECH_TYPES.find((t) => t.value === speechType);
+
   return (
     <div
       id="upload"
-      className="rounded-[18px] border border-border bg-card p-[18px] shadow-[0_1px_0_rgba(0,0,0,0.02),0_12px_28px_-20px_rgba(20,20,40,0.18)] transition-[border-color,box-shadow] duration-150 hover:border-[color-mix(in_oklch,var(--primary)_35%,var(--border))] hover:shadow-[0_1px_0_rgba(0,0,0,0.02),0_18px_36px_-22px_color-mix(in_oklch,var(--primary)_30%,transparent)]"
+      className="scroll-mt-24 border-t-[3px] border-foreground bg-card p-4 sm:p-5"
     >
-      <div role="tablist" aria-label="Audio source" className="mb-[14px] flex gap-[10px]">
+      <div
+        role="tablist"
+        aria-label="Audio source"
+        className="mb-4 inline-grid grid-cols-2 border-[1.5px] border-foreground"
+      >
         {MODES.map((m) => {
           const selected = mode === m.value;
           const locked = busy || recorderActive;
@@ -201,13 +206,13 @@ export function UploadForm() {
                 setError(null);
                 setMode(m.value);
               }}
-              className={`inline-flex items-center gap-[6px] rounded-full border px-[14px] py-[5px] text-[12.5px] font-medium transition-colors ${
+              className={`inline-flex h-9 items-center justify-center gap-2 px-4 font-display text-[17px] font-semibold transition-colors ${
                 selected
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-card text-muted-foreground hover:text-foreground"
-              } ${locked && !selected ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+                  ? "bg-foreground text-card"
+                  : "bg-card text-foreground hover:bg-muted"
+              } ${locked && !selected ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
             >
-              <Icon className="size-[13px]" strokeWidth={2.2} />
+              <Icon className="size-4" strokeWidth={2.2} />
               {m.label}
             </button>
           );
@@ -225,139 +230,146 @@ export function UploadForm() {
       )}
 
       {mode === "upload" && (
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => {
-          if (!busy && !file) openPicker();
-        }}
-        onKeyDown={(e) => {
-          if ((e.key === "Enter" || e.key === " ") && !busy && !file) {
-            e.preventDefault();
-            openPicker();
-          }
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          if (!busy) setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragOver(false);
-          if (!busy) pickFile(e.dataTransfer.files[0] ?? null);
-        }}
-        className={`flex flex-col items-start gap-3 rounded-[14px] border-[1.5px] border-dashed px-[22px] py-[26px] transition-colors sm:flex-row sm:items-center sm:gap-[18px] ${
-          dragOver
-            ? "border-primary bg-accent/60"
-            : "border-[oklch(0.85_0.01_264)] bg-[linear-gradient(180deg,oklch(0.995_0.002_264),oklch(0.98_0.003_264))]"
-        } ${busy || file ? "cursor-default" : "cursor-pointer"}`}
-      >
-        <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-xl bg-foreground text-background">
-          {file ? (
-            <FileAudio className="size-5" strokeWidth={2} />
-          ) : (
-            <UploadCloud className="size-5" strokeWidth={2} />
-          )}
-        </span>
-        <div className="min-w-0 flex-1">
-          {file ? (
-            <>
-              <div className="truncate text-[15px] font-semibold text-foreground">
-                {file.name}
-              </div>
-              <div className="mt-1 font-mono text-[11.5px] tracking-wide text-muted-foreground">
-                {formatSize(file.size)} · ready to analyze
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="text-[15px] font-semibold text-foreground">
-                Drop a recording, or click to browse
-              </div>
-              <div className="mt-1 font-mono text-[11.5px] tracking-wide text-muted-foreground">
-                MP3 · WAV · M4A · up to 100 MB · up to 20 min
-              </div>
-            </>
-          )}
-        </div>
-        {file && !busy && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              clearFile();
-            }}
-            aria-label="Remove file"
-            className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <X className="size-4" />
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleAnalyze();
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label={file ? `Selected file ${file.name}` : "Choose an audio file"}
+          onClick={() => {
+            if (!busy && !file) openPicker();
           }}
-          disabled={busy}
-          className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-[11px] bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-[oklch(0.45_0.22_277)] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto sm:justify-start"
+          onKeyDown={(e) => {
+            if ((e.key === "Enter" || e.key === " ") && !busy && !file) {
+              e.preventDefault();
+              openPicker();
+            }
+          }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (!busy) setDragOver(true);
+          }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            if (!busy) pickFile(e.dataTransfer.files[0] ?? null);
+          }}
+          className={`flex flex-wrap items-center gap-4 border-[1.5px] border-dashed px-4 py-5 transition-colors sm:px-5 ${
+            dragOver
+              ? "border-foreground bg-caution/15"
+              : "border-muted-foreground/50 bg-muted hover:border-foreground"
+          } ${busy || file ? "cursor-default" : "cursor-pointer"}`}
         >
-          {busy ? (
-            <Loader2 className="size-[14px] animate-spin" strokeWidth={2.4} />
-          ) : (
-            <ArrowRight className="size-[14px]" strokeWidth={2.4} />
-          )}
-          {buttonLabel}
-        </button>
-        <input
-          ref={inputRef}
-          id="audio-input"
-          type="file"
-          accept={ACCEPTED_MIME}
-          className="sr-only"
-          onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
-          disabled={busy}
-        />
-      </div>
+          <span className="inline-flex size-12 shrink-0 items-center justify-center bg-foreground text-card">
+            {file ? (
+              <FileAudio className="size-5" strokeWidth={2} />
+            ) : (
+              <UploadCloud className="size-5" strokeWidth={2} />
+            )}
+          </span>
+          <div className="min-w-0 flex-1 basis-[220px]">
+            {file ? (
+              <>
+                <div className="truncate text-[17px] font-semibold">{file.name}</div>
+                <div className="mt-0.5 text-[14.5px] text-muted-foreground">
+                  {formatSize(file.size)} · ready to analyze
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-[17px] font-semibold">
+                  Drop a recording, or click to browse
+                </div>
+                <div className="mt-0.5 text-[14.5px] text-muted-foreground">
+                  MP3 · WAV · M4A · up to 100 MB · up to 20 min
+                </div>
+              </>
+            )}
+          </div>
+          <div className="flex basis-full items-center gap-2">
+            {file && !busy && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  clearFile();
+                }}
+                aria-label="Remove file"
+                className="flex size-[46px] shrink-0 items-center justify-center border-[1.5px] border-foreground bg-card transition-colors hover:bg-muted"
+              >
+                <X className="size-4" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAnalyze();
+              }}
+              disabled={busy}
+              className="btn btn-ink flex-1"
+            >
+              {busy && <Loader2 className="size-4 animate-spin" strokeWidth={2.4} />}
+              {buttonLabel}
+            </button>
+          </div>
+          <input
+            ref={inputRef}
+            id="audio-input"
+            type="file"
+            accept={ACCEPTED_MIME}
+            className="sr-only"
+            onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
+            disabled={busy}
+          />
+        </div>
       )}
 
-      <fieldset
-        className="mt-[14px] flex flex-wrap items-center gap-[10px] px-[6px]"
-        disabled={busy}
-      >
-        <legend className="mr-2 font-mono text-[10.5px] tracking-[0.1em] text-muted-foreground uppercase">
-          Type
-        </legend>
-        {SPEECH_TYPES.map((opt) => {
-          const selected = speechType === opt.value;
-          return (
-            <label
-              key={opt.value}
-              title={opt.hint}
-              className={`inline-flex cursor-pointer items-center rounded-full border px-[14px] py-[5px] text-[12.5px] font-medium transition-colors ${
-                selected
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-card text-muted-foreground hover:text-foreground"
-              } ${busy ? "cursor-not-allowed opacity-60" : ""}`}
-            >
-              <input
-                type="radio"
-                name="speech-type"
-                value={opt.value}
-                checked={selected}
-                onChange={() => setSpeechType(opt.value)}
-                className="sr-only"
-                disabled={busy}
-              />
-              {opt.label}
-            </label>
-          );
-        })}
+      <fieldset className="mt-4" disabled={busy}>
+        <legend className="sr-only">Type</legend>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <span aria-hidden className="text-[15px] font-medium text-muted-foreground">
+            Type
+          </span>
+          <div className="inline-flex flex-wrap border-[1.5px] border-foreground">
+            {SPEECH_TYPES.map((opt, i) => {
+              const selected = speechType === opt.value;
+              return (
+                <label
+                  key={opt.value}
+                  title={opt.hint}
+                  className={`inline-flex h-9 cursor-pointer items-center px-3.5 text-[15px] font-semibold transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-foreground ${
+                    i > 0 ? "border-l-[1.5px] border-foreground" : ""
+                  } ${
+                    selected ? "bg-foreground text-card" : "bg-card hover:bg-muted"
+                  } ${busy ? "cursor-not-allowed opacity-60" : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name="speech-type"
+                    value={opt.value}
+                    checked={selected}
+                    onChange={() => setSpeechType(opt.value)}
+                    className="sr-only"
+                    disabled={busy}
+                  />
+                  {opt.label}
+                </label>
+              );
+            })}
+          </div>
+        </div>
+        {selectedType && (
+          <p className="mt-2 text-[14.5px] text-muted-foreground">
+            {selectedType.hint}
+          </p>
+        )}
       </fieldset>
 
       {error && (
-        <div className="mt-3 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div
+          role="alert"
+          className="mt-4 flex items-start gap-2.5 border-l-[3px] border-stop bg-stop/10 px-4 py-3 text-[15px] text-stop-ink"
+        >
           <AlertCircle className="mt-0.5 size-4 shrink-0" />
           <span>{error}</span>
         </div>

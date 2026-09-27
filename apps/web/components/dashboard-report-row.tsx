@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Loader2, Trash2 } from "lucide-react";
 
+import { Lamp } from "@/components/signal";
 import { deleteReport, type DashboardReport } from "@/lib/api";
+import { scoreTone } from "@/lib/scores";
 
 function formatDuration(sec: number): string {
   const m = Math.floor(sec / 60);
@@ -22,11 +24,6 @@ function formatDate(iso: string): string {
   });
 }
 
-function scoreTone(score: number): string {
-  if (score >= 4) return "bg-primary/10 text-primary";
-  if (score >= 3) return "bg-amber-500/10 text-amber-600";
-  return "bg-destructive/10 text-destructive";
-}
 
 export function DashboardReportRow({ report }: { report: DashboardReport }) {
   const router = useRouter();
@@ -50,34 +47,28 @@ export function DashboardReportRow({ report }: { report: DashboardReport }) {
     }
   }
 
+  const specType = report.speech_type;
+
   return (
-    <li className="flex items-center gap-4 rounded-[14px] border border-border bg-card px-5 py-4 transition-colors hover:border-[color-mix(in_oklch,var(--primary)_35%,var(--border))]">
+    <li className="group relative grid grid-cols-[62px_1fr_auto] items-center gap-4 px-4 py-4 transition-colors hover:bg-muted sm:px-5">
       <span
-        className={`inline-flex size-11 shrink-0 items-center justify-center rounded-[10px] font-mono text-[15px] font-semibold ${scoreTone(
-          report.overall_score,
-        )}`}
+        className="flex items-center gap-2 font-display text-[34px] leading-none font-bold"
         title="Overall score out of 5"
       >
+        <Lamp tone={scoreTone(report.overall_score)} />
         {report.overall_score.toFixed(1)}
       </span>
 
       <Link
         href={`/report/${report.report_id}`}
-        className="min-w-0 flex-1"
+        className="min-w-0 after:absolute after:inset-0 after:content-['']"
       >
-        <div className="truncate text-[15px] font-medium text-foreground">
+        <div className="line-clamp-2 text-[17px] leading-snug font-semibold">
           {report.headline}
         </div>
-        <div className="mt-1 flex flex-wrap gap-x-3 font-mono text-[11.5px] tracking-wide text-muted-foreground">
-          <span>{formatDate(report.created_at)}</span>
-          <span>·</span>
-          <span>{formatDuration(report.duration_sec)}</span>
-          {report.speech_type && (
-            <>
-              <span>·</span>
-              <span className="capitalize">{report.speech_type}</span>
-            </>
-          )}
+        <div className="mt-1 text-[14.5px] text-muted-foreground">
+          {formatDate(report.created_at)} · {formatDuration(report.duration_sec)}
+          {specType && <span className="capitalize"> · {specType}</span>}
         </div>
       </Link>
 
@@ -86,7 +77,7 @@ export function DashboardReportRow({ report }: { report: DashboardReport }) {
         onClick={handleDelete}
         disabled={deleting}
         aria-label="Delete report"
-        className="flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+        className="relative z-10 flex size-10 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-stop/10 hover:text-stop-ink disabled:opacity-50"
       >
         {deleting ? (
           <Loader2 className="size-4 animate-spin" />

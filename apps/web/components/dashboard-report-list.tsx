@@ -29,9 +29,13 @@ export function DashboardReportList({
       : reports.filter((report) => report.speech_type === filter);
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap gap-2">
-        {FILTERS.map(({ value, label }) => {
+    <div>
+      <div
+        role="group"
+        aria-label="Filter by speech type"
+        className="mb-4 inline-flex flex-wrap border-[1.5px] border-foreground"
+      >
+        {FILTERS.map(({ value, label }, i) => {
           const active = filter === value;
           return (
             <button
@@ -39,11 +43,9 @@ export function DashboardReportList({
               type="button"
               onClick={() => setFilter(value)}
               aria-pressed={active}
-              className={`h-8 rounded-full border px-3.5 text-[13px] font-medium transition-colors ${
-                active
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:border-[color-mix(in_oklch,var(--primary)_35%,var(--border))] hover:text-foreground"
-              }`}
+              className={`h-9 px-3.5 text-[15px] font-semibold transition-colors ${
+                i > 0 ? "border-l-[1.5px] border-foreground" : ""
+              } ${active ? "bg-foreground text-card" : "bg-card hover:bg-muted"}`}
             >
               {label}
             </button>
@@ -52,11 +54,11 @@ export function DashboardReportList({
       </div>
 
       {visible.length === 0 ? (
-        <p className="rounded-[14px] border border-dashed border-border bg-card px-5 py-8 text-center text-sm text-muted-foreground">
+        <p className="border-t-[3px] border-foreground bg-card px-5 py-8 text-center text-[16px] text-muted-foreground">
           No reports of this type yet.
         </p>
       ) : (
-        <ul className="space-y-3">
+        <ul className="divide-y divide-border border-t-[3px] border-foreground bg-card">
           {visible.map((report) => (
             <DashboardReportRow key={report.report_id} report={report} />
           ))}

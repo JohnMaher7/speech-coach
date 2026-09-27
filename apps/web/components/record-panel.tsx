@@ -1,15 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import {
-  ArrowRight,
-  Loader2,
-  Mic,
-  Pause,
-  Play,
-  RotateCcw,
-  Square,
-} from "lucide-react";
+import { Loader2, Pause, Play, RotateCcw, Square } from "lucide-react";
 
 import { useRecorder } from "@/lib/use-recorder";
 import { formatSize } from "@/lib/utils";
@@ -38,7 +30,7 @@ function LevelBars({ levels }: { levels: number[] }) {
       {levels.map((level, i) => (
         <span
           key={i}
-          className="w-[3px] rounded-full bg-primary transition-[height] duration-75"
+          className="w-[3px] bg-foreground transition-[height] duration-75"
           style={{ height: `${Math.max(8, level * 100)}%` }}
         />
       ))}
@@ -93,7 +85,7 @@ export function RecordPanel({
   }
 
   return (
-    <div className="flex min-h-[104px] flex-col items-center justify-center gap-4 rounded-[14px] border-[1.5px] border-dashed border-[oklch(0.85_0.01_264)] bg-[linear-gradient(180deg,oklch(0.995_0.002_264),oklch(0.98_0.003_264))] px-[22px] py-[26px]">
+    <div className="flex min-h-[104px] flex-col items-center justify-center gap-4 border-[1.5px] border-dashed border-muted-foreground/50 bg-muted px-4 py-6 sm:px-5">
       {state === "idle" && (
         <>
           <button
@@ -102,19 +94,19 @@ export function RecordPanel({
               onError(null);
               void start();
             }}
-            className="inline-flex h-11 items-center gap-2 rounded-[11px] bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-[oklch(0.45_0.22_277)]"
+            className="btn btn-ink"
           >
-            <Mic className="size-[14px]" strokeWidth={2.4} />
+            <span aria-hidden className="lamp bg-stop" />
             Start recording
           </button>
-          <div className="font-mono text-[11.5px] tracking-wide text-muted-foreground">
+          <div className="text-[14.5px] text-muted-foreground">
             Records in your browser · auto-stops at 20:00
           </div>
         </>
       )}
 
       {state === "requesting" && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-[15px] text-muted-foreground">
           <Loader2 className="size-4 animate-spin" />
           Allow microphone access…
         </div>
@@ -125,19 +117,19 @@ export function RecordPanel({
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-2">
               <span
-                className={`size-2.5 rounded-full ${
+                className={`lamp size-3 ${
                   state === "recording"
-                    ? "animate-pulse bg-[oklch(0.6_0.21_25)]"
-                    : "bg-muted-foreground"
+                    ? "bg-stop [animation:lamp-blink_1.2s_ease-in-out_infinite]"
+                    : "bg-caution"
                 }`}
               />
-              <span className="font-mono text-[15px] font-semibold tabular-nums text-foreground">
+              <span className="font-display text-[40px] leading-none font-bold">
                 {formatClock(elapsedSec)}
               </span>
             </span>
             <LevelBars levels={levels} />
             {state === "paused" && (
-              <span className="font-mono text-[11.5px] tracking-wide text-muted-foreground uppercase">
+              <span className="text-[15px] font-semibold text-caution-ink">
                 Paused
               </span>
             )}
@@ -147,7 +139,7 @@ export function RecordPanel({
               <button
                 type="button"
                 onClick={pause}
-                className="inline-flex h-10 items-center gap-2 rounded-[11px] border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                className="btn btn-line btn-sm"
               >
                 <Pause className="size-[14px]" strokeWidth={2.4} />
                 Pause
@@ -156,7 +148,7 @@ export function RecordPanel({
               <button
                 type="button"
                 onClick={resume}
-                className="inline-flex h-10 items-center gap-2 rounded-[11px] border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                className="btn btn-line btn-sm"
               >
                 <Play className="size-[14px]" strokeWidth={2.4} />
                 Resume
@@ -165,7 +157,7 @@ export function RecordPanel({
             <button
               type="button"
               onClick={stop}
-              className="inline-flex h-10 items-center gap-2 rounded-[11px] border border-destructive/40 bg-destructive/10 px-4 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20"
+              className="btn btn-stop btn-sm"
             >
               <Square className="size-[14px]" strokeWidth={2.4} />
               Stop
@@ -177,7 +169,7 @@ export function RecordPanel({
       {state === "stopped" && blob && previewUrl && (
         <>
           <audio controls src={previewUrl} className="w-full" />
-          <div className="font-mono text-[11.5px] tracking-wide text-muted-foreground">
+          <div className="text-[14.5px] text-muted-foreground">
             {formatClock(elapsedSec)} · {formatSize(blob.size)}
             {autoStopped && " · stopped at the 20-minute limit"}
           </div>
@@ -189,7 +181,7 @@ export function RecordPanel({
                 reset();
               }}
               disabled={busy}
-              className="inline-flex h-11 items-center gap-2 rounded-[11px] border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-70"
+              className="btn btn-line"
             >
               <RotateCcw className="size-[14px]" strokeWidth={2.4} />
               Re-record
@@ -198,13 +190,9 @@ export function RecordPanel({
               type="button"
               onClick={handleAnalyzeClick}
               disabled={busy}
-              className="inline-flex h-11 items-center gap-2 rounded-[11px] bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-[oklch(0.45_0.22_277)] disabled:cursor-not-allowed disabled:opacity-70"
+              className="btn btn-ink"
             >
-              {busy ? (
-                <Loader2 className="size-[14px] animate-spin" strokeWidth={2.4} />
-              ) : (
-                <ArrowRight className="size-[14px]" strokeWidth={2.4} />
-              )}
+              {busy && <Loader2 className="size-4 animate-spin" strokeWidth={2.4} />}
               {analyzeLabel}
             </button>
           </div>

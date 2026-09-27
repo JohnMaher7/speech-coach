@@ -4,10 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { Check, Lightbulb, Loader2, RefreshCw } from "lucide-react";
+import { Check, Loader2, RefreshCw } from "lucide-react";
 
-import { buttonVariants } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { streamAnalyze, type SpeechType } from "@/lib/api";
 
@@ -106,87 +104,113 @@ export default function AnalyzingPage() {
   }, [error]);
 
   const activeIdx = STEPS.findIndex((s) => !completed.has(s.id));
-  const pct = (completed.size / STEPS.length) * 100;
 
   return (
-    <main className="mx-auto w-full max-w-lg px-6 py-20 sm:py-24">
-      <div className="space-y-6">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {error ? "Couldn’t analyze that recording" : "Analyzing your speech"}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {error
-              ? "Nothing was saved — give it another go with a different file."
-              : "This usually takes about three minutes."}
-          </p>
+    <main className="flex-1">
+      <div className="mx-auto w-full max-w-[720px] px-4 py-14 sm:px-6 sm:py-20">
+        <h1 className="font-display text-[clamp(44px,6vw,64px)] leading-[0.92] font-bold">
+          {error ? "Couldn’t analyze that recording" : "Analyzing your speech"}
+        </h1>
+        <p className="mt-3 text-[17px] text-muted-foreground">
+          {error
+            ? "Nothing was saved — give it another go with a different file."
+            : "This usually takes about three minutes."}
+        </p>
+
+        <div
+          role="progressbar"
+          aria-label="Analysis progress"
+          aria-valuemin={0}
+          aria-valuemax={STEPS.length}
+          aria-valuenow={completed.size}
+          className="mt-8 grid grid-cols-6 gap-[3px]"
+        >
+          {STEPS.map((step, i) => {
+            const isDone = completed.has(step.id);
+            const isActive = !isDone && i === activeIdx;
+            return (
+              <span
+                key={step.id}
+                className={cn(
+                  "h-3 transition-colors duration-500",
+                  isDone
+                    ? "bg-go"
+                    : isActive && error
+                      ? "bg-stop"
+                      : isActive
+                        ? "bg-caution [animation:lamp-blink_1.4s_ease-in-out_infinite]"
+                        : "bg-lamp-off",
+                )}
+              />
+            );
+          })}
         </div>
 
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className={cn(
-              "h-full rounded-full transition-all duration-500 ease-out",
-              error ? "bg-destructive" : "bg-primary"
-            )}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-
-        <ol className="space-y-3">
+        <ol className="mt-[3px] divide-y divide-border bg-card">
           {STEPS.map((step, i) => {
             const isDone = completed.has(step.id);
             const isActive = !isDone && i === activeIdx && !error;
+            const failed = !isDone && i === activeIdx && Boolean(error);
             return (
-              <li key={step.id} className="flex items-center gap-3 text-sm">
-                <span className="flex size-5 items-center justify-center">
-                  {isDone ? (
-                    <span className="flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                      <Check className="size-3" />
-                    </span>
-                  ) : isActive ? (
-                    <Loader2 className="size-4 animate-spin text-primary" />
-                  ) : (
-                    <span className="block size-2 rounded-full bg-muted-foreground/30" />
-                  )}
-                </span>
+              <li
+                key={step.id}
+                aria-current={isActive ? "step" : undefined}
+                className="flex items-center gap-3.5 px-4 py-3 sm:px-5"
+              >
                 <span
-                  className={
+                  aria-hidden
+                  className={cn(
+                    "lamp",
+                    isDone
+                      ? "bg-go"
+                      : failed
+                        ? "bg-stop"
+                        : isActive
+                          ? "bg-caution"
+                          : "bg-lamp-off",
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-[16.5px]",
                     isDone
                       ? "text-foreground"
-                      : isActive
-                        ? "font-medium text-foreground"
-                        : "text-muted-foreground"
-                  }
+                      : isActive || failed
+                        ? "font-semibold text-foreground"
+                        : "text-muted-foreground",
+                  )}
                 >
                   {step.label}
                 </span>
+                {isActive && (
+                  <Loader2 className="ml-auto size-4 animate-spin text-muted-foreground" />
+                )}
+                {isDone && <Check className="ml-auto size-4 text-go-ink" strokeWidth={2.6} />}
               </li>
             );
           })}
         </ol>
 
         {error ? (
-          <div className="space-y-3">
-            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+          <div className="mt-6 grid gap-4">
+            <div
+              role="alert"
+              className="border-l-[3px] border-stop bg-stop/10 px-4 py-3 text-[15.5px] text-stop-ink"
+            >
               {error}
             </div>
-            <Link
-              href="/"
-              className={cn(buttonVariants({ variant: "outline" }), "h-10 w-full")}
-            >
+            <Link href="/" className="btn btn-line w-full">
               <RefreshCw className="size-4" />
               Try a different recording
             </Link>
           </div>
         ) : (
-          <Card className="flex items-start gap-3 bg-muted/30 p-4">
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Lightbulb className="size-4" />
-            </span>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              {TIPS[tipIdx]}
-            </p>
-          </Card>
+          <p
+            aria-live="polite"
+            className="mt-6 border-l-[3px] border-foreground pl-4 text-[17px] leading-[1.55] text-[#2D302D]"
+          >
+            {TIPS[tipIdx]}
+          </p>
         )}
       </div>
     </main>
