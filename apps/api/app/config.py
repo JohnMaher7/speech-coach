@@ -28,10 +28,17 @@ class Settings(BaseSettings):
     clerk_secret_key: str
     clerk_authorized_parties: str = "http://localhost:3000"
 
-    # Slug of the paid plan (configured in the Clerk dashboard). The backend
-    # gates money-spending routes on the user's session token carrying this
-    # plan in its `pla` claim — which it does during the free trial too.
+    # Slug of the legacy Clerk Billing plan. Subscribers who signed up before
+    # the move to Stripe keep access while their session token carries this
+    # plan in its `pla` claim (trial included).
     billing_plan_slug: str = "pro"
+
+    # Stripe billing. When unset (e.g. a dev box without Stripe keys) the
+    # /billing routes return 503 and only comp + legacy access works.
+    # `web_base_url` is where Checkout and the billing portal send users back.
+    stripe_secret_key: str | None = None
+    stripe_webhook_secret: str | None = None
+    web_base_url: str = "http://localhost:3000"
 
     # Optional — when unset, Sentry init is a no-op (local dev / preview).
     sentry_dsn: str | None = None

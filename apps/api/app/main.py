@@ -3,21 +3,21 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from typing import Annotated
 from uuid import uuid4
 
 import sentry_sdk
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.acoustic import AcousticFeatures, analyze_audio
-from app.auth import CurrentUser, RequireActivePlan
+from app import billing
+from app.auth import CurrentUser
+from app.billing import RequireActivePlan
 from app.config import settings
-from app.db import get_session, init_db
+from app.db import SessionDep, init_db
 from app.errors import (
     MAX_DURATION_SEC,
     MAX_UPLOAD_BYTES,
@@ -106,8 +106,7 @@ app.add_middleware(
     allow_headers=["content-type", "authorization"],
 )
 
-
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
+app.include_router(billing.router)
 
 
 @app.get("/health")

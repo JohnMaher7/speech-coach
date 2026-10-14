@@ -7,6 +7,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/analyzing(.*)",
+  "/billing(.*)",
 ]);
 
 // A real report (`/report/<id>`) needs auth; the sample reports

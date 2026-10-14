@@ -1,5 +1,7 @@
 from collections.abc import AsyncIterator
+from typing import Annotated
 
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlmodel import SQLModel
 
@@ -18,7 +20,7 @@ _session_factory = async_sessionmaker(
 
 
 async def init_db() -> None:
-    import app.models  # noqa: F401  registers ReportRow on SQLModel.metadata
+    import app.models  # noqa: F401  registers ReportRow + SubscriptionRow on SQLModel.metadata
 
     async with _engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
@@ -64,3 +66,6 @@ async def wipe_reports() -> int:
 async def get_session() -> AsyncIterator[AsyncSession]:
     async with _session_factory() as session:
         yield session
+
+
+SessionDep = Annotated[AsyncSession, Depends(get_session)]

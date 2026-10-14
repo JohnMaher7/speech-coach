@@ -24,6 +24,7 @@ image = (
         "sentry-sdk[fastapi]>=2.20.0",
         "clerk-backend-api>=5.0.6",
         "rapidfuzz>=3.10.0",
+        "stripe[async]>=16.0.0",
     )
     .add_local_python_source("app")
 )
@@ -35,11 +36,13 @@ app = modal.App("speech-coach-api", image=image)
 # between visits. The tradeoff is a 1–3 s cold start on the first request
 # after the app has been idle — acceptable for a low-traffic portfolio app.
 # Secrets are applied in order: later entries override earlier ones, so the
-# named prod secret always beats whatever the local .env holds at deploy time.
+# named prod secrets always beat whatever the local .env holds at deploy time.
 @app.function(
     secrets=[
         modal.Secret.from_dotenv(),
         modal.Secret.from_name("speech-coach-clerk-prod"),
+        modal.Secret.from_name("speech-coach-stripe-prod"),
+        modal.Secret.from_dict({"WEB_BASE_URL": "https://speakgrade.com"}),
     ],
     min_containers=0,
 )

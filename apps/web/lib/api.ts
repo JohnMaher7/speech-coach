@@ -316,3 +316,67 @@ export async function deleteReport(id: string, token: string): Promise<void> {
     throw new Error(`delete report failed: ${res.status}`);
   }
 }
+
+export type BillingPlan = "monthly" | "yearly";
+
+export type PlanPrice = {
+  plan: BillingPlan;
+  amount: number;
+  currency: string;
+  interval: string;
+};
+
+export type BillingStatus = {
+  active: boolean;
+  source: "comp" | "stripe" | "legacy" | null;
+  status: string | null;
+  current_period_end: string | null;
+  cancel_at: string | null;
+  can_manage: boolean;
+};
+
+async function errorDetail(res: Response, fallback: string): Promise<string> {
+  const body = await res.json().catch(() => null);
+  return typeof body?.detail === "string" ? body.detail : fallback;
+}
+
+export async function fetchPlanPrices(): Promise<PlanPrice[]> {
+  const res = await fetch(`${API_URL}/billing/prices`, { cache: "no-store" });
+  if (!res.ok) throw new ApiError("Couldn't load prices.", res.status);
+  return res.json();
+}
+
+export async function fetchBillingStatus(token: string): Promise<BillingStatus> {
+  const res = await fetch(`${API_URL}/billing/status`, {
+    cache: "no-store",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) throw new ApiError("Couldn't load your plan.", res.status);
+  return res.json();
+}
+
+export async function createCheckout(
+  plan: BillingPlan,
+  token: string,
+): Promise<{ url: string }> {
+  const res = await fetch(`${API_URL}/billing/checkout`, {
+    method: "POST",
+    headers: { "content-type": "application/json", ...authHeaders(token) },
+    body: JSON.stringify({ plan }),
+  });
+  if (!res.ok) {
+    throw new ApiError(await errorDetail(res, "Checkout failed."), res.status);
+  }
+  return res.json();
+}
+
+export async function createPortalSession(token: string): Promise<{ url: string }> {
+  const res = await fetch(`${API_URL}/billing/portal`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) {
+    throw new ApiError(await errorDetail(res, "Couldn't open billing."), res.status);
+  }
+  return res.json();
+}

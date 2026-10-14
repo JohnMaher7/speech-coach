@@ -20,3 +20,24 @@ class ReportRow(SQLModel, table=True):
     )
     duration_sec: float
     payload: dict[str, Any] = Field(sa_column=Column(JSONB, nullable=False))
+
+
+class SubscriptionRow(SQLModel, table=True):
+    __tablename__ = "subscriptions"
+
+    # One row per Clerk user. The Stripe fields mirror the user's newest
+    # Stripe subscription and are rewritten by the webhook on every change.
+    clerk_user_id: str = Field(primary_key=True)
+    stripe_customer_id: str = Field(index=True, unique=True)
+    stripe_subscription_id: str | None = None
+    status: str | None = None
+    price_id: str | None = None
+    current_period_end: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True))
+    )
+    cancel_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True))
+    )
+    updated_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )

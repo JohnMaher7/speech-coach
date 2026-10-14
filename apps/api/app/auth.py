@@ -1,16 +1,16 @@
-"""Clerk session verification + billing gate.
+"""Clerk session verification + the Clerk-side access checks.
 
 The browser holds a Clerk session and attaches a short-lived JWT to every
 API call as `Authorization: Bearer <token>`. This module turns that header
 into a verified Clerk user id (a `user_xxx` string) that route handlers can
-depend on, and gates the money-spending routes on an active paid plan.
+depend on. The paid-plan gate itself lives in `billing.py`; it uses the claim
+helpers here for comp accounts and legacy Clerk Billing subscribers.
 
 `Clerk.authenticate_request` verifies the token's signature against Clerk's
 public keys (JWKS) and checks expiry + the `authorized_parties` allowlist.
 The SDK caches the JWKS after the first fetch, so this is effectively a
 local check on the hot path. FastAPI caches `get_auth_state` per request, so
-the dependents below (`get_current_user`, `require_active_plan`) share a
-single verification.
+`get_current_user` and the billing gate share a single verification.
 """
 
 from typing import Annotated
@@ -59,7 +59,7 @@ async def get_current_user(request: Request, state: AuthState) -> str:
 CurrentUser = Annotated[str, Depends(get_current_user)]
 
 
-def _claim_has_slug(claim: str | None, slug: str) -> bool:
+def claim_has_slug(claim: str | None, slug: str) -> bool:
     """Whether `slug` is present in a Clerk `pla`/`fea` claim.
 
     Clerk encodes plans/features as a comma-separated string of `scope:slug`
@@ -77,7 +77,7 @@ def _claim_has_slug(claim: str | None, slug: str) -> bool:
     return False
 
 
-def _has_comp_access(payload: dict) -> bool:
+def has_comp_access(payload: dict) -> bool:
     """Whether the user is allowlisted for free access via Clerk public metadata.
 
     Set `{"compAccess": true}` on a user's public metadata in the Clerk
@@ -91,21 +91,3 @@ def _has_comp_access(payload: dict) -> bool:
     return value is True or (
         isinstance(value, str) and value.strip().lower() in ("true", "1", "yes")
     )
-
-
-async def require_active_plan(state: AuthState) -> None:
-    """Reject (402) a verified user who isn't on the paid plan, its trial, or
-    an allowlisted comp account."""
-
-    payload = state.payload or {}
-    if _has_comp_access(payload):
-        return
-    if not _claim_has_slug(payload.get("pla"), settings.billing_plan_slug):
-        raise HTTPException(
-            status_code=402,
-            detail="A subscription is required to analyze speeches.",
-        )
-
-
-# Add `_plan: RequireActivePlan` to a route to require an active plan/trial.
-RequireActivePlan = Annotated[None, Depends(require_active_plan)]

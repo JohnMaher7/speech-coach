@@ -470,3 +470,32 @@ class DashboardReport(BaseModel):
     speech_type: SpeechType | None = None
     headline: str
     overall_score: float
+
+
+BillingPlan = Literal["monthly", "yearly"]
+
+
+class PlanPrice(BaseModel):
+    plan: BillingPlan
+    amount: int  # minor units (cents)
+    currency: str
+    interval: str
+
+
+class CheckoutRequest(BaseModel):
+    plan: BillingPlan
+
+
+class RedirectResponse(BaseModel):
+    url: str
+
+
+class BillingStatus(BaseModel):
+    active: bool
+    # Where access comes from: a comp account, a Stripe subscription, or a
+    # subscription that predates the move off Clerk Billing.
+    source: Literal["comp", "stripe", "legacy"] | None
+    status: str | None
+    current_period_end: datetime | None
+    cancel_at: datetime | None
+    can_manage: bool

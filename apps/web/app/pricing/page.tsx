@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { PricingTable } from "@clerk/nextjs";
 import { Lamp } from "@/components/signal";
+import { PlanCards } from "@/components/plan-cards";
 
 export const metadata: Metadata = {
   title: "Pricing — SpeakGrade",
@@ -36,10 +36,8 @@ export default function PricingPage() {
           </p>
         </div>
 
-        {/* Plans — Monthly / Yearly toggle + trial CTA are rendered by Clerk
-            from the plan configured in the dashboard. */}
         <div className="mt-10 border-t-[3px] border-foreground bg-card px-4 py-6 sm:px-6">
-          <PricingTable />
+          <PlanCards />
         </div>
 
         <div className="mt-[3px] bg-card px-4 py-6 sm:px-6">
@@ -58,7 +56,7 @@ export default function PricingPage() {
 
         <p className="mt-6 text-[14.5px] text-muted-foreground">
           Secure checkout by Stripe · manage or cancel your plan anytime from
-          your account menu
+          your dashboard
         </p>
       </section>
     </main>

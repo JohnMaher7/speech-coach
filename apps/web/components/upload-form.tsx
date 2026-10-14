@@ -12,7 +12,13 @@ import {
   X,
 } from "lucide-react";
 
-import { signUpload, uploadToR2, warmUpApi, type SpeechType } from "@/lib/api";
+import {
+  fetchBillingStatus,
+  signUpload,
+  uploadToR2,
+  warmUpApi,
+  type SpeechType,
+} from "@/lib/api";
 import { RecordPanel } from "@/components/record-panel";
 import { formatSize } from "@/lib/utils";
 
@@ -52,6 +58,21 @@ export function UploadForm() {
   const [speechType, setSpeechType] = useState<SpeechType>("prepared");
   const [mode, setMode] = useState<Mode>("upload");
   const [recorderActive, setRecorderActive] = useState(false);
+  const [hasStripePlan, setHasStripePlan] = useState(false);
+
+  useEffect(() => {
+    if (!isSignedIn) return;
+    let cancelled = false;
+    (async () => {
+      const token = await getToken();
+      if (!token) return;
+      const { active } = await fetchBillingStatus(token);
+      if (!cancelled) setHasStripePlan(active);
+    })().catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isSignedIn, getToken]);
   const inputRef = useRef<HTMLInputElement>(null);
   const warmupStartedRef = useRef(false);
 
@@ -145,11 +166,11 @@ export function UploadForm() {
   }
 
   const busy = status !== "idle";
-  // Allowlisted comp accounts (Clerk public metadata) get free access.
+  // Comp accounts and legacy Clerk Billing subscribers are known from the
+  // session instantly; Stripe subscribers once /billing/status answers.
   const hasComp = Boolean(user?.publicMetadata?.compAccess);
-  // `has` is undefined until Clerk loads; treat unknown as "not subscribed".
   const isSubscribed = Boolean(
-    isSignedIn && (hasComp || has?.({ plan: "pro" })),
+    isSignedIn && (hasComp || has?.({ plan: "pro" }) || hasStripePlan),
   );
   const buttonLabel = {
     idle: !isSignedIn

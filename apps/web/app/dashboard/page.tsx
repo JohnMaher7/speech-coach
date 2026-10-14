@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 
+import { BillingSummary } from "@/components/billing-summary";
 import { DashboardReportList } from "@/components/dashboard-report-list";
 import { fetchMyReports, type DashboardReport } from "@/lib/api";
 
@@ -40,6 +41,8 @@ export default async function DashboardPage() {
             </Link>
           )}
         </div>
+
+        <BillingSummary />
 
         <div className="mt-8">
           {loadError ? (
