@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 
 _client = AsyncAnthropic(api_key=settings.anthropic_api_key)
 
-_MODEL = "claude-sonnet-5"
+_MODEL = "claude-sonnet-5-5"
 
-_SYSTEM_PROMPT_PREPARED = """You are a speech evaluator. You read an annotated transcript of a recorded speech, a segment-level table of prosody numbers, and the headline metrics — and you return a structured evaluator report as JSON matching the provided schema.
+_SYSTEM_PROMPT_PREPARED = """You are a speech evaluator. You read an annotated transcript of a recorded speech, a segment-level table of prosody numbers, and the headline metrics — and you submit a structured evaluator report by calling the `submit_evaluation` tool.
 
 # What the inputs look like
 
@@ -285,7 +285,7 @@ _RULES_SECTION = """# Rules
 - **`walkthrough` is chronological.** `opening` covers roughly the first 15%, `close` the last 15%, `body` is 2-4 beats in between. Each `Beat` has an `observation` (what happened) and at least one of `praise`/`critique` populated when the moment warrants it; `quote_t` points at the key word.
 - **`headline` is one short sentence** that captures the speech's character — a verdict line, not a stat dump."""
 
-_IMPROMPTU_INTRO = """You are a communication coach evaluating an IMPROMPTU answer — a table topic, or a tough question answered live in a meeting, with little or no prep time. You read an annotated transcript, a segment-level table of prosody numbers, and the headline metrics, and you return a structured evaluator report as JSON matching the provided schema.
+_IMPROMPTU_INTRO = """You are a communication coach evaluating an IMPROMPTU answer — a table topic, or a tough question answered live in a meeting, with little or no prep time. You read an annotated transcript, a segment-level table of prosody numbers, and the headline metrics, and you submit a structured evaluator report by calling the `submit_evaluation` tool.
 
 Judge this the way a good impromptu coach would, NOT by the standards of a rehearsed speech. The golden rule: composure and answering the question beat polish and speed."""
 
@@ -385,7 +385,7 @@ Segment table: WPM 105-120, pitch_range_st avg 2.4, boundary_tone mostly falling
 </output>
 </example>"""
 
-_PRESENTATION_INTRO = """You are a communication coach evaluating a PRESENTATION — an informative or persuasive talk delivered to an audience, usually supported by slides. You read an annotated transcript, a segment-level table of prosody numbers, and the headline metrics, and you return a structured evaluator report as JSON matching the provided schema.
+_PRESENTATION_INTRO = """You are a communication coach evaluating a PRESENTATION — an informative or persuasive talk delivered to an audience, usually supported by slides. You read an annotated transcript, a segment-level table of prosody numbers, and the headline metrics, and you submit a structured evaluator report by calling the `submit_evaluation` tool.
 
 Judge it the way you would assess a conference or boardroom talk. The golden rule: a presentation lives on signposting and on a takeaway the audience can carry out of the room."""
 
@@ -534,8 +534,9 @@ async def synthesize(
 
     response = await _client.messages.create(
         model=_MODEL,
-        max_tokens=12000,
-        thinking={"type": "disabled"},
+        max_tokens=16000,
+        thinking={"type": "adaptive"},
+        output_config={"effort": "medium"},
         system=[
             {
                 "type": "text",
@@ -544,7 +545,7 @@ async def synthesize(
             }
         ],
         tools=_TOOLS,
-        tool_choice={"type": "tool", "name": _TOOL_NAME},
+        tool_choice={"type": "auto"},
         messages=[{"role": "user", "content": user_content}],
     )
 

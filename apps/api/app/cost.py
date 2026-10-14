@@ -14,8 +14,12 @@ class ModelPricing:
     cache_read: float
 
 
-# Source: https://platform.claude.com/docs/en/about-claude/pricing (May 2026).
+# Source: https://platform.claude.com/docs/en/about-claude/pricing (May 2026;
+# claude-sonnet-5-5 added Oct 2026).
 PRICING: dict[str, ModelPricing] = {
+    "claude-sonnet-5-5": ModelPricing(
+        input=2.00, output=10.00, cache_write_5m=2.50, cache_read=0.20
+    ),
     "claude-sonnet-5": ModelPricing(
         input=3.00, output=15.00, cache_write_5m=3.75, cache_read=0.30
     ),
