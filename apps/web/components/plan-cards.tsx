@@ -10,6 +10,7 @@ import {
   createCheckout,
   fetchBillingStatus,
   fetchPlanPrices,
+  pingApi,
   type BillingPlan,
   type BillingStatus,
   type PlanPrice,
@@ -30,19 +31,25 @@ async function goToCheckout(plan: BillingPlan, token: string): Promise<void> {
   window.location.assign(url);
 }
 
-export function PlanCards() {
+export function PlanCards({ initialPrices }: { initialPrices: PlanPrice[] | null }) {
   const router = useRouter();
   const { isLoaded, isSignedIn, getToken } = useAuth();
-  const [prices, setPrices] = useState<PlanPrice[] | null>(null);
+  const [prices, setPrices] = useState<PlanPrice[] | null>(initialPrices);
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [pending, setPending] = useState<BillingPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Wake the API now so checkout doesn't pay its cold start. Prices only
+  // need fetching here if the server render couldn't get them.
   useEffect(() => {
+    if (initialPrices) {
+      pingApi();
+      return;
+    }
     fetchPlanPrices()
       .then(setPrices)
       .catch(() => setError("Couldn't load prices. Please refresh the page."));
-  }, []);
+  }, [initialPrices]);
 
   useEffect(() => {
     if (!isSignedIn) return;

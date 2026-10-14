@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Lamp } from "@/components/signal";
 import { PlanCards } from "@/components/plan-cards";
+import { fetchPlanPrices } from "@/lib/api";
 
 export const metadata: Metadata = {
   title: "Pricing — SpeakGrade",
@@ -15,7 +16,13 @@ const INCLUDED: string[] = [
   "Report history across your devices",
 ];
 
-export default function PricingPage() {
+// Prices are baked into the static page and refreshed in the background at
+// most every 5 minutes, so the page never waits on a cold API.
+export const revalidate = 300;
+
+export default async function PricingPage() {
+  const prices = await fetchPlanPrices(revalidate).catch(() => null);
+
   return (
     <main className="flex-1">
       <section className="wrap py-12 sm:py-16">
@@ -37,7 +44,7 @@ export default function PricingPage() {
         </div>
 
         <div className="mt-10 border-t-[3px] border-foreground bg-card px-4 py-6 sm:px-6">
-          <PlanCards />
+          <PlanCards initialPrices={prices} />
         </div>
 
         <div className="mt-[3px] bg-card px-4 py-6 sm:px-6">

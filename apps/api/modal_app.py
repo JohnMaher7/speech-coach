@@ -17,6 +17,7 @@ image = (
         "deepgram-sdk>=7.0.0",
         "anthropic>=0.99.0",
         "sqlmodel>=0.0.38",
+        "sqlalchemy[asyncio]>=2.0.49",
         "asyncpg>=0.31.0",
         "librosa>=0.11.0",
         "praat-parselmouth>=0.4.7",

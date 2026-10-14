@@ -340,10 +340,21 @@ async function errorDetail(res: Response, fallback: string): Promise<string> {
   return typeof body?.detail === "string" ? body.detail : fallback;
 }
 
-export async function fetchPlanPrices(): Promise<PlanPrice[]> {
-  const res = await fetch(`${API_URL}/billing/prices`, { cache: "no-store" });
+// `revalidateSec` is for server components: Next caches the response so the
+// pricing page is served as static HTML instead of waiting on the API.
+export async function fetchPlanPrices(revalidateSec?: number): Promise<PlanPrice[]> {
+  const res = await fetch(
+    `${API_URL}/billing/prices`,
+    revalidateSec === undefined
+      ? { cache: "no-store" }
+      : { next: { revalidate: revalidateSec }, signal: AbortSignal.timeout(10_000) },
+  );
   if (!res.ok) throw new ApiError("Couldn't load prices.", res.status);
   return res.json();
+}
+
+export function pingApi(): void {
+  fetch(`${API_URL}/health`, { cache: "no-store" }).catch(() => {});
 }
 
 export async function fetchBillingStatus(token: string): Promise<BillingStatus> {
