@@ -10,25 +10,11 @@ import modal
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .apt_install("ffmpeg")
-    .uv_pip_install(
-        "fastapi[standard]>=0.136.1",
-        "pydantic-settings>=2.14.0",
-        "boto3>=1.43.3",
-        "deepgram-sdk>=7.0.0",
-        "anthropic>=0.99.0",
-        "sqlmodel>=0.0.38",
-        "sqlalchemy[asyncio]>=2.0.49",
-        "asyncpg>=0.31.0",
-        "librosa>=0.11.0",
-        "praat-parselmouth>=0.4.7",
-        "slowapi>=0.1.9",
-        "sentry-sdk[fastapi]>=2.20.0",
-        "clerk-backend-api>=5.0.6",
-        "rapidfuzz>=3.10.0",
-        "stripe[async]>=16.0.0",
-    )
+    .uv_sync(extra_options="--no-dev")
     .add_local_python_source("app")
 )
+# Dependencies come from uv.lock (exact pins, prod deps only), so `uv add` is the
+# only place a new package needs to be declared.
 
 app = modal.App("speech-coach-api", image=image)
 
