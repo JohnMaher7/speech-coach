@@ -40,6 +40,14 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str | None = None
     web_base_url: str = "http://localhost:3000"
 
+    # Feedback widget. Every message is saved to Postgres; when both are set,
+    # it is also emailed to `feedback_to_email` through Resend. Without a
+    # verified sending domain, Resend only delivers to the Resend account's
+    # own address, so `feedback_to_email` must be that address.
+    resend_api_key: str | None = None
+    feedback_to_email: str | None = None
+    feedback_from_email: str = "SpeakGrade <onboarding@resend.dev>"
+
     # Optional — when unset, Sentry init is a no-op (local dev / preview).
     sentry_dsn: str | None = None
 

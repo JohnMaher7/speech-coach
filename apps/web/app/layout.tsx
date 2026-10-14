@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { FeedbackWidget } from "@/components/feedback-widget";
 
 const barlow = Barlow({
   variable: "--font-barlow",
@@ -82,6 +83,7 @@ export default function RootLayout({
           <SiteHeader />
           {children}
           <SiteFooter />
+          <FeedbackWidget />
         </body>
       </html>
     </ClerkProvider>

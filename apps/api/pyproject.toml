@@ -9,6 +9,7 @@ dependencies = [
     "clerk-backend-api>=5.0.6",
     "deepgram-sdk>=7.0.0",
     "fastapi[standard]>=0.136.1",
+    "httpx>=0.28.1",
     "librosa>=0.11.0",
     "praat-parselmouth>=0.4.7",
     "pydantic-settings>=2.14.0",

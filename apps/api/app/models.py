@@ -41,3 +41,19 @@ class SubscriptionRow(SQLModel, table=True):
     updated_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False)
     )
+
+
+class FeedbackRow(SQLModel, table=True):
+    __tablename__ = "feedback"
+
+    feedback_id: str = Field(primary_key=True)
+    created_at: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+    kind: str
+    message: str
+    email: str | None = None
+    # Clerk user id when the sender was signed in; None for visitors.
+    user_id: str | None = None
+    page: str | None = None
+    user_agent: str | None = None

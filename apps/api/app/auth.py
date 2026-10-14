@@ -59,6 +59,30 @@ async def get_current_user(request: Request, state: AuthState) -> str:
 CurrentUser = Annotated[str, Depends(get_current_user)]
 
 
+async def get_optional_user(request: Request) -> str | None:
+    """The verified Clerk user id, or None for a signed-out visitor.
+
+    For routes open to everyone (the feedback form) that still want to know
+    who sent a request when they can."""
+
+    if not request.headers.get("authorization"):
+        return None
+    state = _clerk.authenticate_request(
+        request,
+        AuthenticateRequestOptions(
+            authorized_parties=settings.clerk_authorized_party_list,
+        ),
+    )
+    if not state.is_signed_in or state.payload is None:
+        return None
+    user_id = state.payload.get("sub")
+    request.state.user_id = user_id
+    return user_id
+
+
+OptionalUser = Annotated[str | None, Depends(get_optional_user)]
+
+
 def claim_has_slug(claim: str | None, slug: str) -> bool:
     """Whether `slug` is present in a Clerk `pla`/`fea` claim.
 

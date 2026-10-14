@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 import sentry_sdk
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, StreamingResponse
 from slowapi.errors import RateLimitExceeded
@@ -14,7 +14,7 @@ from sqlalchemy import select
 
 from app.acoustic import AcousticFeatures, analyze_audio
 from app import billing
-from app.auth import CurrentUser
+from app.auth import CurrentUser, OptionalUser
 from app.billing import RequireActivePlan
 from app.config import settings
 from app.db import SessionDep, init_db
@@ -25,14 +25,16 @@ from app.errors import (
     MIN_WORDS,
     AnalysisError,
 )
+from app.feedback import email_feedback
 from app.lexical_fillers import detect_lexical_fillers
 from app.metrics import build_acoustic, compute_metrics
-from app.models import ReportRow
+from app.models import FeedbackRow, ReportRow
 from app.r2 import audio_size, delete_audio, download_to_tempfile, presign_put
 from app.rate_limit import limiter, rate_limit_handler
 from app.schemas import (
     AnalyzeRequest,
     DashboardReport,
+    FeedbackRequest,
     FillerHit,
     HealthResponse,
     LlmCost,
@@ -118,6 +120,33 @@ async def health() -> HealthResponse:
 async def warmup(session: SessionDep, user: CurrentUser) -> HealthResponse:
     await session.execute(select(1))
     return HealthResponse(status="ok")
+
+
+@app.post("/feedback", status_code=204)
+@limiter.limit("5/minute;30/hour")
+async def submit_feedback(
+    request: Request,
+    req: FeedbackRequest,
+    session: SessionDep,
+    user: OptionalUser,
+    background: BackgroundTasks,
+) -> Response:
+    if req.website:
+        return Response(status_code=204)
+    row = FeedbackRow(
+        feedback_id=uuid4().hex,
+        created_at=datetime.now(UTC),
+        kind=req.kind,
+        message=req.message,
+        email=req.email or None,
+        user_id=user,
+        page=req.page,
+        user_agent=(request.headers.get("user-agent") or "")[:500] or None,
+    )
+    session.add(row)
+    await session.commit()
+    background.add_task(email_feedback, row)
+    return Response(status_code=204)
 
 
 @app.post("/uploads/sign")

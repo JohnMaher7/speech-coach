@@ -41,6 +41,25 @@ class AnalyzeRequest(BaseModel):
     )
 
 
+FeedbackKind = Literal["feedback", "bug", "support"]
+
+
+class FeedbackRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    kind: FeedbackKind
+    message: str = Field(min_length=1, max_length=5000)
+    email: str | None = Field(default=None, max_length=320)
+    page: str | None = Field(
+        default=None, max_length=500, description="Path the widget was opened on."
+    )
+    website: str = Field(
+        default="",
+        max_length=500,
+        description="Honeypot. Hidden from people, so only bots fill it in.",
+    )
+
+
 class AnalyzeResponse(BaseModel):
     report_id: str = Field(
         description="Identifier the client uses to fetch the finished report.")

@@ -391,3 +391,30 @@ export async function createPortalSession(token: string): Promise<{ url: string 
   }
   return res.json();
 }
+
+export type FeedbackKind = "feedback" | "bug" | "support";
+
+export async function sendFeedback(
+  body: {
+    kind: FeedbackKind;
+    message: string;
+    email: string | null;
+    page: string;
+    website: string;
+  },
+  token: string | null,
+): Promise<void> {
+  const res = await fetch(`${API_URL}/feedback`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      ...(token ? authHeaders(token) : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(
+      await errorDetail(res, "Your message didn't send. Please try again."),
+    );
+  }
+}

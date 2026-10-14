@@ -20,7 +20,7 @@ _session_factory = async_sessionmaker(
 
 
 async def init_db() -> None:
-    import app.models  # noqa: F401  registers ReportRow + SubscriptionRow on SQLModel.metadata
+    import app.models  # noqa: F401  registers every table on SQLModel.metadata
 
     async with _engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
