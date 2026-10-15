@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-15",
+  "browser": "155.0.8059.39",
+  "checks": [
+    "All four report tabs update advice, metric, chart and selected state.",
+    "Report tabs support arrow keys, Home and End.",
+    "Both billing periods show verified prices and pass selection into the local trial dialog; Escape and sample navigation work.",
+    "FAQ expands and collapses.",
+    "No horizontal overflow at 320, 360, 390, 768, 1024, 1440 CSS pixels.",
+    "Mobile menu opens, navigates, closes and supports Escape.",
+    "Reduced-motion preference disables smooth scrolling and transitions.",
+    "No broken section links, JavaScript errors or external runtime requests.",
+    "Directly opening index.html works without a server, including images and interactions."
+  ],
+  "images": [
+    {
+      "loaded": true,
+      "source": "http://127.0.0.1:4173/assets/voice-to-feedback-800.webp"
+    }
+  ],
+  "payload": {
+    "uncompressedBaseBytes": 48210,
+    "mobileWith800pxWebP": 73530,
+    "desktopWith1500pxWebP": 86180
+  },
+  "errors": [],
+  "externalRequests": []
+}
