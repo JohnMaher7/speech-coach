@@ -1,1 +1,0 @@
-{"name":"speakgrade-homepage-prototype","version":"1.0.0","private":true,"description":"Standalone homepage exploration. No app dependencies, external requests or production changes.","scripts":{"start":"node server.cjs"}}
