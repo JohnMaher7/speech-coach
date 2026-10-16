@@ -15,10 +15,10 @@ import {
 import type { Pause, TimelinePoint } from "@/lib/api";
 import { pitchVarietySeries } from "@/lib/pitch-variety";
 
-const PITCH_COLOR = "#151515";
-const WPM_COLOR = "#0E9F5B";
-const PAUSE_COLOR = "#8C928B";
-const LONG_PAUSE_COLOR = "#DA3A2B";
+const PITCH_COLOR = "#0D0D0C";
+const WPM_COLOR = "#1F9D63";
+const PAUSE_COLOR = "#A3A39C";
+const LONG_PAUSE_COLOR = "#E0483E";
 const PAUSE_MIN_SEC = 0.6;
 const LONG_PAUSE_SEC = 2.0;
 const WPM_SWEET_LOW = 130;
@@ -79,7 +79,7 @@ function ChartTooltip({
   const pauseIsLong = pauseDur >= LONG_PAUSE_SEC;
 
   return (
-    <div className="bg-foreground px-3 py-2 text-[13px] leading-snug text-card">
+    <div className="rounded-xl bg-foreground px-3 py-2 text-[12.5px] leading-snug text-white shadow-lift">
       <div className="font-semibold">{formatTime(label)}</div>
       {hoveredPause && (
         <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ export function TimelineChart({
             </linearGradient>
           </defs>
           <CartesianGrid
-            stroke="#E3E6E0"
+            stroke="#EEEDE9"
             vertical={false}
           />
           <XAxis
@@ -213,7 +213,7 @@ export function TimelineChart({
             label={{
               value: "sweet spot 130–160 wpm",
               position: "top",
-              fill: "#0A7A45",
+              fill: "#137A4A",
               fontSize: 12,
               fillOpacity: 0.9,
               offset: 4,

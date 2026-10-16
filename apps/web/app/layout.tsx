@@ -1,56 +1,76 @@
 import type { Metadata } from "next";
-import { Barlow, Barlow_Condensed } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { FeedbackWidget } from "@/components/feedback-widget";
 
-const barlow = Barlow({
-  variable: "--font-barlow",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  style: ["normal", "italic"],
 });
 
-const barlowCondensed = Barlow_Condensed({
-  variable: "--font-barlow-condensed",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  preload: false,
+});
+
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 const clerkAppearance = {
   variables: {
-    colorPrimary: "#151515",
+    colorPrimary: "#0D0D0C",
     colorPrimaryForeground: "#FFFFFF",
-    colorForeground: "#151515",
-    colorMutedForeground: "#555A55",
-    colorMuted: "#F1F2EE",
+    colorForeground: "#0D0D0C",
+    colorMutedForeground: "#6B6B66",
+    colorMuted: "#F3F3F0",
     colorBackground: "#FFFFFF",
     colorInput: "#FFFFFF",
-    colorInputForeground: "#151515",
-    colorBorder: "#CDD1CA",
-    colorRing: "#151515",
-    colorDanger: "#C8321F",
-    colorSuccess: "#0A7A45",
-    colorWarning: "#8A5B00",
-    colorShadow: "transparent",
-    fontFamily: "var(--font-barlow), sans-serif",
-    fontFamilyButtons: "var(--font-barlow-condensed), sans-serif",
+    colorInputForeground: "#0D0D0C",
+    colorBorder: "#E7E6E1",
+    colorRing: "#0D0D0C",
+    colorDanger: "#BB3329",
+    colorSuccess: "#137A4A",
+    colorWarning: "#8F5D06",
+    fontFamily: "var(--font-geist), sans-serif",
+    fontFamilyButtons: "var(--font-geist), sans-serif",
     fontSize: "15px",
-    borderRadius: "0px",
+    borderRadius: "12px",
   },
   elements: {
-    card: { boxShadow: "none", borderTop: "3px solid #151515" },
-    cardBox: { boxShadow: "none" },
+    card: {
+      boxShadow:
+        "0 1px 1px rgb(16 16 14 / 0.03), 0 16px 40px -16px rgb(16 16 14 / 0.16)",
+      border: "1px solid #E7E6E1",
+    },
+    cardBox: { boxShadow: "none", borderRadius: "20px" },
+    headerTitle: {
+      fontFamily: "var(--font-instrument-serif), serif",
+      fontSize: "30px",
+      fontWeight: 400,
+      letterSpacing: "-0.01em",
+    },
     formButtonPrimary: {
       backgroundImage: "none",
-      boxShadow: "none",
-      fontSize: "17px",
-      fontWeight: 600,
+      borderRadius: "9999px",
+      fontSize: "15px",
+      fontWeight: 500,
     },
-    socialButtonsBlockButton: { border: "1.5px solid #151515", boxShadow: "none" },
-    formFieldInput: { border: "1.5px solid #CDD1CA", boxShadow: "none" },
+    socialButtonsBlockButton: {
+      borderRadius: "9999px",
+      border: "1px solid #D4D3CD",
+      boxShadow: "0 1px 2px rgb(16 16 14 / 0.04)",
+    },
+    formFieldInput: {
+      border: "1px solid #DDDCD6",
+      boxShadow: "0 1px 2px rgb(16 16 14 / 0.04)",
+    },
   },
 };
 
@@ -77,7 +97,7 @@ export default function RootLayout({
     <ClerkProvider appearance={clerkAppearance}>
       <html
         lang="en"
-        className={`${barlow.variable} ${barlowCondensed.variable} antialiased`}
+        className={`${geist.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
       >
         <body className="flex min-h-svh flex-col bg-background text-foreground">
           <SiteHeader />

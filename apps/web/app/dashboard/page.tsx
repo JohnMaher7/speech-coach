@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 
 import { BillingSummary } from "@/components/billing-summary";
+import { BrandMark } from "@/components/site-header";
 import { DashboardReportList } from "@/components/dashboard-report-list";
 import { fetchMyReports, type DashboardReport } from "@/lib/api";
 
@@ -25,19 +26,20 @@ export default async function DashboardPage() {
 
   return (
     <main className="flex-1">
-      <div className="mx-auto w-full max-w-[880px] px-4 py-12 sm:px-6 sm:py-16">
+      <div className="mx-auto w-full max-w-[920px] px-5 pt-12 pb-24 sm:px-8 sm:pt-16">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="font-display text-[clamp(48px,6vw,68px)] leading-[0.9] font-bold">
+            <p className="eyebrow">Dashboard</p>
+            <h1 className="display mt-3 text-[clamp(44px,6vw,64px)] leading-none tracking-[-0.02em]">
               Your reports
             </h1>
-            <p className="mt-3 text-[17px] text-muted-foreground">
+            <p className="mt-3 text-[15.5px] text-muted-foreground">
               Every speech you&apos;ve analyzed. Open one to revisit the coaching.
             </p>
           </div>
           {!loadError && reports.length > 0 && (
             <Link href="/#upload" className="btn btn-ink shrink-0 self-start sm:self-auto">
-              Analyze a speech
+              New analysis
             </Link>
           )}
         </div>
@@ -46,26 +48,20 @@ export default async function DashboardPage() {
 
         <div className="mt-8">
           {loadError ? (
-            <p
-              role="alert"
-              className="border-l-[3px] border-stop bg-stop/10 px-4 py-3 text-[15.5px] text-stop-ink"
-            >
+            <p role="alert" className="alert-stop px-4 py-3 text-[14.5px]">
               We couldn&apos;t load your reports just now. Please refresh the page.
             </p>
           ) : reports.length === 0 ? (
-            <div className="border-t-[3px] border-foreground bg-card px-6 py-12 text-center">
-              <div aria-hidden className="mx-auto mb-5 grid w-max gap-[5px]">
-                <span className="lamp size-3 bg-lamp-off" />
-                <span className="lamp size-3 bg-lamp-off" />
-                <span className="lamp size-3 bg-lamp-off" />
-              </div>
-              <p className="font-display text-[30px] leading-none font-bold">
-                No reports yet
+            <div className="surface flex flex-col items-center px-6 py-16 text-center">
+              <span className="grid size-14 place-items-center rounded-full border border-border bg-background">
+                <BrandMark className="size-7 text-foreground" />
+              </span>
+              <p className="display mt-6 text-[34px] leading-none">No reports yet</p>
+              <p className="mt-3 max-w-[40ch] text-[15px] text-muted-foreground">
+                Analyze your first speech and it&apos;ll show up here, ready to
+                compare against your next rehearsal.
               </p>
-              <p className="mt-2 text-[16px] text-muted-foreground">
-                Analyze your first speech and it&apos;ll show up here.
-              </p>
-              <Link href="/#upload" className="btn btn-ink mt-6">
+              <Link href="/#upload" className="btn btn-ink mt-7">
                 Analyze a speech
               </Link>
             </div>

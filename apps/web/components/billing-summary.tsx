@@ -46,8 +46,8 @@ export function BillingSummary() {
   const text = status.active ? describe(status) : "You don't have an active plan.";
 
   return (
-    <div className="mt-8 flex flex-col gap-3 border-l-[3px] border-foreground bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-      {text && <p className="text-[15.5px]">{text}</p>}
+    <div className="surface mt-8 flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      {text && <p className="text-[14.5px] text-ink-2">{text}</p>}
       <div className="flex gap-3">
         {status.can_manage && <ManageBillingButton className="btn btn-line btn-sm" />}
         {!status.active && (

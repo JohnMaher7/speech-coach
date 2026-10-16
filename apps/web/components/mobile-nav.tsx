@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Show } from "@clerk/nextjs";
 
-import { NAV_LINKS } from "@/components/site-header";
+import { NAV_LINKS, Wordmark } from "@/components/site-header";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
@@ -37,7 +37,7 @@ export function MobileNav() {
         aria-label="Open menu"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="inline-flex size-10 items-center justify-center border-[1.5px] border-foreground text-foreground transition-colors hover:bg-muted"
+        className="inline-flex size-10 items-center justify-center rounded-full border border-border-strong bg-card text-foreground transition-colors hover:bg-muted"
       >
         <Menu className="size-5" strokeWidth={2} />
       </button>
@@ -51,16 +51,16 @@ export function MobileNav() {
             aria-label="Close menu"
             tabIndex={-1}
             onClick={close}
-            className="absolute inset-0 bg-foreground/50"
+            className="absolute inset-0 bg-foreground/30 backdrop-blur-[2px] [animation:fade_.2s_ease-out]"
           />
-          <div className="absolute inset-y-0 right-0 flex w-[86%] max-w-[340px] flex-col border-l-[3px] border-foreground bg-card px-6 pt-4 pb-8">
+          <div className="absolute inset-y-2 right-2 flex w-[calc(100%-16px)] max-w-[360px] flex-col rounded-3xl border border-border bg-card px-6 pt-3 pb-6 shadow-float [animation:rise_.22s_ease-out]">
             <div className="mb-4 flex items-center justify-between">
-              <span className="font-display text-[24px] font-bold">Menu</span>
+              <Wordmark />
               <button
                 type="button"
                 aria-label="Close menu"
                 onClick={close}
-                className="inline-flex size-10 items-center justify-center border-[1.5px] border-foreground text-foreground transition-colors hover:bg-muted"
+                className="-mr-2 inline-flex size-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted"
               >
                 <X className="size-5" strokeWidth={2} />
               </button>
@@ -72,7 +72,7 @@ export function MobileNav() {
                   key={href}
                   href={href}
                   onClick={close}
-                  className="border-b border-border py-3 font-display text-[22px] font-semibold text-foreground transition-colors hover:text-muted-foreground"
+                  className="display border-b border-border py-3.5 text-[28px] text-foreground transition-colors hover:text-muted-foreground"
                 >
                   {label}
                 </Link>
@@ -81,7 +81,7 @@ export function MobileNav() {
                 <Link
                   href="/dashboard"
                   onClick={close}
-                  className="border-b border-border py-3 font-display text-[22px] font-semibold text-foreground transition-colors hover:text-muted-foreground"
+                  className="display border-b border-border py-3.5 text-[28px] text-foreground transition-colors hover:text-muted-foreground"
                 >
                   Dashboard
                 </Link>
@@ -90,20 +90,28 @@ export function MobileNav() {
                 <Link
                   href="/sign-in"
                   onClick={close}
-                  className="border-b border-border py-3 font-display text-[22px] font-semibold text-foreground transition-colors hover:text-muted-foreground"
+                  className="display border-b border-border py-3.5 text-[28px] text-foreground transition-colors hover:text-muted-foreground"
                 >
                   Log in
                 </Link>
               </Show>
             </nav>
 
-            <Link
-              href="/#upload"
-              onClick={close}
-              className="btn btn-ink mt-6 w-full"
-            >
-              New analysis
-            </Link>
+            <div className="mt-auto pt-6">
+              <Show when="signed-in">
+                <Link href="/#upload" onClick={close} className="btn btn-ink btn-lg w-full">
+                  New analysis
+                </Link>
+              </Show>
+              <Show when="signed-out">
+                <Link href="/pricing" onClick={close} className="btn btn-ink btn-lg w-full">
+                  Start free trial
+                </Link>
+                <p className="mt-3 text-center text-[13.5px] text-muted-foreground">
+                  7 days free · cancel anytime
+                </p>
+              </Show>
+            </div>
           </div>
         </div>,
           document.body,

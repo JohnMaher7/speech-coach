@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { SectionHead, SignalBar, Lamp, Tally, TONE_INK } from "@/components/signal";
+import { ScoreRing, SectionHead, SignalBar, Lamp, Tally, TONE_INK } from "@/components/signal";
 import { TimelineChart } from "@/components/timeline-chart";
 import { VolumeChart } from "@/components/volume-chart";
 import type {
@@ -81,7 +81,7 @@ export function ReportView({
   const { synthesis } = report;
 
   return (
-    <main className="wrap flex-1 pb-4">
+    <main className="wrap flex-1 pb-8">
       <HeadlineSection report={report} sampleLabel={sampleLabel} />
       <SpeechStrip report={report} />
       <StatReadout report={report} />
@@ -110,55 +110,56 @@ function HeadlineSection({
   const wordCount = report.transcript.words.length.toLocaleString();
 
   return (
-    <section className="pt-7 pb-8">
-      <div className="flex flex-wrap items-center gap-2 text-[14.5px] font-medium text-muted-foreground">
+    <section className="pt-8 pb-10 sm:pt-10">
+      <nav
+        aria-label="Breadcrumb"
+        className="flex flex-wrap items-center gap-2 text-[13px] text-muted-foreground"
+      >
         <Link href="/" className="transition-colors hover:text-foreground">
           SpeakGrade
         </Link>
-        <span className="text-border">/</span>
+        <span className="text-border-strong">/</span>
         <span>Report</span>
-        <span className="text-border">/</span>
+        <span className="text-border-strong">/</span>
         <span className="truncate">{report.report_id}</span>
         {sampleLabel && (
-          <span className="bg-caution px-2 font-semibold text-foreground">
+          <span className="ml-1 rounded-full border border-caution/30 bg-caution/10 px-2.5 py-0.5 text-[12px] font-medium text-caution-ink">
             {sampleLabel}
           </span>
         )}
-      </div>
+      </nav>
 
-      <div className="mt-4 grid items-end gap-8 md:grid-cols-[1fr_300px] md:gap-10">
+      <div className="mt-8 grid items-center gap-10 lg:grid-cols-[1fr_340px] lg:gap-16">
         <div>
-          <h1 className="font-display text-[clamp(52px,7vw,92px)] leading-[0.9] font-bold">
-            Speech evaluation.
-          </h1>
-          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-[16px] text-muted-foreground">
-            <span>
-              Recorded{" "}
-              <b className="font-semibold text-foreground">
-                {formatDate(report.created_at)}
-              </b>
-            </span>
-            <span>
-              <b className="font-semibold text-foreground">
-                {formatDuration(report.duration_sec)}
-              </b>{" "}
-              · {wordCount} words · {wpm} wpm
-            </span>
+          <p className="eyebrow">
+            Speech evaluation
             {report.speech_type && (
-              <b className="font-semibold text-foreground">
-                {SPEECH_TYPE_LABEL[report.speech_type] ?? report.speech_type}
-              </b>
-            )}
-          </div>
-          <p className="mt-5 max-w-[36ch] text-pretty text-[23px] leading-[1.4] font-medium">
-            {report.synthesis.headline}
+              <> · {SPEECH_TYPE_LABEL[report.speech_type] ?? report.speech_type}</>
+            )}{" "}
+            · {formatDate(report.created_at)}
           </p>
-          {report.synthesis.message_sentence && (
-            <p className="mt-3 max-w-[60ch] text-muted-foreground">
-              Core message ·{" "}
-              <span className="text-foreground">
-                &ldquo;{report.synthesis.message_sentence}&rdquo;
+          <h1 className="display mt-4 max-w-[22ch] text-[clamp(36px,4.6vw,58px)] leading-[1.04] tracking-[-0.015em]">
+            {report.synthesis.headline}
+          </h1>
+          <div className="mt-6 flex flex-wrap gap-2 text-[13.5px]">
+            {[
+              formatDuration(report.duration_sec),
+              `${wordCount} words`,
+              `${wpm} wpm`,
+            ].map((chip) => (
+              <span
+                key={chip}
+                className="rounded-full border border-border bg-card px-3 py-1 text-ink-2"
+              >
+                {chip}
               </span>
+            ))}
+          </div>
+          {report.synthesis.message_sentence && (
+            <p className="mt-6 max-w-[62ch] border-l-2 border-border-strong pl-4 text-[15.5px] leading-[1.6] text-muted-foreground">
+              <span className="font-medium text-foreground">Core message</span>
+              <br />
+              &ldquo;{report.synthesis.message_sentence}&rdquo;
             </p>
           )}
         </div>
@@ -166,43 +167,19 @@ function HeadlineSection({
         <div
           role="img"
           aria-label={`Overall ${overall.toFixed(1)} out of 5, ${verdict(overall)}`}
-          className="grid max-w-[360px] grid-cols-[auto_1fr] items-center gap-5 bg-foreground px-[22px] pt-5 pb-[18px] text-card"
+          className="surface flex items-center gap-6 p-6 shadow-lift lg:flex-col lg:items-start lg:gap-5 lg:p-7"
         >
-          <div className="grid gap-2">
-            {(["good", "mid", "low"] as const).map((t) => (
-              <SignalLamp key={t} tone={t} on={t === tone} />
-            ))}
-          </div>
+          <ScoreRing score={overall} tone={tone} size={128} stroke={7} />
           <div>
-            <div className="text-[14.5px] text-[#B9BDB8]">Overall</div>
-            <div className="mt-0.5 font-display text-[76px] leading-[0.9] font-bold">
-              {overall.toFixed(1)}
-            </div>
-            <div className="mt-1 font-display text-[24px] leading-tight font-semibold">
-              {verdict(overall)}
-            </div>
-            <div className="mt-0.5 text-[14.5px] text-[#B9BDB8]">
-              {overall.toFixed(1)} / 5
-            </div>
+            <p className="eyebrow">Overall</p>
+            <p className="display mt-1 text-[34px] leading-none">{verdict(overall)}</p>
+            <p className="mt-2 text-[13.5px] text-muted-foreground">
+              {overall.toFixed(1)} out of 5, averaged across eight categories
+            </p>
           </div>
         </div>
       </div>
     </section>
-  );
-}
-
-const SIGNAL_ON: Record<ScoreTone, string> = {
-  good: "bg-go shadow-[0_0_0_4px_rgb(14_159_91/0.25)]",
-  mid: "bg-caution shadow-[0_0_0_4px_rgb(240_160_0/0.25)]",
-  low: "bg-stop shadow-[0_0_0_4px_rgb(218_58_43/0.3)]",
-};
-
-function SignalLamp({ tone, on }: { tone: ScoreTone; on: boolean }) {
-  return (
-    <span
-      aria-hidden
-      className={`block size-[30px] rounded-full ${on ? SIGNAL_ON[tone] : "bg-[#2C2E2C]"}`}
-    />
   );
 }
 
@@ -220,11 +197,14 @@ function SpeechStrip({ report }: { report: Report }) {
   return (
     <section
       aria-label="The whole speech at a glance"
-      className="border-t-[3px] border-foreground bg-card px-4 pt-4 pb-3 sm:px-5"
+      className="surface px-4 pt-5 pb-4 sm:px-6"
     >
-      <p className="mb-3 text-[14.5px] text-muted-foreground">
-        {formatDuration(duration)} total · {pauseLabel}
-      </p>
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-[15px] font-semibold tracking-[-0.005em]">The whole talk at a glance</h2>
+        <p className="text-[13px] text-muted-foreground">
+          {formatDuration(duration)} total · {pauseLabel}
+        </p>
+      </div>
 
       <div className="grid grid-cols-[52px_1fr] gap-x-3 sm:grid-cols-[64px_1fr]">
         <span />
@@ -234,12 +214,12 @@ function SpeechStrip({ report }: { report: Report }) {
             return (
               <div
                 key={label}
-                className="absolute inset-y-0 overflow-hidden border-x border-card bg-muted"
+                className="absolute inset-y-0 overflow-hidden rounded-lg border-x-2 border-card bg-muted"
                 style={{ left: pct(beat.start_t), width: `${width}%` }}
                 title={`${label} · ${formatDuration(beat.start_t)} – ${formatDuration(beat.end_t)}`}
               >
                 <span
-                  className={`block h-[6px] ${beatTone(beat) === "good" ? "bg-go" : "bg-caution"}`}
+                  className={`block h-[4px] ${beatTone(beat) === "good" ? "bg-go" : "bg-caution"}`}
                 />
                 {width > 9 && (
                   <div
@@ -247,10 +227,10 @@ function SpeechStrip({ report }: { report: Report }) {
                       width <= 22 ? "max-sm:hidden" : ""
                     }`}
                   >
-                    <div className="font-display text-[18px] font-bold">{label}</div>
+                    <div className="text-[13.5px] font-semibold">{label}</div>
                     {width > 16 && (
                       <div
-                        className={`text-[12.5px] text-muted-foreground ${
+                        className={`text-[11.5px] text-muted-foreground ${
                           width <= 30 ? "max-sm:hidden" : ""
                         }`}
                       >
@@ -264,19 +244,19 @@ function SpeechStrip({ report }: { report: Report }) {
           })}
         </div>
 
-        <span className="self-center text-[13px] text-muted-foreground">Fillers</span>
+        <span className="self-center text-[12.5px] text-muted-foreground">Fillers</span>
         <div className="relative my-3 h-5">
           {metrics.fillers.map((f, i) => (
             <span
               key={i}
               title={`“${f.word}” at ${formatDuration(f.t)}`}
-              className="absolute inset-y-0 w-[2px] bg-foreground"
+              className="absolute inset-y-0.5 w-[2px] rounded-full bg-foreground/80"
               style={{ left: pct(f.t) }}
             />
           ))}
         </div>
 
-        <span className="self-center text-[13px] text-muted-foreground">Pauses</span>
+        <span className="self-center text-[12.5px] text-muted-foreground">Pauses</span>
         <div className="relative h-5">
           <span className="absolute inset-x-0 top-1/2 h-px bg-border" />
           {acoustic.pauses.map((p, i) => {
@@ -285,7 +265,7 @@ function SpeechStrip({ report }: { report: Report }) {
               <span
                 key={i}
                 title={`Pause ${(p.end - p.start).toFixed(1)}s at ${formatDuration(p.start)}`}
-                className={`absolute inset-y-0 min-w-[4px] ${long ? "bg-stop" : "bg-foreground"}`}
+                className={`absolute inset-y-1 min-w-[4px] rounded-full ${long ? "bg-stop" : "bg-foreground/70"}`}
                 style={{
                   left: pct(p.start),
                   width: `${((p.end - p.start) / duration) * 100}%`,
@@ -296,24 +276,24 @@ function SpeechStrip({ report }: { report: Report }) {
         </div>
 
         <span />
-        <div className="relative mt-1 h-6 border-t border-muted-foreground/40">
+        <div className="relative mt-1 h-6 border-t border-border-strong">
           {ticks.map((t) => (
             <span
               key={t}
-              className="absolute top-0 flex flex-col items-center text-[12px] text-muted-foreground"
+              className="absolute top-0 flex flex-col items-center text-[11.5px] text-muted-foreground"
               style={{
                 left: pct(t),
                 transform: t === 0 ? "none" : "translateX(-50%)",
               }}
             >
-              <span className="h-[5px] w-px bg-muted-foreground" />
+              <span className="h-[4px] w-px bg-border-strong" />
               {formatDuration(t)}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[14px] text-muted-foreground">
+      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 border-t border-border pt-3 text-[12.5px] text-muted-foreground">
         <span className="inline-flex items-center gap-2">
           <Lamp tone="good" />
           Strong
@@ -345,13 +325,13 @@ function Readout({
   context: string;
 }) {
   return (
-    <div className="px-4 pt-4 pb-5 sm:px-5">
-      <div className="text-[15px] font-medium text-muted-foreground">{label}</div>
-      <div className="mt-1 font-display text-[54px] leading-none font-bold">
+    <div className="px-5 pt-5 pb-6 sm:px-6">
+      <div className="eyebrow">{label}</div>
+      <div className="display mt-2 text-[52px] leading-none">
         {value}
-        {unit && <small className="ml-0.5 text-[26px]">{unit}</small>}
+        {unit && <small className="ml-0.5 text-[28px] text-muted-foreground">{unit}</small>}
       </div>
-      <div className="mt-2 flex items-baseline gap-2 text-[15px] text-muted-foreground">
+      <div className="mt-3 flex items-baseline gap-2 text-[13.5px] text-muted-foreground">
         {tone && <Lamp tone={tone} className="translate-y-[1px]" />}
         <span>{context}</span>
       </div>
@@ -372,7 +352,7 @@ function StatReadout({ report }: { report: Report }) {
 
   return (
     <section aria-label="By the numbers">
-      <div className="mt-[3px] grid grid-cols-2 bg-card lg:grid-cols-4 [&>*]:border-border max-lg:[&>*:nth-child(n+3)]:border-t max-lg:[&>*:nth-child(even)]:border-l lg:[&>*+*]:border-l">
+      <div className="surface mt-4 grid grid-cols-2 overflow-hidden lg:grid-cols-4 [&>*]:border-border max-lg:[&>*:nth-child(n+3)]:border-t max-lg:[&>*:nth-child(even)]:border-l lg:[&>*+*]:border-l">
         <Readout
           label="Duration"
           value={formatDuration(duration_sec)}
@@ -398,8 +378,8 @@ function StatReadout({ report }: { report: Report }) {
           context={`${mono.label} · lower is better`}
         />
       </div>
-      <div className="mt-[3px] grid items-baseline gap-x-6 gap-y-2 bg-card px-4 py-4 sm:grid-cols-[auto_repeat(3,1fr)] sm:px-5">
-        <span className="text-[15px] font-medium text-muted-foreground">Pauses</span>
+      <div className="surface mt-4 grid items-baseline gap-x-6 gap-y-3 px-5 py-5 sm:grid-cols-[auto_repeat(3,1fr)] sm:px-6">
+        <span className="eyebrow">Pauses</span>
         <PauseStat value={metrics.pauses_over_0_6} label="≥ 0.6s · deliberate" />
         <PauseStat value={metrics.pauses_over_2} label="≥ 2s · long" />
         <PauseStat
@@ -414,39 +394,39 @@ function StatReadout({ report }: { report: Report }) {
 function PauseStat({ value, label }: { value: number | string; label: string }) {
   return (
     <div className="flex items-baseline gap-2">
-      <span className="font-display text-[32px] leading-none font-bold">{value}</span>
-      <span className="text-[15px] text-muted-foreground">{label}</span>
+      <span className="display text-[32px] leading-none">{value}</span>
+      <span className="text-[13.5px] text-muted-foreground">{label}</span>
     </div>
   );
 }
 
 function WalkthroughSection({ walkthrough }: { walkthrough: Walkthrough }) {
   return (
-    <section className="pt-16">
+    <section className="pt-24">
       <SectionHead
         label="Walk-through · how it unfolded"
         title="Listen back to how it ran."
       />
-      <ol className="divide-y divide-border bg-card">
+      <ol className="surface divide-y divide-border overflow-hidden">
         {walkthroughBeats(walkthrough).map(({ label, beat }) => (
           <li
             key={label}
-            className="grid gap-2 px-4 py-5 sm:grid-cols-[200px_1fr] sm:gap-7 sm:px-6"
+            className="grid gap-3 px-5 py-6 sm:grid-cols-[200px_1fr] sm:gap-8 sm:px-7 sm:py-7"
           >
             <div className="flex flex-wrap items-baseline gap-x-3 sm:block">
-              <div className="font-display text-[26px] leading-none font-bold">
+              <div className="display text-[28px] leading-none">
                 {label}
               </div>
-              <div className="font-display text-[20px] font-semibold text-muted-foreground sm:mt-1.5">
+              <div className="text-[13.5px] font-medium text-muted-foreground sm:mt-2">
                 {formatDuration(beat.start_t)} – {formatDuration(beat.end_t)}
               </div>
               {beat.quote_t !== null && (
-                <div className="text-[14.5px] text-muted-foreground">
+                <div className="text-[12.5px] text-muted-foreground">
                   @ {formatDuration(beat.quote_t)}
                 </div>
               )}
             </div>
-            <div className="max-w-[68ch]">
+            <div className="max-w-[68ch] text-[15.5px] leading-[1.65]">
               <p>{beat.observation}</p>
               {beat.praise && (
                 <Note tone="good" lead="Strong.">
@@ -476,8 +456,8 @@ function Note({
   children: React.ReactNode;
 }) {
   return (
-    <p className="mt-3 grid grid-cols-[10px_1fr] gap-3 text-[#2D302D]">
-      <Lamp tone={tone} className="mt-[8px]" />
+    <p className="mt-3 grid grid-cols-[8px_1fr] gap-3 text-ink-2">
+      <Lamp tone={tone} className="mt-[9px]" />
       <span>
         <b className="font-semibold text-foreground">{lead}</b> {children}
       </span>
@@ -487,9 +467,9 @@ function Note({
 
 function Quote({ text, t }: { text: string; t: number }) {
   return (
-    <p className="my-3 border-l-[3px] border-foreground pl-3.5 font-medium italic">
+    <p className="my-4 rounded-xl bg-background px-4 py-3 text-[15px] leading-[1.6] text-ink-2">
       &ldquo;{text}&rdquo;
-      <span className="ml-2 text-[14.5px] font-medium text-muted-foreground not-italic">
+      <span className="ml-2 text-[12.5px] font-medium whitespace-nowrap text-muted-foreground">
         @ {formatDuration(t)}
       </span>
     </p>
@@ -498,33 +478,37 @@ function Quote({ text, t }: { text: string; t: number }) {
 
 function PrioritiesSection({ priorities }: { priorities: Priority[] }) {
   return (
-    <section className="pt-16">
+    <section className="pt-24">
       <SectionHead
         label={`Top ${priorities.length} ${
           priorities.length === 1 ? "priority" : "priorities"
         } · ranked`}
         title="Work on these next."
       />
-      <ol className="border-b-[3px] border-foreground">
+      <ol className="grid gap-4">
         {priorities.map((p, i) => (
           <li
             key={i}
-            className="grid grid-cols-[48px_1fr] gap-3 border-t-[3px] border-foreground py-6 sm:grid-cols-[90px_1fr] sm:gap-5"
+            className="surface grid grid-cols-[44px_1fr] gap-4 px-5 py-7 sm:grid-cols-[96px_1fr] sm:gap-6 sm:px-8 sm:py-8"
           >
-            <span className="font-display text-[56px] leading-[0.8] font-bold sm:text-[84px]">
+            <span className="display text-[52px] leading-[0.8] text-muted-foreground/70 sm:text-[84px]">
               {i + 1}
             </span>
-            <div className="max-w-[72ch]">
-              <h3 className="font-display text-[30px] leading-[1.05] font-bold">
+            <div className="max-w-[72ch] text-[15.5px] leading-[1.65]">
+              <h3 className="display text-[30px] leading-[1.08] sm:text-[34px]">
                 {p.title}
               </h3>
-              <p className="mt-1.5">{p.observation}</p>
+              <p className="mt-3 text-ink-2">{p.observation}</p>
               <Quote text={p.example_quote} t={p.example_t} />
-              <dl className="grid grid-cols-[56px_1fr] gap-x-3 gap-y-1">
-                <dt className="font-bold">Why.</dt>
-                <dd className="text-[#2D302D]">{p.why_it_matters}</dd>
-                <dt className="font-bold">Drill.</dt>
-                <dd className="text-[#2D302D]">{p.drill}</dd>
+              <dl className="grid gap-4 border-t border-border pt-4 sm:grid-cols-2 sm:gap-8">
+                <div>
+                  <dt className="text-[13px] font-semibold">Why it matters</dt>
+                  <dd className="mt-1 text-ink-2">{p.why_it_matters}</dd>
+                </div>
+                <div>
+                  <dt className="text-[13px] font-semibold">Drill</dt>
+                  <dd className="mt-1 text-ink-2">{p.drill}</dd>
+                </div>
               </dl>
             </div>
           </li>
@@ -536,33 +520,29 @@ function PrioritiesSection({ priorities }: { priorities: Priority[] }) {
 
 function RewritesSection({ rewrites }: { rewrites: Rewrite[] }) {
   return (
-    <section className="pt-16">
+    <section className="pt-24">
       <SectionHead
         label={`Phrasing rewrites · ${rewrites.length} ${
           rewrites.length === 1 ? "example" : "examples"
         }`}
         title="Say it like this instead."
       />
-      <div className="grid gap-[3px]">
+      <div className="grid gap-4">
         {rewrites.map((rw, i) => (
-          <article key={i} className="grid bg-card md:grid-cols-2">
-            <div className="border-border px-4 py-5 max-md:border-b sm:px-6 md:border-r">
-              <p className="text-[14.5px] font-medium text-muted-foreground">
-                What you said
-              </p>
-              <p className="mt-1.5 text-[18px] text-muted-foreground line-through decoration-stop decoration-2">
+          <article key={i} className="surface grid overflow-hidden md:grid-cols-[1fr_1.2fr]">
+            <div className="border-border bg-background/70 px-5 py-6 max-md:border-b sm:px-7 md:border-r">
+              <p className="eyebrow">What you said</p>
+              <p className="mt-2 text-[16px] leading-[1.6] text-muted-foreground line-through decoration-stop/60 decoration-[1.5px]">
                 {rw.original}
               </p>
             </div>
-            <div className="px-4 py-5 sm:px-6">
-              <p className="text-[14.5px] font-medium text-muted-foreground">
-                Try instead
-              </p>
-              <p className="mt-1 font-display text-[30px] leading-[1.08] font-bold">
+            <div className="px-5 py-6 sm:px-7">
+              <p className="text-[13.5px] font-medium text-go-ink">Try instead</p>
+              <p className="display mt-2 text-[28px] leading-[1.12]">
                 {rw.suggested}
               </p>
-              <p className="mt-2 text-[15.5px] text-[#2D302D]">
-                <b className="font-bold text-foreground">Why.</b> {rw.why}
+              <p className="mt-4 text-[14.5px] leading-[1.6] text-muted-foreground">
+                <span className="font-medium text-foreground">Why it works.</span> {rw.why}
               </p>
             </div>
           </article>
@@ -574,9 +554,9 @@ function RewritesSection({ rewrites }: { rewrites: Rewrite[] }) {
 
 function ScorecardSection({ report }: { report: Report }) {
   return (
-    <section className="pt-16">
+    <section className="pt-24">
       <SectionHead label="Scorecard · eight categories" title="How you scored." />
-      <div className="grid gap-[3px] md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         {CATEGORY_ORDER.map((key) => (
           <CategoryCard
             key={key}
@@ -595,32 +575,33 @@ function CategoryCard({ catKey, cat }: { catKey: CategoryKey; cat: CategoryScore
   const tone = na ? null : scoreTone(score);
 
   return (
-    <article className="bg-card px-4 pt-5 pb-6 sm:px-6">
+    <article className="surface px-5 pt-6 pb-6 sm:px-7">
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="font-display text-[26px] leading-none font-bold">
+        <h3 className="display text-[28px] leading-none">
           {CATEGORY_LABEL[catKey]}
         </h3>
         <span
-          className={`font-display text-[26px] leading-none font-bold ${tone ? TONE_INK[tone] : "text-muted-foreground"}`}
+          className={`display text-[28px] leading-none ${tone ? TONE_INK[tone] : "text-muted-foreground"}`}
         >
           {na ? (
             "n/a"
           ) : (
             <>
-              {score} <small className="text-[17px] text-muted-foreground">/ 5</small>
+              {score}
+              <small className="text-[18px] text-muted-foreground">/5</small>
             </>
           )}
         </span>
       </div>
-      <SignalBar filled={score} tone={tone} className="mt-3" />
+      <SignalBar filled={score} tone={tone} className="mt-4" />
 
-      <p className="mt-3 text-[16px]">{cat.rationale}</p>
+      <p className="mt-4 text-[15px] leading-[1.65] text-ink-2">{cat.rationale}</p>
 
       {cat.counts.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-[15px]">
+        <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-[14px]">
           {cat.counts.map((c) => (
             <span key={c.label} className="inline-flex items-center gap-2">
-              <b className="font-semibold">{c.label}</b>
+              <span className="font-medium">{c.label}</span>
               {catKey === "language" && c.count <= 40 && <Tally count={c.count} />}
               <span className="text-muted-foreground">×{c.count}</span>
             </span>
@@ -633,7 +614,7 @@ function CategoryCard({ catKey, cat }: { catKey: CategoryKey; cat: CategoryScore
       ))}
 
       {na && cat.applicability_reason && (
-        <p className="mt-3 text-[15px] text-muted-foreground">
+        <p className="mt-3 text-[14px] text-muted-foreground">
           {cat.applicability_reason}
         </p>
       )}
@@ -642,7 +623,7 @@ function CategoryCard({ catKey, cat }: { catKey: CategoryKey; cat: CategoryScore
 }
 
 function LegendSwatch({ className }: { className: string }) {
-  return <span aria-hidden className={`inline-block size-3 ${className}`} />;
+  return <span aria-hidden className={`inline-block size-2.5 rounded-[3px] ${className}`} />;
 }
 
 function ChartsSection({ report }: { report: Report }) {
@@ -652,18 +633,19 @@ function ChartsSection({ report }: { report: Report }) {
   } marked`;
 
   return (
-    <section className="pt-16">
-      <div className="bg-card px-4 pt-5 pb-6 sm:px-6">
-        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <h2 className="font-display text-[30px] leading-none font-bold">
-            Pitch &amp; pace over time
-          </h2>
-          <span className="text-[15px] text-muted-foreground">
+    <section className="pt-24">
+      <SectionHead label="Delivery over time" title="Pitch, pace and volume." />
+      <div className="surface px-4 pt-6 pb-7 sm:px-7">
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+          <h3 className="text-[16px] font-semibold tracking-[-0.005em]">
+            Pitch &amp; pace
+          </h3>
+          <span className="text-[13px] text-muted-foreground">
             {formatDuration(duration_sec)} total · {pauseLabel}
           </span>
         </div>
 
-        <div className="mb-2 flex flex-wrap gap-x-5 gap-y-1 text-[14.5px] text-muted-foreground">
+        <div className="mb-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] text-muted-foreground">
           <span className="inline-flex items-center gap-2">
             <LegendSwatch className="bg-foreground" />
             <span>
@@ -676,7 +658,7 @@ function ChartsSection({ report }: { report: Report }) {
             <b className="font-semibold text-foreground">Words per minute</b>
           </span>
           <span className="inline-flex items-center gap-2">
-            <LegendSwatch className="bg-[#A9AFA8]" />
+            <LegendSwatch className="bg-[#A3A39C]/60" />
             <span>
               <b className="font-semibold text-foreground">Pause</b> (≥ 0.6s)
             </span>
@@ -695,7 +677,7 @@ function ChartsSection({ report }: { report: Report }) {
           duration_sec={duration_sec}
         />
 
-        <p className="mt-2 mb-6 max-w-[110ch] text-[14.5px] leading-[1.55] text-muted-foreground">
+        <p className="mt-3 mb-10 max-w-[110ch] text-[13px] leading-[1.6] text-muted-foreground">
           <b className="font-semibold text-foreground">Vocal variety</b> — flat at
           your baseline, spiking when your pitch moves notably higher or lower
           (hover for the actual pitch) ·{" "}
@@ -710,7 +692,7 @@ function ChartsSection({ report }: { report: Report }) {
           duration_sec={duration_sec}
         />
 
-        <p className="mt-2 max-w-[110ch] text-[14.5px] leading-[1.55] text-muted-foreground">
+        <p className="mt-3 max-w-[110ch] text-[13px] leading-[1.6] text-muted-foreground">
           <b className="font-semibold text-caution-ink">Volume</b> as{" "}
           <em>± decibels from your recent delivery</em>, not absolute loudness — so
           it doesn&apos;t depend on your mic. The line sits near 0 when you hold a
@@ -724,26 +706,31 @@ function ChartsSection({ report }: { report: Report }) {
 
 function FooterSection({ report }: { report: Report }) {
   return (
-    <section className="grid justify-items-center gap-8 pt-14 pb-10">
-      <Link href="/" className="btn btn-ink btn-lg">
-        <Lamp tone="good" className="size-3" />
-        Analyze another speech
-      </Link>
+    <section className="grid gap-6 pt-24 pb-6">
+      <div className="surface flex flex-col items-center px-6 py-14 text-center">
+        <h2 className="display max-w-[18ch] text-[clamp(32px,4vw,46px)] leading-[1.05]">
+          Rehearse it again and see what moved.
+        </h2>
+        <p className="mt-3 max-w-[46ch] text-[15px] text-muted-foreground">
+          Every report is saved to your dashboard, so you can track each
+          rehearsal against the last.
+        </p>
+        <Link href="/#upload" className="btn btn-ink btn-lg mt-7">
+          Analyze another speech
+        </Link>
+      </div>
 
-      <details className="group w-full bg-card px-4 py-3 text-[15px] text-muted-foreground sm:px-5">
-        <summary className="flex cursor-pointer list-none items-center justify-between font-semibold text-foreground [&::-webkit-details-marker]:hidden">
-          <span>Details · raw report data</span>
-          <span aria-hidden className="font-display text-[22px] leading-none group-open:hidden">
+      <details className="group surface w-full px-5 py-4 text-[14px] text-muted-foreground sm:px-6">
+        <summary className="flex cursor-pointer list-none items-center justify-between font-medium text-foreground [&::-webkit-details-marker]:hidden">
+          <span>Technical details · raw report data</span>
+          <span aria-hidden className="text-[20px] leading-none text-muted-foreground transition-transform group-open:rotate-45">
             +
           </span>
-          <span aria-hidden className="hidden font-display text-[22px] leading-none group-open:inline">
-            −
-          </span>
         </summary>
-        <div className="mt-3 border-t border-border pt-3 text-[14px] leading-[1.6]">
+        <div className="mt-3 border-t border-border pt-3 text-[13.5px] leading-[1.6]">
           Deepgram transcription, Parselmouth + librosa acoustic pass, annotated
           transcript, schema v{report.schema_version}.
-          <pre className="mt-3 max-h-[420px] overflow-auto bg-background px-3.5 py-3 font-mono text-[12px] text-foreground">
+          <pre className="mt-3 max-h-[420px] overflow-auto rounded-xl bg-background px-4 py-3 font-mono text-[12px] text-foreground">
             {JSON.stringify(report, null, 2)}
           </pre>
         </div>

@@ -41,35 +41,35 @@ export default async function TipsSectionPage({
 
   return (
     <article>
-      <p className="text-[15px] font-medium text-muted-foreground">
-        Section {String(number).padStart(2, "0")} /{" "}
+      <p className="eyebrow">
+        Section {String(number).padStart(2, "0")} of{" "}
         {String(TIPS_SECTIONS.length).padStart(2, "0")}
       </p>
-      <h1 className="mt-2 text-balance font-display text-[clamp(42px,5.4vw,64px)] leading-[0.92] font-bold">
+      <h1 className="display mt-4 text-[clamp(42px,5.4vw,66px)] leading-[1.0] tracking-[-0.02em]">
         {section.title}
       </h1>
-      <p className="mt-5 max-w-[60ch] text-[18px] leading-[1.55] text-[#2D302D]">
+      <p className="mt-6 max-w-[60ch] text-[17.5px] leading-[1.65] text-ink-2">
         {section.intro}
       </p>
 
-      <ol className="mt-8 divide-y divide-border border-t-[3px] border-foreground bg-card">
+      <ol className="mt-12 border-t border-border">
         {section.tips.map((tip, i) => (
           <li
             key={tip.heading}
-            className="grid grid-cols-[40px_1fr] gap-x-4 px-4 py-6 sm:grid-cols-[56px_1fr] sm:px-6"
+            className="grid grid-cols-[36px_1fr] gap-x-4 border-b border-border py-8 sm:grid-cols-[56px_1fr]"
           >
-            <span className="font-display text-[34px] leading-[0.9] font-bold text-muted-foreground">
-              {i + 1}
+            <span className="pt-2 text-[13px] font-medium text-muted-foreground">
+              {String(i + 1).padStart(2, "0")}
             </span>
             <div>
-              <h2 className="font-display text-[26px] leading-[1.05] font-bold">
+              <h2 className="display text-[30px] leading-[1.08]">
                 {tip.heading}
               </h2>
-              <p className="mt-2 max-w-[64ch] text-[16.5px] leading-[1.6] text-[#2D302D]">
+              <p className="mt-3 max-w-[64ch] text-[16px] leading-[1.7] text-ink-2">
                 {tip.body}
               </p>
               {tip.attribution && (
-                <p className="mt-3 text-[14.5px] font-medium text-muted-foreground">
+                <p className="mt-4 text-[13px] text-muted-foreground">
                   {tip.attribution}
                 </p>
               )}
@@ -78,19 +78,19 @@ export default async function TipsSectionPage({
         ))}
       </ol>
 
-      <div className="mt-8 flex flex-col gap-5 bg-foreground px-5 py-6 text-card sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <div className="mt-12 flex flex-col gap-6 rounded-[24px] bg-night px-7 py-8 text-white sm:flex-row sm:items-center sm:justify-between sm:px-9">
         <div>
-          <p className="font-display text-[28px] leading-none font-bold">
+          <p className="display text-[34px] leading-none">
             Reading is 10% of it.
           </p>
-          <p className="mt-2 max-w-[46ch] text-[15.5px] leading-[1.55] text-[#B9BDB8]">
+          <p className="mt-3 max-w-[46ch] text-[15px] leading-[1.6] text-white/60">
             The other 90% is reps with feedback. Upload a talk and see your
             fillers, pacing, and vocal variety measured.
           </p>
         </div>
         <Link
           href="/#upload"
-          className="btn shrink-0 self-start bg-card text-foreground hover:bg-muted sm:self-auto"
+          className="btn btn-light shrink-0 self-start sm:self-auto"
         >
           Analyze a speech
         </Link>
@@ -98,18 +98,18 @@ export default async function TipsSectionPage({
 
       <nav
         aria-label="Adjacent sections"
-        className="mt-10 grid grid-cols-2 gap-[3px]"
+        className="mt-8 grid grid-cols-2 gap-4"
       >
         {prev ? (
           <Link
             href={`/tips/${prev.slug}`}
-            className="group bg-card px-4 py-4 transition-colors hover:bg-muted sm:px-5"
+            className="group surface px-5 py-5 transition-shadow hover:shadow-lift sm:px-6"
           >
-            <span className="flex items-center gap-1.5 text-[14.5px] font-medium text-muted-foreground">
-              <ArrowLeft className="size-4" />
+            <span className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
+              <ArrowLeft className="size-3.5" />
               Previous
             </span>
-            <span className="mt-1 block font-display text-[22px] leading-tight font-bold">
+            <span className="display mt-2 block text-[24px] leading-tight">
               {prev.navLabel}
             </span>
           </Link>
@@ -119,13 +119,13 @@ export default async function TipsSectionPage({
         {next && (
           <Link
             href={`/tips/${next.slug}`}
-            className="group bg-card px-4 py-4 text-right transition-colors hover:bg-muted sm:px-5"
+            className="group surface px-5 py-5 text-right transition-shadow hover:shadow-lift sm:px-6"
           >
-            <span className="flex items-center justify-end gap-1.5 text-[14.5px] font-medium text-muted-foreground">
+            <span className="flex items-center justify-end gap-1.5 text-[13px] text-muted-foreground">
               Next
-              <ArrowRight className="size-4" />
+              <ArrowRight className="size-3.5" />
             </span>
-            <span className="mt-1 block font-display text-[22px] leading-tight font-bold">
+            <span className="display mt-2 block text-[24px] leading-tight">
               {next.navLabel}
             </span>
           </Link>

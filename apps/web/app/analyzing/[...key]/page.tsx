@@ -107,11 +107,17 @@ export default function AnalyzingPage() {
 
   return (
     <main className="flex-1">
-      <div className="mx-auto w-full max-w-[720px] px-4 py-14 sm:px-6 sm:py-20">
-        <h1 className="font-display text-[clamp(44px,6vw,64px)] leading-[0.92] font-bold">
-          {error ? "Couldn’t analyze that recording" : "Analyzing your speech"}
+      <div className="mx-auto w-full max-w-[640px] px-5 pt-14 pb-24 sm:px-8 sm:pt-20">
+        <p className="eyebrow inline-flex items-center gap-2">
+          {!error && (
+            <span className="lamp bg-caution [animation:lamp-blink_1.4s_ease-in-out_infinite]" />
+          )}
+          {error ? "Analysis stopped" : `Step ${Math.min(completed.size + 1, STEPS.length)} of ${STEPS.length}`}
+        </p>
+        <h1 className="display mt-4 text-[clamp(42px,6vw,60px)] leading-[1.0] tracking-[-0.02em]">
+          {error ? "Couldn’t analyze that recording" : "Listening to your speech"}
         </h1>
-        <p className="mt-3 text-[17px] text-muted-foreground">
+        <p className="mt-4 text-[16px] text-muted-foreground">
           {error
             ? "Nothing was saved — give it another go with a different file."
             : "This usually takes about three minutes."}
@@ -123,7 +129,7 @@ export default function AnalyzingPage() {
           aria-valuemin={0}
           aria-valuemax={STEPS.length}
           aria-valuenow={completed.size}
-          className="mt-8 grid grid-cols-6 gap-[3px]"
+          className="mt-10 grid grid-cols-6 gap-1.5"
         >
           {STEPS.map((step, i) => {
             const isDone = completed.has(step.id);
@@ -132,7 +138,7 @@ export default function AnalyzingPage() {
               <span
                 key={step.id}
                 className={cn(
-                  "h-3 transition-colors duration-500",
+                  "h-1.5 rounded-full transition-colors duration-500",
                   isDone
                     ? "bg-go"
                     : isActive && error
@@ -146,7 +152,7 @@ export default function AnalyzingPage() {
           })}
         </div>
 
-        <ol className="mt-[3px] divide-y divide-border bg-card">
+        <ol className="surface mt-5 divide-y divide-border overflow-hidden">
           {STEPS.map((step, i) => {
             const isDone = completed.has(step.id);
             const isActive = !isDone && i === activeIdx && !error;
@@ -155,7 +161,7 @@ export default function AnalyzingPage() {
               <li
                 key={step.id}
                 aria-current={isActive ? "step" : undefined}
-                className="flex items-center gap-3.5 px-4 py-3 sm:px-5"
+                className="flex items-center gap-3.5 px-5 py-3.5"
               >
                 <span
                   aria-hidden
@@ -172,11 +178,11 @@ export default function AnalyzingPage() {
                 />
                 <span
                   className={cn(
-                    "text-[16.5px]",
+                    "text-[15px]",
                     isDone
                       ? "text-foreground"
                       : isActive || failed
-                        ? "font-semibold text-foreground"
+                        ? "font-medium text-foreground"
                         : "text-muted-foreground",
                   )}
                 >
@@ -195,7 +201,7 @@ export default function AnalyzingPage() {
           <div className="mt-6 grid gap-4">
             <div
               role="alert"
-              className="border-l-[3px] border-stop bg-stop/10 px-4 py-3 text-[15.5px] text-stop-ink"
+              className="alert-stop px-4 py-3 text-[14.5px]"
             >
               {error}
             </div>
@@ -207,7 +213,7 @@ export default function AnalyzingPage() {
         ) : (
           <p
             aria-live="polite"
-            className="mt-6 border-l-[3px] border-foreground pl-4 text-[17px] leading-[1.55] text-[#2D302D]"
+            className="display mt-10 text-[26px] leading-[1.3] text-ink-2"
           >
             {TIPS[tipIdx]}
           </p>

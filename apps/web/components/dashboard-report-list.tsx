@@ -33,9 +33,9 @@ export function DashboardReportList({
       <div
         role="group"
         aria-label="Filter by speech type"
-        className="mb-4 inline-flex flex-wrap border-[1.5px] border-foreground"
+        className="seg mb-4 flex-wrap"
       >
-        {FILTERS.map(({ value, label }, i) => {
+        {FILTERS.map(({ value, label }) => {
           const active = filter === value;
           return (
             <button
@@ -43,9 +43,7 @@ export function DashboardReportList({
               type="button"
               onClick={() => setFilter(value)}
               aria-pressed={active}
-              className={`h-9 px-3.5 text-[15px] font-semibold transition-colors ${
-                i > 0 ? "border-l-[1.5px] border-foreground" : ""
-              } ${active ? "bg-foreground text-card" : "bg-card hover:bg-muted"}`}
+              className="seg-item"
             >
               {label}
             </button>
@@ -54,11 +52,11 @@ export function DashboardReportList({
       </div>
 
       {visible.length === 0 ? (
-        <p className="border-t-[3px] border-foreground bg-card px-5 py-8 text-center text-[16px] text-muted-foreground">
+        <p className="surface px-5 py-10 text-center text-[15px] text-muted-foreground">
           No reports of this type yet.
         </p>
       ) : (
-        <ul className="divide-y divide-border border-t-[3px] border-foreground bg-card">
+        <ul className="surface divide-y divide-border overflow-hidden">
           {visible.map((report) => (
             <DashboardReportRow key={report.report_id} report={report} />
           ))}

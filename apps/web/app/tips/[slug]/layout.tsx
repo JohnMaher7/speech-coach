@@ -7,9 +7,9 @@ export default function TipsSectionLayout({
 }>) {
   return (
     <main className="flex-1">
-      <div className="wrap py-10 lg:py-14">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[250px_minmax(0,760px)] lg:gap-14">
-          <aside className="lg:sticky lg:top-[88px] lg:self-start">
+      <div className="wrap pt-10 pb-24 lg:pt-16 lg:pb-32">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[240px_minmax(0,740px)] lg:gap-20">
+          <aside className="lg:sticky lg:top-[96px] lg:self-start">
             <TipsSidebar />
           </aside>
           <div className="min-w-0">{children}</div>

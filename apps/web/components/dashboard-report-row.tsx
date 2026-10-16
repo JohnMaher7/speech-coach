@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Loader2, Trash2 } from "lucide-react";
 
-import { Lamp } from "@/components/signal";
+import { ScoreRing } from "@/components/signal";
 import { deleteReport, type DashboardReport } from "@/lib/api";
 import { scoreTone } from "@/lib/scores";
 
@@ -50,23 +50,24 @@ export function DashboardReportRow({ report }: { report: DashboardReport }) {
   const specType = report.speech_type;
 
   return (
-    <li className="group relative grid grid-cols-[62px_1fr_auto] items-center gap-4 px-4 py-4 transition-colors hover:bg-muted sm:px-5">
-      <span
-        className="flex items-center gap-2 font-display text-[34px] leading-none font-bold"
-        title="Overall score out of 5"
-      >
-        <Lamp tone={scoreTone(report.overall_score)} />
-        {report.overall_score.toFixed(1)}
+    <li className="group relative grid grid-cols-[52px_1fr_auto] items-center gap-4 px-4 py-4 transition-colors hover:bg-background sm:gap-5 sm:px-6">
+      <span title="Overall score out of 5">
+        <ScoreRing
+          score={report.overall_score}
+          tone={scoreTone(report.overall_score)}
+          size={52}
+          stroke={3.5}
+        />
       </span>
 
       <Link
         href={`/report/${report.report_id}`}
         className="min-w-0 after:absolute after:inset-0 after:content-['']"
       >
-        <div className="line-clamp-2 text-[17px] leading-snug font-semibold">
+        <div className="line-clamp-2 text-[15.5px] leading-snug font-medium tracking-[-0.005em]">
           {report.headline}
         </div>
-        <div className="mt-1 text-[14.5px] text-muted-foreground">
+        <div className="mt-1 text-[13px] text-muted-foreground">
           {formatDate(report.created_at)} · {formatDuration(report.duration_sec)}
           {specType && <span className="capitalize"> · {specType}</span>}
         </div>
@@ -77,7 +78,7 @@ export function DashboardReportRow({ report }: { report: DashboardReport }) {
         onClick={handleDelete}
         disabled={deleting}
         aria-label="Delete report"
-        className="relative z-10 flex size-10 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-stop/10 hover:text-stop-ink disabled:opacity-50"
+        className="relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground opacity-60 transition-[color,background-color,opacity] group-hover:opacity-100 hover:bg-stop/10 hover:text-stop-ink focus-visible:opacity-100 disabled:opacity-50"
       >
         {deleting ? (
           <Loader2 className="size-4 animate-spin" />

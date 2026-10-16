@@ -30,7 +30,7 @@ function LevelBars({ levels }: { levels: number[] }) {
       {levels.map((level, i) => (
         <span
           key={i}
-          className="w-[3px] bg-foreground transition-[height] duration-75"
+          className="w-[3px] rounded-full bg-foreground transition-[height] duration-75"
           style={{ height: `${Math.max(8, level * 100)}%` }}
         />
       ))}
@@ -85,7 +85,7 @@ export function RecordPanel({
   }
 
   return (
-    <div className="flex min-h-[104px] flex-col items-center justify-center gap-4 border-[1.5px] border-dashed border-muted-foreground/50 bg-muted px-4 py-6 sm:px-5">
+    <div className="flex min-h-[132px] flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-border-strong bg-background px-4 py-6 sm:px-5">
       {state === "idle" && (
         <>
           <button
@@ -94,12 +94,12 @@ export function RecordPanel({
               onError(null);
               void start();
             }}
-            className="btn btn-ink"
+            className="btn btn-ink btn-lg"
           >
             <span aria-hidden className="lamp bg-stop" />
             Start recording
           </button>
-          <div className="text-[14.5px] text-muted-foreground">
+          <div className="text-[13.5px] text-muted-foreground">
             Records in your browser · auto-stops at 20:00
           </div>
         </>
@@ -123,13 +123,13 @@ export function RecordPanel({
                     : "bg-caution"
                 }`}
               />
-              <span className="font-display text-[40px] leading-none font-bold">
+              <span className="display text-[44px] leading-none">
                 {formatClock(elapsedSec)}
               </span>
             </span>
             <LevelBars levels={levels} />
             {state === "paused" && (
-              <span className="text-[15px] font-semibold text-caution-ink">
+              <span className="text-[14px] font-medium text-caution-ink">
                 Paused
               </span>
             )}
@@ -169,7 +169,7 @@ export function RecordPanel({
       {state === "stopped" && blob && previewUrl && (
         <>
           <audio controls src={previewUrl} className="w-full" />
-          <div className="text-[14.5px] text-muted-foreground">
+          <div className="text-[13.5px] text-muted-foreground">
             {formatClock(elapsedSec)} · {formatSize(blob.size)}
             {autoStopped && " · stopped at the 20-minute limit"}
           </div>

@@ -203,12 +203,13 @@ export function UploadForm() {
   return (
     <div
       id="upload"
-      className="scroll-mt-24 border-t-[3px] border-foreground bg-card p-4 sm:p-5"
+      className="surface scroll-mt-24 p-3 shadow-lift sm:p-4"
     >
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
       <div
         role="tablist"
         aria-label="Audio source"
-        className="mb-4 inline-grid grid-cols-2 border-[1.5px] border-foreground"
+        className="seg"
       >
         {MODES.map((m) => {
           const selected = mode === m.value;
@@ -227,17 +228,17 @@ export function UploadForm() {
                 setError(null);
                 setMode(m.value);
               }}
-              className={`inline-flex h-9 items-center justify-center gap-2 px-4 font-display text-[17px] font-semibold transition-colors ${
-                selected
-                  ? "bg-foreground text-card"
-                  : "bg-card text-foreground hover:bg-muted"
-              } ${locked && !selected ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+              className="seg-item"
             >
-              <Icon className="size-4" strokeWidth={2.2} />
+              <Icon className="size-4" strokeWidth={1.8} />
               {m.label}
             </button>
           );
         })}
+      </div>
+      <span className="pr-1 text-[13px] text-muted-foreground">
+        MP3 · WAV · M4A · up to 20 min
+      </span>
       </div>
 
       {mode === "record" && (
@@ -274,34 +275,34 @@ export function UploadForm() {
             setDragOver(false);
             if (!busy) pickFile(e.dataTransfer.files[0] ?? null);
           }}
-          className={`flex flex-wrap items-center gap-4 border-[1.5px] border-dashed px-4 py-5 transition-colors sm:px-5 ${
+          className={`flex flex-wrap items-center gap-4 rounded-2xl border border-dashed px-4 py-4 transition-colors sm:px-5 sm:py-5 ${
             dragOver
-              ? "border-foreground bg-caution/15"
-              : "border-muted-foreground/50 bg-muted hover:border-foreground"
+              ? "border-foreground/50 bg-muted"
+              : "border-border-strong bg-background hover:border-foreground/30"
           } ${busy || file ? "cursor-default" : "cursor-pointer"}`}
         >
-          <span className="inline-flex size-12 shrink-0 items-center justify-center bg-foreground text-card">
+          <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-soft">
             {file ? (
-              <FileAudio className="size-5" strokeWidth={2} />
+              <FileAudio className="size-[18px]" strokeWidth={1.8} />
             ) : (
-              <UploadCloud className="size-5" strokeWidth={2} />
+              <UploadCloud className="size-[18px]" strokeWidth={1.8} />
             )}
           </span>
           <div className="min-w-0 flex-1 basis-[220px]">
             {file ? (
               <>
-                <div className="truncate text-[17px] font-semibold">{file.name}</div>
-                <div className="mt-0.5 text-[14.5px] text-muted-foreground">
+                <div className="truncate text-[15.5px] font-medium">{file.name}</div>
+                <div className="mt-0.5 text-[13.5px] text-muted-foreground">
                   {formatSize(file.size)} · ready to analyze
                 </div>
               </>
             ) : (
               <>
-                <div className="text-[17px] font-semibold">
+                <div className="text-[15.5px] font-medium">
                   Drop a recording, or click to browse
                 </div>
-                <div className="mt-0.5 text-[14.5px] text-muted-foreground">
-                  MP3 · WAV · M4A · up to 100 MB · up to 20 min
+                <div className="mt-0.5 text-[13.5px] text-muted-foreground">
+                  Any talk up to 100 MB · your audio is deleted after analysis
                 </div>
               </>
             )}
@@ -315,7 +316,7 @@ export function UploadForm() {
                   clearFile();
                 }}
                 aria-label="Remove file"
-                className="flex size-[46px] shrink-0 items-center justify-center border-[1.5px] border-foreground bg-card transition-colors hover:bg-muted"
+                className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border-strong bg-card transition-colors hover:bg-muted"
               >
                 <X className="size-4" />
               </button>
@@ -327,7 +328,7 @@ export function UploadForm() {
                 handleAnalyze();
               }}
               disabled={busy}
-              className="btn btn-ink flex-1"
+              className="btn btn-ink btn-lg flex-1"
             >
               {busy && <Loader2 className="size-4 animate-spin" strokeWidth={2.4} />}
               {buttonLabel}
@@ -345,24 +346,20 @@ export function UploadForm() {
         </div>
       )}
 
-      <fieldset className="mt-4" disabled={busy}>
+      <fieldset className="mt-3 px-1 pb-1" disabled={busy}>
         <legend className="sr-only">Type</legend>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <span aria-hidden className="text-[15px] font-medium text-muted-foreground">
-            Type
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <span aria-hidden className="text-[13.5px] font-medium text-muted-foreground">
+            Speech type
           </span>
-          <div className="inline-flex flex-wrap border-[1.5px] border-foreground">
-            {SPEECH_TYPES.map((opt, i) => {
+          <div className="seg">
+            {SPEECH_TYPES.map((opt) => {
               const selected = speechType === opt.value;
               return (
                 <label
                   key={opt.value}
                   title={opt.hint}
-                  className={`inline-flex h-9 cursor-pointer items-center px-3.5 text-[15px] font-semibold transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-foreground ${
-                    i > 0 ? "border-l-[1.5px] border-foreground" : ""
-                  } ${
-                    selected ? "bg-foreground text-card" : "bg-card hover:bg-muted"
-                  } ${busy ? "cursor-not-allowed opacity-60" : ""}`}
+                  className={`seg-item h-7 px-3 text-[13.5px] ${busy ? "cursor-not-allowed opacity-60" : ""}`}
                 >
                   <input
                     type="radio"
@@ -380,7 +377,7 @@ export function UploadForm() {
           </div>
         </div>
         {selectedType && (
-          <p className="mt-2 text-[14.5px] text-muted-foreground">
+          <p className="mt-2 text-[13.5px] text-muted-foreground">
             {selectedType.hint}
           </p>
         )}
@@ -389,7 +386,7 @@ export function UploadForm() {
       {error && (
         <div
           role="alert"
-          className="mt-4 flex items-start gap-2.5 border-l-[3px] border-stop bg-stop/10 px-4 py-3 text-[15px] text-stop-ink"
+          className="alert-stop mt-3 flex items-start gap-2.5 px-4 py-3 text-[14.5px]"
         >
           <AlertCircle className="mt-0.5 size-4 shrink-0" />
           <span>{error}</span>

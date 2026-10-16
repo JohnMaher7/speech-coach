@@ -14,9 +14,9 @@ import {
 import type { Pause, TimelinePoint } from "@/lib/api";
 import { volumeDeviationSeries } from "@/lib/volume-series";
 
-const VOLUME_COLOR = "#D48D00";
-const PAUSE_COLOR = "#8C928B";
-const LONG_PAUSE_COLOR = "#DA3A2B";
+const VOLUME_COLOR = "#D08A0B";
+const PAUSE_COLOR = "#A3A39C";
+const LONG_PAUSE_COLOR = "#E0483E";
 const PAUSE_MIN_SEC = 0.6;
 const LONG_PAUSE_SEC = 2.0;
 // Fixed, symmetric axis around the speaker's own baseline (mirrors the pitch
@@ -65,7 +65,7 @@ function VolumeTooltip({
   const entry = payload.find((p) => p.value !== null && p.value !== undefined);
   if (!entry) return null;
   return (
-    <div className="bg-foreground px-3 py-2 text-[13px] leading-snug text-card">
+    <div className="rounded-xl bg-foreground px-3 py-2 text-[12.5px] leading-snug text-white shadow-lift">
       <div className="font-semibold">{formatTime(label)}</div>
       <div className="flex items-center gap-2">
         <span
@@ -112,7 +112,7 @@ export function VolumeChart({
             </linearGradient>
           </defs>
           <CartesianGrid
-            stroke="#E3E6E0"
+            stroke="#EEEDE9"
             vertical={false}
           />
           <XAxis

@@ -40,8 +40,8 @@ export default function BillingSuccessPage() {
 
   return (
     <main className="flex-1">
-      <section className="wrap py-16 sm:py-24">
-        <p className="inline-flex items-center gap-2.5 text-[15px] font-medium text-muted-foreground">
+      <section className="mx-auto flex w-full max-w-[640px] flex-col items-center px-5 pt-20 pb-28 text-center sm:pt-28">
+        <p className="inline-flex items-center gap-2 rounded-full border border-border bg-card py-1 pr-3.5 pl-2.5 text-[13.5px] font-medium text-ink-2 shadow-soft">
           {state === "waiting" ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
@@ -49,15 +49,15 @@ export default function BillingSuccessPage() {
           )}
           {state === "waiting" ? "Activating your plan…" : "Checkout complete"}
         </p>
-        <h1 className="mt-3 max-w-[16ch] font-display text-[clamp(44px,6vw,72px)] leading-[0.9] font-bold">
+        <h1 className="display mt-6 text-[clamp(48px,6.4vw,80px)] leading-[0.98] tracking-[-0.02em]">
           {state === "slow" ? "Almost there" : "You're all set"}
         </h1>
-        <p className="mt-4 max-w-[52ch] text-[18px] leading-[1.55]">
+        <p className="mt-5 max-w-[46ch] text-[17px] leading-[1.6] text-ink-2">
           {state === "slow"
             ? "Your payment went through, but activation is taking a moment. Refresh in a minute — if it still isn't active, get in touch."
             : "Upload a speech and get your first evaluator-style report."}
         </p>
-        <div className="mt-8 flex gap-3">
+        <div className="mt-9 flex gap-3">
           <Link href="/#upload" className="btn btn-ink">
             Analyze a speech
           </Link>

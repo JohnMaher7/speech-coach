@@ -28,6 +28,12 @@ export function Lamp({
   );
 }
 
+export const TONE_STROKE: Record<ScoreTone, string> = {
+  good: "var(--go)",
+  mid: "var(--caution)",
+  low: "var(--stop)",
+};
+
 export function SignalBar({
   filled,
   tone,
@@ -42,15 +48,68 @@ export function SignalBar({
   return (
     <div
       aria-hidden
-      className={`grid gap-[3px] ${className}`}
+      className={`grid gap-1 ${className}`}
       style={{ gridTemplateColumns: `repeat(${total}, minmax(0, 1fr))` }}
     >
       {Array.from({ length: total }).map((_, i) => (
         <span
           key={i}
-          className={`h-[10px] ${tone && i < filled ? LAMP_BG[tone] : "bg-lamp-off"}`}
+          className={`h-[5px] rounded-full ${tone && i < filled ? LAMP_BG[tone] : "bg-lamp-off"}`}
         />
       ))}
+    </div>
+  );
+}
+
+export function ScoreRing({
+  score,
+  size = 120,
+  stroke = 6,
+  tone,
+  label,
+  className = "",
+}: {
+  score: number;
+  size?: number;
+  stroke?: number;
+  tone: ScoreTone;
+  label?: React.ReactNode;
+  className?: string;
+}) {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const pct = Math.min(1, Math.max(0, score / 5));
+  return (
+    <div
+      className={`relative grid shrink-0 place-items-center ${className}`}
+      style={{ width: size, height: size }}
+    >
+      <svg width={size} height={size} aria-hidden className="absolute inset-0 -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="var(--lamp-off)"
+          strokeWidth={stroke}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke={TONE_STROKE[tone]}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={`${c * pct} ${c}`}
+        />
+      </svg>
+      <div className="relative text-center">
+        <div className="display" style={{ fontSize: size * 0.36 }}>
+          {score.toFixed(1)}
+        </div>
+        {label}
+      </div>
     </div>
   );
 }
@@ -69,22 +128,18 @@ export function SectionHead({
   return (
     <div
       className={cn(
-        "mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-10",
+        "mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-12",
         className,
       )}
     >
       <div>
-        {label && (
-          <p className="mb-1 text-[15.5px] font-medium text-muted-foreground">
-            {label}
-          </p>
-        )}
-        <h2 className="text-balance font-display text-[clamp(34px,4.4vw,46px)] leading-none font-bold">
+        {label && <p className="eyebrow mb-3">{label}</p>}
+        <h2 className="display max-w-[20ch] text-[clamp(36px,4.4vw,54px)] leading-[1.02]">
           {title}
         </h2>
       </div>
       {aside && (
-        <div className="max-w-[44ch] text-[15.5px] leading-[1.55] text-muted-foreground sm:text-right">
+        <div className="max-w-[42ch] text-[15.5px] leading-[1.6] text-muted-foreground">
           {aside}
         </div>
       )}

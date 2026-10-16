@@ -35,7 +35,7 @@ const KINDS: {
 ];
 
 const FIELD =
-  "w-full border-[1.5px] border-border bg-card px-3 text-[16px] text-foreground transition-colors placeholder:text-muted-foreground/80 focus:border-foreground focus:outline-none";
+  "w-full rounded-xl border border-input bg-card px-3.5 text-[15px] text-foreground shadow-[0_1px_2px_rgb(16_16_14/0.04)] transition-[border-color,box-shadow] placeholder:text-muted-foreground/70 focus:border-foreground/40 focus:shadow-[0_0_0_4px_rgb(16_16_14/0.06)] focus:outline-none";
 
 export function FeedbackWidget() {
   const pathname = usePathname();
@@ -128,10 +128,11 @@ export function FeedbackWidget() {
         type="button"
         onClick={openPanel}
         aria-haspopup="dialog"
-        className="btn btn-ink btn-sm fixed right-4 bottom-4 z-40 sm:right-6 sm:bottom-6"
+        aria-label="Feedback"
+        className="btn btn-line btn-sm fixed right-4 bottom-4 z-40 shadow-lift max-sm:size-11 max-sm:px-0 sm:right-6 sm:bottom-6"
       >
-        <MessageSquare className="size-[18px]" strokeWidth={2.2} />
-        Feedback
+        <MessageSquare className="size-4" strokeWidth={1.8} />
+        <span className="max-sm:hidden">Feedback</span>
       </button>
     );
   }
@@ -140,17 +141,17 @@ export function FeedbackWidget() {
     <div
       role="dialog"
       aria-labelledby="feedback-title"
-      className="fixed right-4 bottom-4 left-4 z-40 max-h-[calc(100svh-32px)] overflow-y-auto border-[1.5px] border-t-[3px] border-foreground bg-card shadow-[5px_5px_0_0_rgb(21_21_21_/_0.18)] sm:right-6 sm:bottom-6 sm:left-auto sm:w-[384px]"
+      className="fixed right-4 bottom-4 left-4 z-40 max-h-[calc(100svh-32px)] overflow-y-auto rounded-[22px] border border-border bg-card shadow-float [animation:rise_.2s_ease-out] sm:right-6 sm:bottom-6 sm:left-auto sm:w-[392px]"
     >
-      <div className="flex items-start justify-between gap-4 px-5 pt-4">
+      <div className="flex items-start justify-between gap-4 px-6 pt-5">
         <div>
           <h2
             id="feedback-title"
-            className="font-display text-[26px] leading-tight font-bold"
+            className="display text-[30px] leading-tight"
           >
             How can we help?
           </h2>
-          <p className="text-[14.5px] text-muted-foreground">
+          <p className="mt-0.5 text-[13.5px] text-muted-foreground">
             Every message is read by a real person.
           </p>
         </div>
@@ -158,19 +159,19 @@ export function FeedbackWidget() {
           type="button"
           aria-label="Close"
           onClick={() => setOpen(false)}
-          className="-mr-1 inline-flex size-9 shrink-0 items-center justify-center text-foreground transition-colors hover:bg-muted"
+          className="-mr-2 inline-flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
-          <X className="size-5" strokeWidth={2} />
+          <X className="size-[18px]" strokeWidth={1.8} />
         </button>
       </div>
 
       {sentTo !== undefined ? (
-        <div className="px-5 pt-5 pb-5" role="status">
-          <p className="flex items-center gap-2.5 font-display text-[22px] font-semibold">
+        <div className="px-6 pt-5 pb-6" role="status">
+          <p className="flex items-center gap-2.5 text-[16px] font-medium">
             <Lamp tone="good" />
             Message sent. Thank you.
           </p>
-          <p className="mt-1.5 text-[15px] text-muted-foreground">
+          <p className="mt-1.5 text-[14px] text-muted-foreground">
             {sentTo
               ? `If it needs a reply, we'll write to ${sentTo}.`
               : "We read every message, even when we can't reply."}
@@ -189,18 +190,16 @@ export function FeedbackWidget() {
           </div>
         </div>
       ) : (
-        <form onSubmit={onSubmit} className="px-5 pt-4 pb-5" noValidate>
+        <form onSubmit={onSubmit} className="px-6 pt-4 pb-6" noValidate>
           <fieldset disabled={busy}>
             <legend className="sr-only">Message type</legend>
-            <div className="grid grid-cols-3 border-[1.5px] border-foreground">
-              {KINDS.map((opt, i) => {
+            <div className="seg grid w-full grid-cols-3">
+              {KINDS.map((opt) => {
                 const selected = kind === opt.value;
                 return (
                   <label
                     key={opt.value}
-                    className={`flex h-10 cursor-pointer items-center justify-center px-1 text-center text-[14.5px] leading-tight font-semibold transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-foreground ${
-                      i > 0 ? "border-l-[1.5px] border-foreground" : ""
-                    } ${selected ? "bg-foreground text-card" : "bg-card hover:bg-muted"}`}
+                    className="seg-item px-1 text-center text-[13px] leading-tight"
                   >
                     <input
                       type="radio"
@@ -218,7 +217,7 @@ export function FeedbackWidget() {
 
             <label
               htmlFor="feedback-message"
-              className="mt-4 mb-1.5 block text-[15px] font-semibold"
+              className="mt-5 mb-2 block text-[14px] font-medium"
             >
               {current.prompt}
             </label>
@@ -235,10 +234,10 @@ export function FeedbackWidget() {
 
             <label
               htmlFor="feedback-email"
-              className="mt-4 mb-1.5 flex items-baseline justify-between gap-3 text-[15px] font-semibold"
+              className="mt-4 mb-2 flex items-baseline justify-between gap-3 text-[14px] font-medium"
             >
               Your email
-              <span className="text-[13.5px] font-normal text-muted-foreground">
+              <span className="text-[12.5px] font-normal text-muted-foreground">
                 {emailRequired ? "So we can reply" : "Optional, for a reply"}
               </span>
             </label>
@@ -269,14 +268,14 @@ export function FeedbackWidget() {
             {error && (
               <div
                 role="alert"
-                className="mt-4 flex items-start gap-2.5 border-l-[3px] border-stop bg-stop/10 px-3.5 py-2.5 text-[14.5px] text-stop-ink"
+                className="alert-stop mt-4 flex items-start gap-2.5 px-3.5 py-2.5 text-[14px]"
               >
                 <AlertCircle className="mt-0.5 size-4 shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
-            <button type="submit" className="btn btn-ink mt-5 w-full">
+            <button type="submit" className="btn btn-ink mt-6 w-full">
               {busy && <Loader2 className="size-4 animate-spin" strokeWidth={2.4} />}
               {busy ? "Sending…" : "Send message"}
             </button>
