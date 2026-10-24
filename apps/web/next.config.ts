@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Serve images as-is: optimizing them on Cloudflare needs the Images
+  // binding, which isn't set up.
+  images: { unoptimized: true },
 };
 
 export default nextConfig;

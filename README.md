@@ -3,7 +3,7 @@
 Free web tool that turns a recorded talk into an evaluator-style report — filler words, pacing, vocal variety, structure, top-3 actions — plus a pace + pitch timeline chart.
 
 ## Stack
-Next.js 16 · FastAPI · Deepgram · librosa + parselmouth · Claude Sonnet · Cloudflare R2 · Neon Postgres · Modal · Vercel
+Next.js 16 · FastAPI · Deepgram · librosa + parselmouth · Claude Sonnet · Cloudflare R2 · Neon Postgres · Modal · Cloudflare Workers
 
 ## Status
 In active development — see [`BUILD_STAGES.md`](./BUILD_STAGES.md).
