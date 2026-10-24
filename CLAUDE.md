@@ -3,19 +3,20 @@
 Free web tool: upload a speech → evaluator-style report (fillers, pacing, vocal variety, structure, top-3 actions) + pace/pitch timeline chart. Two-week MVP, public deploy, AI-engineering portfolio piece. (Product name: **SpeakGrade**, on the domain **speakgrade.com**. Renamed "Toastmasters Speech Coach" → "Rhetor" (Stage 24) → "SpeakGrade" (for the Clerk production domain); the evaluation methodology is still evaluator-style.)
 
 ## Stack
-- Frontend: Next.js 15 + TS + Tailwind + shadcn/ui — `apps/web/`
+- Frontend: Next.js 16 + TS + Tailwind + shadcn/ui — `apps/web/`
 - Backend: FastAPI + Python 3.12 (managed by `uv`) — `apps/api/`
 - Audio: Deepgram (STT), librosa + parselmouth (acoustic)
 - LLM: Claude Sonnet via `anthropic` SDK with prompt caching + tool-use
 - Storage: Cloudflare R2 (audio), Neon Postgres + SQLModel (reports)
-- Hosting: Vercel (web), Modal (api)
+- Hosting: Cloudflare Workers via `@opennextjs/cloudflare` (web), Modal (api). `next` and the adapter are pinned exact: upgrade them together and re-check `pnpm preview`, since `proxy.ts` on Workers is experimental in the adapter.
 
 ## Commands
 - `cd apps/api && uv sync` — install Python deps
 - `cd apps/api && uv run uvicorn app.main:app --reload` — local API
 - `cd apps/api && uv run modal deploy modal_app.py` — deploy API
 - `cd apps/web && pnpm dev` — local web
-- `cd apps/web && vercel deploy` — deploy web
+- `cd apps/web && pnpm preview` — build and run the Worker locally (workerd on :8787, dev keys from `.env.local`)
+- Deploy web: push to `main`; Cloudflare Workers Builds runs `pnpm run deploy` with the public prod values in `apps/web/.env.production`. Local `pnpm run deploy` refuses to run, because OpenNext bundles local `.env*` files into the Worker.
 
 ## Architecture
 Browser → R2 (presigned PUT) → `POST /analyze` (SSE): `asyncio.gather(transcribe, acoustic)` → derived metrics → Claude synthesis → persist → `done` event with `report_id`. Pydantic models in `apps/api/app/schemas.py` are the spine.
