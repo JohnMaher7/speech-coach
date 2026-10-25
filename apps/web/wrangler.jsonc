@@ -36,5 +36,10 @@
   ],
   "observability": {
     "enabled": true
-  }
+  },
+  "routes": [
+    { "pattern": "www.speakgrade.com", "custom_domain": true },
+    { "pattern": "speakgrade.com", "custom_domain": true }
+  ],
+  "workers_dev": false
 }
