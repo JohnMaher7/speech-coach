@@ -35,6 +35,15 @@ app = modal.App("speech-coach-api", image=image)
 )
 @modal.asgi_app()
 def web():
+    import logging
+
+    # Modal doesn't run uvicorn, so nothing configures logging: without this,
+    # the app's INFO lines (Stripe syncs, cache tokens) never reach the logs.
+    # Libraries stay at WARNING so httpx doesn't log every request.
+    logging.basicConfig(format="%(levelname)s %(name)s: %(message)s")
+    for name in ("app", "uvicorn.error"):
+        logging.getLogger(name).setLevel(logging.INFO)
+
     from app.main import app as fastapi_app
 
     return fastapi_app
