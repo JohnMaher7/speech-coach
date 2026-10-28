@@ -333,6 +333,7 @@ export type BillingStatus = {
   current_period_end: string | null;
   cancel_at: string | null;
   can_manage: boolean;
+  trial_available: boolean;
 };
 
 async function errorDetail(res: Response, fallback: string): Promise<string> {

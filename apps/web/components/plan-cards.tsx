@@ -122,6 +122,9 @@ export function PlanCards({ initialPrices }: { initialPrices: PlanPrice[] | null
     );
   }
 
+  // Returning subscribers are charged at checkout, so don't promise a trial.
+  const trial = status?.trial_available ?? true;
+  const afterTrial = trial ? " after your 7-day trial" : "";
   const monthly = prices?.find((p) => p.plan === "monthly");
   const yearly = prices?.find((p) => p.plan === "yearly");
   const savePct =
@@ -136,7 +139,7 @@ export function PlanCards({ initialPrices }: { initialPrices: PlanPrice[] | null
       blurb: "Flexible. Cancel whenever you like.",
       headline: formatMoney(monthly.amount, monthly.currency),
       cadence: "/ month",
-      note: "Billed monthly after your 7-day trial",
+      note: `Billed monthly${afterTrial}`,
       featured: false,
     },
     yearly && {
@@ -145,7 +148,7 @@ export function PlanCards({ initialPrices }: { initialPrices: PlanPrice[] | null
       blurb: "For a season of talks. Best value.",
       headline: formatMoney(Math.round(yearly.amount / 12), yearly.currency),
       cadence: "/ month",
-      note: `${formatMoney(yearly.amount, yearly.currency)} billed yearly after your 7-day trial`,
+      note: `${formatMoney(yearly.amount, yearly.currency)} billed yearly${afterTrial}`,
       featured: true,
     },
   ].filter((c) => !!c);
@@ -196,7 +199,7 @@ export function PlanCards({ initialPrices }: { initialPrices: PlanPrice[] | null
                 className={`btn btn-lg mt-8 w-full ${featured ? "btn-light" : "btn-ink"}`}
               >
                 {pending === price.plan && <Loader2 className="size-4 animate-spin" />}
-                Start 7-day free trial
+                {trial ? "Start 7-day free trial" : `Subscribe ${name.toLowerCase()}`}
               </button>
               <ul
                 className={`mt-8 grid gap-3 border-t pt-7 text-[14.5px] ${

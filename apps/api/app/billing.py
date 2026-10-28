@@ -10,6 +10,7 @@ Docs: https://docs.stripe.com/billing/subscriptions/build-subscriptions
       https://docs.stripe.com/customer-management/integrate-customer-portal
 """
 
+import asyncio
 import logging
 import time
 from datetime import UTC, datetime
@@ -86,14 +87,32 @@ def _access_source(
     return None
 
 
+async def _resolve_access(
+    payload: dict, user: str, session: SessionDep
+) -> tuple[Literal["comp", "stripe", "legacy"] | None, SubscriptionRow | None]:
+    """The user's access source and row. The row is only as fresh as the last
+    webhook, so a user who'd be refused is re-checked against Stripe first:
+    a late or failing webhook must never hide a live subscription."""
+
+    row = await session.get(SubscriptionRow, user)
+    source = _access_source(payload, row)
+    if source is None and row is not None:
+        try:
+            row = await _sync_customer(session, row.stripe_customer_id) or row
+        except stripe.StripeError:
+            logger.exception("Stripe re-check failed for %s", row.stripe_customer_id)
+        source = _access_source(payload, row)
+    return source, row
+
+
 async def require_active_plan(
     state: AuthState, user: CurrentUser, session: SessionDep
 ) -> None:
     """Reject (402) a user with no comp account, Stripe subscription/trial, or
     legacy Clerk Billing plan."""
 
-    row = await session.get(SubscriptionRow, user)
-    if _access_source(state.payload or {}, row) is None:
+    source, _ = await _resolve_access(state.payload or {}, user, session)
+    if source is None:
         raise HTTPException(
             status_code=402,
             detail="A subscription is required to analyze speeches.",
@@ -127,6 +146,27 @@ async def _primary_email(user_id: str) -> str | None:
     return None
 
 
+async def _subscriptions_for_email(
+    email: str, exclude: str | None
+) -> list[stripe.Subscription]:
+    """Every subscription on the other Stripe customers that share this email."""
+
+    client = _client()
+    customers = await client.v1.customers.list_async(
+        params={"email": email, "limit": 10}
+    )
+    pages = await asyncio.gather(
+        *(
+            client.v1.subscriptions.list_async(
+                params={"customer": c.id, "status": "all", "limit": 10}
+            )
+            for c in customers.data
+            if c.id != exclude
+        )
+    )
+    return [sub for page in pages for sub in page.data]
+
+
 @router.get("/prices")
 async def prices() -> list[PlanPrice]:
     return [
@@ -144,8 +184,7 @@ async def prices() -> list[PlanPrice]:
 async def status(
     state: AuthState, user: CurrentUser, session: SessionDep
 ) -> BillingStatus:
-    row = await session.get(SubscriptionRow, user)
-    source = _access_source(state.payload or {}, row)
+    source, row = await _resolve_access(state.payload or {}, user, session)
     return BillingStatus(
         active=source is not None,
         source=source,
@@ -153,6 +192,7 @@ async def status(
         current_period_end=row.current_period_end if row else None,
         cancel_at=row.cancel_at if row else None,
         can_manage=bool(row and row.stripe_subscription_id),
+        trial_available=not (row and row.stripe_subscription_id),
     )
 
 
@@ -161,19 +201,34 @@ async def checkout(
     req: CheckoutRequest, state: AuthState, user: CurrentUser, session: SessionDep
 ) -> RedirectResponse:
     client = _client()
-    row = await session.get(SubscriptionRow, user)
-    if _access_source(state.payload or {}, row) is not None:
+    source, row = await _resolve_access(state.payload or {}, user, session)
+    if source is not None:
         raise HTTPException(status_code=409, detail="You already have an active plan.")
     price = (await _plan_prices()).get(req.plan)
     if price is None:
         raise HTTPException(status_code=503, detail="That plan isn't available right now.")
 
+    # One plan and one trial per email, even across separate logins.
+    email = await _primary_email(user)
+    other_subs = (
+        await _subscriptions_for_email(
+            email, exclude=row.stripe_customer_id if row else None
+        )
+        if email
+        else []
+    )
+    if any(s.status in ACTIVE_STATUSES for s in other_subs):
+        raise HTTPException(
+            status_code=409,
+            detail="This email already has an active plan. Sign in with the account you subscribed with.",
+        )
+
     if row is None:
         customer = await client.v1.customers.create_async(
-            params={
-                "email": await _primary_email(user),
-                "metadata": {"clerk_user_id": user},
-            }
+            params={"email": email, "metadata": {"clerk_user_id": user}},
+            # Two checkouts racing for one user share a customer instead of
+            # creating two.
+            options={"idempotency_key": f"customer-{user}"},
         )
         row = SubscriptionRow(
             clerk_user_id=user,
@@ -183,10 +238,20 @@ async def checkout(
         session.add(row)
         await session.commit()
 
-    # One free trial per user: anyone who has had a Stripe subscription pays
-    # from day one.
+    # Only one Checkout may be open per customer, so an old tab can't start a
+    # second subscription alongside this one.
+    open_sessions = await client.v1.checkout.sessions.list_async(
+        params={"customer": row.stripe_customer_id, "status": "open"}
+    )
+    await asyncio.gather(
+        *(client.v1.checkout.sessions.expire_async(s.id) for s in open_sessions.data)
+    )
+
+    # One free trial per user and per email: anyone who has had a Stripe
+    # subscription pays from day one. The row was just re-read from Stripe,
+    # so this holds even when webhooks are failing.
     subscription_data: dict = {"metadata": {"clerk_user_id": user}}
-    if row.stripe_subscription_id is None:
+    if row.stripe_subscription_id is None and not other_subs:
         subscription_data["trial_period_days"] = TRIAL_DAYS
 
     checkout_session = await client.v1.checkout.sessions.create_async(
@@ -218,8 +283,10 @@ async def portal(user: CurrentUser, session: SessionDep) -> RedirectResponse:
     return RedirectResponse(url=portal_session.url)
 
 
-async def _sync_customer(session: SessionDep, customer_id: str) -> None:
-    """Copy the customer's newest subscription onto their row.
+async def _sync_customer(
+    session: SessionDep, customer_id: str
+) -> SubscriptionRow | None:
+    """Copy the customer's live subscription (else their newest) onto their row.
 
     Re-reading from Stripe instead of trusting the event payload makes this
     safe against retried and out-of-order deliveries."""
@@ -237,7 +304,7 @@ async def _sync_customer(session: SessionDep, customer_id: str) -> None:
         user_id = getattr(customer.metadata, "clerk_user_id", None)
         if not user_id:
             logger.warning("Stripe customer %s has no clerk_user_id", customer_id)
-            return
+            return None
         row = SubscriptionRow(
             clerk_user_id=user_id,
             stripe_customer_id=customer_id,
@@ -245,10 +312,18 @@ async def _sync_customer(session: SessionDep, customer_id: str) -> None:
         )
 
     subs = await client.v1.subscriptions.list_async(
-        params={"customer": customer_id, "status": "all", "limit": 1}
+        params={"customer": customer_id, "status": "all", "limit": 10}
     )
-    if subs.data:
-        sub = subs.data[0]
+    live = [s for s in subs.data if s.status in ACTIVE_STATUSES]
+    if len(live) > 1:
+        logger.error(
+            "DUPLICATE SUBSCRIPTIONS: Stripe customer %s has %d live: %s",
+            customer_id,
+            len(live),
+            ", ".join(s.id for s in live),
+        )
+    sub = live[0] if live else (subs.data[0] if subs.data else None)
+    if sub is not None:
         item = sub.items.data[0]
         row.stripe_subscription_id = sub.id
         row.status = sub.status
@@ -257,9 +332,17 @@ async def _sync_customer(session: SessionDep, customer_id: str) -> None:
         row.cancel_at = (
             datetime.fromtimestamp(sub.cancel_at, UTC) if sub.cancel_at else None
         )
+        logger.info(
+            "Stripe sync %s: %s status=%s cancel_at=%s",
+            customer_id,
+            sub.id,
+            sub.status,
+            row.cancel_at,
+        )
     row.updated_at = datetime.now(UTC)
     session.add(row)
     await session.commit()
+    return row
 
 
 @router.post("/webhooks/stripe")
@@ -276,7 +359,8 @@ async def stripe_webhook(request: Request, session: SessionDep) -> dict[str, boo
             request.headers.get("stripe-signature"),
             settings.stripe_webhook_secret,
         )
-    except (ValueError, stripe.SignatureVerificationError):
+    except (ValueError, stripe.SignatureVerificationError) as e:
+        logger.error("Rejected Stripe webhook: %s: %s", type(e).__name__, e)
         raise HTTPException(status_code=400, detail="Invalid Stripe signature.")
 
     if event.type in SYNC_EVENTS:

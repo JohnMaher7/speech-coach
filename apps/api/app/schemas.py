@@ -518,3 +518,6 @@ class BillingStatus(BaseModel):
     current_period_end: datetime | None
     cancel_at: datetime | None
     can_manage: bool
+    # False once the user has had any Stripe subscription: checkout then
+    # charges on day one, so the UI mustn't promise a free trial.
+    trial_available: bool

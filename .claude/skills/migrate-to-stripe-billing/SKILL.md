@@ -37,6 +37,10 @@ describes the built system. Verified against: stripe-python 16.0.0 (API
   `customer` id → `subscriptions.stripe_customer_id`; metadata is a fallback.
 - **One trial per user**: no `trial_period_days` once the row has a
   `stripe_subscription_id`.
+- **Never trust the row alone to say "no plan"**: `_resolve_access` re-reads
+  Stripe before refusing, and checkout expires open sessions. A failing
+  webhook (Oct 2026: a bad signing secret, every delivery 400) otherwise let
+  users start a second trial subscription and get double-charged.
 - **Modal deps drift:** `stripe[async]` must be in both `pyproject.toml` and
   `modal_app.py`. Prod keys live in Modal secret `speech-coach-stripe-prod`
   (deploy fails if it doesn't exist).
