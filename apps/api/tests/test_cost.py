@@ -41,6 +41,14 @@ def test_no_tokens_costs_nothing():
     assert usage_cost("claude-sonnet-4-6", usage) == 0.0
 
 
+def test_every_model_the_pipeline_calls_has_a_price():
+    from app import lexical_fillers, synthesize
+    from app.cost import PRICING
+
+    assert lexical_fillers._MODEL in PRICING
+    assert synthesize._MODEL in PRICING
+
+
 def test_unknown_model_raises():
     usage = Usage(input_tokens=10, output_tokens=5)
     with pytest.raises(KeyError):

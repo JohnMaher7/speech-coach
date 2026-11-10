@@ -6,7 +6,7 @@ from anthropic.types import Usage
 @dataclass(frozen=True)
 class ModelPricing:
     """USD per million tokens. Cache write is the 5-minute-TTL rate (1.25x input);
-    cache read is 0.1x input."""
+    cache read is 0.1x input, except 0.05x on Sonnet 5.5."""
 
     input: float
     output: float
@@ -14,17 +14,20 @@ class ModelPricing:
     cache_read: float
 
 
-# Source: https://platform.claude.com/docs/en/about-claude/pricing (May 2026;
-# claude-sonnet-5-5 added Oct 2026).
+# Source: https://platform.claude.com/docs/en/about-claude/pricing (checked Nov 2026).
+# Haiku 5.5 rates are for prompts up to 100K tokens; longer prompts cost 5x.
 PRICING: dict[str, ModelPricing] = {
     "claude-sonnet-5-5": ModelPricing(
-        input=2.00, output=10.00, cache_write_5m=2.50, cache_read=0.20
+        input=2.00, output=10.00, cache_write_5m=2.50, cache_read=0.10
     ),
     "claude-sonnet-5": ModelPricing(
-        input=3.00, output=15.00, cache_write_5m=3.75, cache_read=0.30
+        input=2.00, output=10.00, cache_write_5m=2.50, cache_read=0.20
     ),
     "claude-sonnet-4-6": ModelPricing(
         input=3.00, output=15.00, cache_write_5m=3.75, cache_read=0.30
+    ),
+    "claude-haiku-5-5": ModelPricing(
+        input=0.10, output=0.50, cache_write_5m=0.125, cache_read=0.01
     ),
     "claude-haiku-4-5": ModelPricing(
         input=1.00, output=5.00, cache_write_5m=1.25, cache_read=0.10

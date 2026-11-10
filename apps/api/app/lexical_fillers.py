@@ -5,7 +5,7 @@ interjections — `um`, `uh`, `er`. Many common fillers are real English words
 used as discourse markers: `like`, `you know`, `kind of`, `sort of`,
 `basically`, `actually`. Distinguishing those from their literal uses
 ("flew like a bird") is a judgement call, not a regex problem — so we ask
-Claude Haiku 4.5 to do it.
+Claude Haiku 5.5 to do it.
 
 Runs concurrently with `transcribe` and `analyze_audio` in `main.analyze`.
 If it fails or times out, the pipeline continues with token-only fillers
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 _client = AsyncAnthropic(api_key=settings.anthropic_api_key)
 
-_MODEL = "claude-haiku-4-5"
+_MODEL = "claude-haiku-5-5"
 
 # Words sent to the model are timestamped, so the model can return a `t` that
 # resolves to the exact word it flagged. We deliberately do not pass the joined
@@ -66,7 +66,9 @@ class _LexicalFillerResponse(BaseModel):
     fillers: list[_LexicalHit]
 
 
+# Synthesis waits on this call, so keep thinking short.
 _OUTPUT_CONFIG = {
+    "effort": "low",
     "format": {
         "type": "json_schema",
         "schema": _LexicalFillerResponse.model_json_schema(),
@@ -93,7 +95,8 @@ async def detect_lexical_fillers(
 
     response = await _client.messages.create(
         model=_MODEL,
-        max_tokens=2048,
+        max_tokens=8000,
+        thinking={"type": "adaptive"},
         system=[
             {
                 "type": "text",
