@@ -22,11 +22,13 @@ app = modal.App("speech-coach-api", image=image)
 # `min_containers=0` scales the app to zero when idle, so it bills nothing
 # between visits. The tradeoff is a 1–3 s cold start on the first request
 # after the app has been idle — acceptable for a low-traffic portfolio app.
-# Secrets are applied in order: later entries override earlier ones, so the
-# named prod secrets always beat whatever the local .env holds at deploy time.
+# Every secret is a named Modal secret, so a deploy gets the same env from any
+# machine. (`Secret.from_dotenv()` silently shipped an empty secret from a
+# machine with no .env, and every container crashed on boot.) Later entries
+# override earlier ones.
 @app.function(
     secrets=[
-        modal.Secret.from_dotenv(),
+        modal.Secret.from_name("speech-coach-api-prod"),
         modal.Secret.from_name("speech-coach-clerk-prod"),
         modal.Secret.from_name("speech-coach-stripe-prod"),
         modal.Secret.from_dict({"WEB_BASE_URL": "https://speakgrade.com"}),
