@@ -1,4 +1,28 @@
+import os
+
 import pytest
+from pydantic import ValidationError
+
+# Without a `.env` (a fresh clone, CI) `Settings()` can't be built, and every
+# module that imports it fails at collection. Placeholders go in only then:
+# environment variables outrank `.env`, so setting them unconditionally would
+# hide the real keys the eval tests need.
+try:
+    import app.config  # noqa: F401
+except ValidationError:
+    for _name in (
+        "R2_ACCOUNT_ID",
+        "R2_ACCESS_KEY_ID",
+        "R2_SECRET_ACCESS_KEY",
+        "R2_BUCKET",
+        "DEEPGRAM_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "CLERK_SECRET_KEY",
+    ):
+        os.environ.setdefault(_name, "test")
+    os.environ.setdefault(
+        "DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test"
+    )
 
 from app.acoustic import AcousticFeatures
 from app.schemas import Pause, Transcript, Word

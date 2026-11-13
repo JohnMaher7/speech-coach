@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Check, Loader2, RefreshCw } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { streamAnalyze, type SpeechType } from "@/lib/api";
+import { ApiError, streamAnalyze, type SpeechType } from "@/lib/api";
 
 const SPEECH_TYPES: readonly SpeechType[] = [
   "prepared",
@@ -40,6 +40,11 @@ const TIPS = [
   "A speech needs a real ending — a callback or a call to action, not “so, yeah, that’s it”.",
 ];
 
+// /analyze rejections that re-running on the same key can't fix: the audio is
+// gone (404) or too large (413), or the user isn't allowed to analyze (401,
+// 402, 403). Network errors, 429 and 5xx are worth retrying.
+const FINAL_STATUSES = new Set([401, 402, 403, 404, 413]);
+
 export default function AnalyzingPage() {
   const router = useRouter();
   const { getToken } = useAuth();
@@ -50,49 +55,73 @@ export default function AnalyzingPage() {
 
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  // True when the API kept the audio, so re-running /analyze on the same key
+  // can still work.
+  const [retryable, setRetryable] = useState(false);
+  const [retrying, setRetrying] = useState(false);
   const [tipIdx, setTipIdx] = useState(0);
   const startedRef = useRef(false);
   const tokenRefreshRef = useRef<Promise<string | null> | null>(null);
 
+  const runAnalysis = useCallback(async () => {
+    const fail = (message: string, canRetry: boolean) => {
+      setError(message);
+      setRetryable(canRetry);
+    };
+    try {
+      const token = await getToken();
+      if (!token) {
+        router.replace("/sign-in");
+        return;
+      }
+      for await (const ev of streamAnalyze(key, token, speechType)) {
+        if (ev.event === "done") {
+          router.replace(`/report/${ev.data.report_id}?fresh=1`);
+          return;
+        }
+        if (ev.event === "error") {
+          fail(ev.data.message, ev.data.retryable === true);
+          return;
+        }
+        if (ev.event === "synthesis_done" && !tokenRefreshRef.current) {
+          tokenRefreshRef.current = getToken({ skipCache: true }).catch(
+            () => null,
+          );
+        }
+        if (STEP_IDS.has(ev.event)) {
+          setCompleted((prev) => new Set(prev).add(ev.event));
+        }
+      }
+      // The stream ended without a terminal "done"/"error" event (e.g. a
+      // proxy idle timeout closed the connection cleanly mid-analysis).
+      fail(
+        "The connection was interrupted before the analysis finished. Please try again.",
+        true,
+      );
+    } catch (e) {
+      fail(
+        e instanceof Error ? e.message : "Analysis failed.",
+        !(e instanceof ApiError && FINAL_STATUSES.has(e.status)),
+      );
+    }
+  }, [key, router, speechType, getToken]);
+
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
+    void runAnalysis();
+  }, [runAnalysis]);
 
-    (async () => {
-      try {
-        const token = await getToken();
-        if (!token) {
-          router.replace("/sign-in");
-          return;
-        }
-        for await (const ev of streamAnalyze(key, token, speechType)) {
-          if (ev.event === "done") {
-            router.replace(`/report/${ev.data.report_id}?fresh=1`);
-            return;
-          }
-          if (ev.event === "error") {
-            setError(ev.data.message);
-            return;
-          }
-          if (ev.event === "synthesis_done" && !tokenRefreshRef.current) {
-            tokenRefreshRef.current = getToken({ skipCache: true }).catch(
-              () => null,
-            );
-          }
-          if (STEP_IDS.has(ev.event)) {
-            setCompleted((prev) => new Set(prev).add(ev.event));
-          }
-        }
-        // The stream ended without a terminal "done"/"error" event (e.g. a
-        // proxy idle timeout closed the connection cleanly mid-analysis).
-        setError(
-          "The connection was interrupted before the analysis finished. Please try again.",
-        );
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Analysis failed.");
-      }
-    })();
-  }, [key, router, speechType, getToken]);
+  function retry() {
+    if (retrying) return;
+    setRetrying(true);
+    setCompleted(new Set());
+    setError(null);
+    setRetryable(false);
+    setTipIdx(0);
+    tokenRefreshRef.current = null;
+    void runAnalysis().finally(() => setRetrying(false));
+  }
 
   useEffect(() => {
     if (error) return;
@@ -119,7 +148,9 @@ export default function AnalyzingPage() {
         </h1>
         <p className="mt-4 text-[16px] text-muted-foreground">
           {error
-            ? "Nothing was saved — give it another go with a different file."
+            ? retryable
+              ? "Your recording is still here, so you can try again without uploading it again."
+              : "Nothing was saved — give it another go with a different file."
             : "This usually takes about three minutes."}
         </p>
 
@@ -205,6 +236,17 @@ export default function AnalyzingPage() {
             >
               {error}
             </div>
+            {retryable && (
+              <button
+                type="button"
+                onClick={retry}
+                disabled={retrying}
+                className="btn btn-ink w-full"
+              >
+                <RefreshCw className="size-4" />
+                Try again
+              </button>
+            )}
             <Link href="/" className="btn btn-line w-full">
               <RefreshCw className="size-4" />
               Try a different recording

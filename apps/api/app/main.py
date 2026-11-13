@@ -327,19 +327,25 @@ async def analyze(
             yield sse_event("saving_report", {})
             yield sse_event("done", {"report_id": report.report_id})
 
-        # Terminal failures also delete the audio: the client always restarts
-        # from a fresh upload, and audio must not outlive the analysis. A
-        # client disconnect (GeneratorExit) is not terminal — a page refresh
-        # retries /analyze with the same key, so the object stays.
+        # Bad input (AnalysisError) deletes the audio: retrying the same file
+        # can't help. Any other failure is ours, so the audio stays and the
+        # client can retry /analyze with the same key ("Try again"). So does a
+        # client disconnect (GeneratorExit), which a page refresh retries.
+        # Audio that is never retried expires under the R2 lifecycle rule
+        # `expire-uploads-1d` (prefix `uploads/`, 1 day; set with wrangler).
         except AnalysisError as exc:
             await asyncio.to_thread(delete_audio, req.key)
-            yield sse_event("error", {"message": exc.user_message})
+            yield sse_event(
+                "error", {"message": exc.user_message, "retryable": False}
+            )
         except Exception:
             logger.exception("analyze stream failed for key=%s", req.key)
-            await asyncio.to_thread(delete_audio, req.key)
             yield sse_event(
                 "error",
-                {"message": "Something went wrong analyzing your speech. Please try again."},
+                {
+                    "message": "Something went wrong analyzing your speech. Please try again.",
+                    "retryable": True,
+                },
             )
 
     return StreamingResponse(
