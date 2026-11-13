@@ -72,7 +72,7 @@ const STEPS: { title: string; body: string; timing: string }[] = [
 const FAQ_ITEMS: { q: string; a: string }[] = [
   {
     q: "Is my recording stored anywhere?",
-    a: "No. Audio is kept only while your report is being generated, then deleted. We keep the report itself so you can come back to it from your dashboard; you can delete it at any time.",
+    a: "Only briefly. Audio is deleted as soon as your report is ready. If analysis fails on our side, we keep it for up to two days so you can try again, then delete it automatically. We keep the report itself so you can come back to it from your dashboard; you can delete it at any time.",
   },
   {
     q: "What languages does SpeakGrade support?",

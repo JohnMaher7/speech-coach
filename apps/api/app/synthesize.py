@@ -1,6 +1,7 @@
 import logging
 
 from anthropic import AsyncAnthropic
+from pydantic import ValidationError
 
 from app.annotate import build_annotated_transcript
 from app.config import settings
@@ -227,13 +228,26 @@ Segment table: WPM 142-156, pitch_range_st avg 3.1, boundary_tone mostly falling
 
 _TOOL_NAME = "submit_evaluation"
 
+# `strict` makes the API sample only inputs that match the schema, so a nested
+# object can no longer come back as a JSON string (the walkthrough failure in
+# the 13 Nov audit). The schema's cross-field rules (sub-5 needs evidence, n/a
+# needs a reason) live in Pydantic validators, which strict mode can't enforce;
+# `synthesize` retries once for those.
 _TOOLS = [
     {
         "name": _TOOL_NAME,
         "description": "Submit the structured evaluator report for the recorded speech.",
         "input_schema": Synthesis.model_json_schema(),
+        "strict": True,
     }
 ]
+
+# One call plus one retry. Each attempt is a full Sonnet call (~$0.03-0.05).
+_MAX_ATTEMPTS = 2
+
+
+class SynthesisError(RuntimeError):
+    """No valid `submit_evaluation` call came back after every attempt."""
 
 
 def _format_segment_table(rows: list[dict]) -> str:
@@ -532,39 +546,76 @@ async def synthesize(
 
     system_prompt = _SYSTEM_PROMPTS[speech_type or "prepared"]
 
-    response = await _client.messages.create(
-        model=_MODEL,
-        max_tokens=16000,
-        thinking={"type": "adaptive"},
-        output_config={"effort": "medium"},
-        system=[
-            {
-                "type": "text",
-                "text": system_prompt,
-                "cache_control": {"type": "ephemeral"},
-            }
-        ],
-        tools=_TOOLS,
-        tool_choice={"type": "auto"},
-        messages=[{"role": "user", "content": user_content}],
-    )
+    total_cost = 0.0
+    failure = ""
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
+        response = await _client.messages.create(
+            model=_MODEL,
+            max_tokens=16000,
+            thinking={"type": "adaptive"},
+            output_config={"effort": "medium"},
+            system=[
+                {
+                    "type": "text",
+                    "text": system_prompt,
+                    "cache_control": {"type": "ephemeral"},
+                }
+            ],
+            tools=_TOOLS,
+            tool_choice={"type": "auto"},
+            messages=[{"role": "user", "content": user_content}],
+        )
 
-    usage = response.usage
-    cost = usage_cost(_MODEL, usage)
-    logger.info(
-        "synthesize usage: input=%d cache_create=%s cache_read=%s output=%d cost=$%.5f",
-        usage.input_tokens,
-        usage.cache_creation_input_tokens,
-        usage.cache_read_input_tokens,
-        usage.output_tokens,
-        cost,
-    )
+        usage = response.usage
+        cost = usage_cost(_MODEL, usage)
+        total_cost += cost
+        logger.info(
+            "synthesize attempt %d/%d usage: input=%d cache_create=%s "
+            "cache_read=%s output=%d stop_reason=%s cost=$%.5f",
+            attempt,
+            _MAX_ATTEMPTS,
+            usage.input_tokens,
+            usage.cache_creation_input_tokens,
+            usage.cache_read_input_tokens,
+            usage.output_tokens,
+            response.stop_reason,
+            cost,
+        )
 
-    for block in response.content:
-        if block.type == "tool_use" and block.name == _TOOL_NAME:
-            return Synthesis.model_validate(block.input), cost
+        block = next(
+            (
+                b
+                for b in response.content
+                if b.type == "tool_use" and b.name == _TOOL_NAME
+            ),
+            None,
+        )
+        if block is None:
+            failure = f"no {_TOOL_NAME} call (stop_reason={response.stop_reason})"
+        else:
+            # A `max_tokens` cut-off leaves the input incomplete, which fails
+            # validation here like any other bad input.
+            try:
+                synthesis = Synthesis.model_validate(block.input)
+            except ValidationError as exc:
+                failure = (
+                    f"invalid {_TOOL_NAME} input "
+                    f"(stop_reason={response.stop_reason}): {exc}"
+                )
+            else:
+                if attempt > 1:
+                    logger.info(
+                        "synthesize succeeded on attempt %d; total cost $%.5f",
+                        attempt,
+                        total_cost,
+                    )
+                return synthesis, total_cost
 
-    raise RuntimeError(
-        f"Claude did not return a {_TOOL_NAME} tool_use block. "
-        f"stop_reason={response.stop_reason}"
+        logger.warning(
+            "synthesize attempt %d/%d failed: %s", attempt, _MAX_ATTEMPTS, failure
+        )
+
+    raise SynthesisError(
+        f"no valid {_TOOL_NAME} call after {_MAX_ATTEMPTS} attempts "
+        f"(total cost ${total_cost:.5f}); last failure: {failure}"
     )

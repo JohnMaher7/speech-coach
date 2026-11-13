@@ -35,7 +35,9 @@ export type AnalyzeEvent =
   | { event: "synthesis_done"; data: { priorities: number } }
   | { event: "saving_report"; data: Record<string, never> }
   | { event: "done"; data: { report_id: string } }
-  | { event: "error"; data: { message: string } };
+  // `retryable`: the API kept the audio, so re-calling /analyze with the same
+  // key can succeed. Older API deployments omit it; treat missing as false.
+  | { event: "error"; data: { message: string; retryable?: boolean } };
 
 export type Word = {
   text: string;
@@ -258,7 +260,7 @@ export async function* streamAnalyze(
   });
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { detail?: string } | null;
-    throw new Error(body?.detail ?? `Analysis failed (${res.status}).`);
+    throw new ApiError(body?.detail ?? `Analysis failed (${res.status}).`, res.status);
   }
   if (!res.body) throw new Error("Analysis returned an empty response.");
 
